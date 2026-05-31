@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('transactions', function (Blueprint $table) {
+            $table->id();
+            
+            // Esta línea crea la columna 'user_id' y le dice que se conecta con la tabla de usuarios
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            
+            $table->string('description', 255);
+            $table->decimal('amount', 12, 2);
+            $table->string('type', 30);
+            $table->timestamps(); // Reemplaza de forma más eficiente tu columna 'created_at'
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('transactions');
+    }
+};
