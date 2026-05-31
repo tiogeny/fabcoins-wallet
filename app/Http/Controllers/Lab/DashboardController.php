@@ -9,45 +9,39 @@ use Illuminate\Support\Facades\DB;
 class DashboardController extends Controller
 {
     /**
-     * 📊 ACCIÓN 1: CARGAR EL DASHBOARD DEL LAB (Reemplaza tu consulta de saldo y KPIs)
+     * 📊 DASHBOARD DEL LAB
      */
     public function index()
     {
         $lab = auth()->user();
 
-        // Usamos las relaciones Eloquent automáticas que creamos en la Fase 2
         $misActivos = $lab->activos()->with('categoriaGlobal')->get();
         $misMisiones = $lab->misiones()->latest()->get();
 
-        // Saldo neto (Calculado automáticamente por el atributo mágico que programamos en tu Modelo User)
         $saldoTotal = $lab->saldo_total;
         $isFrozen = ($saldoTotal < 0);
 
-        // KPIs económicos rápidos usando agregadores de Laravel
         $totalFinanciados = DB::table('financing_agreements')->where('lab_id', $lab->id)->where('status', 'active')->count();
         $totalHistoricoEmitido = $lab->activos()->sum('generated_fc');
         
-        // Pasamos los datos limpios a la vista de Blade (la cual diseñaremos en la Fase 4)
         return view('lab.dashboard', compact(
             'lab', 'misActivos', 'misMisiones', 'saldoTotal', 'isFrozen', 'totalFinanciados', 'totalHistoricoEmitido'
         ));
     }
 
     /**
-     * 🚀 ACCIÓN 2: TOKENIZACIÓN DE ACTIVOS (Emisión de FabCoins por preventa de capacidad)
+     * 🚀 TOKENIZACIÓN (MINT)
      */
     public function tokenize(Request $request)
     {
         $lab = auth()->user();
         
-        // Validación express nativa de Laravel (reemplaza tus validaciones manuales)
         $request->validate([
             'custom_name' => 'required|array',
             'set_price_fc' => 'required|array',
         ]);
 
         try {
-            // Tu lógica original de base de datos blindada con seguridad atómica de Laravel
             DB::transaction(function () use ($request, $lab) {
                 $names = $request->input('custom_name');
                 $prices = $request->input('set_price_fc');
@@ -55,7 +49,7 @@ class DashboardController extends Controller
                 $types = $request->input('asset_type');
                 $quantities = $request->input('quantity_offered');
                 
-                $globalPct = 35; // Política monetaria referencial fijada por tu SuperAdmin
+                $globalPct = 35;
                 $horasVidaUtilContrato = 4160;
                 $fechaExpiracion = now()->addYears(2);
 
@@ -64,14 +58,13 @@ class DashboardController extends Controller
                     
                     if (!empty(trim($names[$i])) && $precio > 0) {
                         $tipo = $types[$i];
-                        
-                        // Ecuación macroeconómica original de FabCoins según el tipo de activo
                         $cantidadGuardada = ($tipo === 'machine') ? ($horasVidaUtilContrato * ($globalPct / 100)) : floatval($quantities[$i]);
                         $montoGenerar = $cantidadGuardada * $precio;
 
-                        if ($montoGenerar <= 0) continue;
+                        if ($montoGenerar <= 0) {
+                            continue;
+                        }
 
-                        // 1. Guardar el activo en el inventario del Lab usando Eloquent
                         $lab->activos()->create([
                             'catalog_id' => $catalogIds[$i],
                             'asset_type' => $tipo,
@@ -83,7 +76,6 @@ class DashboardController extends Controller
                             'expires_at' => $fechaExpiracion,
                         ]);
 
-                        // 2. Registrar el movimiento de emisión en tu libro contable
                         $lab->transacciones()->create([
                             'description' => "Emisión (Mint): " . trim($names[$i]),
                             'amount' => $montoGenerar,
@@ -91,9 +83,8 @@ class DashboardController extends Controller
                         ]);
                     }
                 }
-            ]);
+            }); // 👈 ¡CORREGIDO AQUÍ! Cambiado ]; por };
 
-            // Redirección elegante con un "Mensaje Flash" que SweetAlert leerá en la vista
             return redirect()->route('lab.dashboard')->with('msg', 'mint_ok');
 
         } catch (\Exception $e) {

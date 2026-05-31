@@ -12,7 +12,6 @@ class User extends Authenticatable
 
     /**
      * CAMPOS PERMITIDOS PARA GUARDARSE DE FORMA MASIVA
-     * (Mapeados directamente desde tu SQL original)
      */
     protected $fillable = [
         'name',
@@ -47,47 +46,31 @@ class User extends Authenticatable
     ];
 
     // =========================================================
-    // 📊 RELACIONES DE TU ECOSISTEMA ECONÓMICO
+    // RELACIONES DE ELORENT
     // =========================================================
 
-    /**
-     * Un usuario (Lab o Maker) tiene muchas transacciones contables
-     */
     public function transacciones()
     {
-        return $this->hasMany(Transaction::class, 'user_id'); [cite: 3]
+        return $this->hasMany(Transaction::class, 'user_id');
     }
 
-    /**
-     * Un Laboratorio es dueño de muchos activos operativos (máquinas, espacios)
-     */
     public function activos()
     {
-        return $this->hasMany(LabAsset::class, 'lab_id'); [cite: 3]
+        return $this->hasMany(LabAsset::class, 'lab_id');
     }
 
-    /**
-     * Un Laboratorio publica muchas misiones de trabajo
-     */
     public function misiones()
     {
-        return $this->hasMany(Mission::class, 'lab_id'); [cite: 3]
+        return $this->hasMany(Mission::class, 'lab_id');
     }
 
     // =========================================================
-    // 🧠 ATRIBUTOS DINÁMICOS (MAGIA DE LARAEL)
+    // ATRIBUTOS DINÁMICOS
     // =========================================================
 
-    /**
-     * Tu Ecuación Contable Original convertida a código nativo.
-     * Calcula el saldo neto del usuario en tiempo real sin consultas SQL sucias.
-     */
     public function getSaldoTotalAttribute()
     {
-        // Sumamos todas las operaciones que inyectan dinero (ingresos y emisiones mint)
         $ingresos = $this->transacciones()->whereIn('type', ['income', 'mint'])->sum('amount');
-        
-        // Sumamos todas las operaciones que retiran o congelan dinero (gastos, escrow y quema)
         $egresos  = $this->transacciones()->whereIn('type', ['expense', 'escrow', 'burn'])->sum('amount');
 
         return $ingresos - $egresos;

@@ -17,6 +17,23 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            
+            // 🪙 NUESTRAS COLUMNAS PERSONALIZADAS PARA EL ECOSISTEMA FABCOINS
+            $table->string('slug', 150)->nullable();
+            $table->string('role', 30)->default('maker'); // Puede ser: 'maker', 'lab', 'superadmin'
+            $table->string('avatar_url', 255)->nullable();
+            $table->text('bio')->nullable();
+            $table->string('address', 255)->nullable();
+            $table->boolean('force_password_change')->default(false);
+            $table->integer('reputation_score')->default(5); // Sistema de reputación por estrellas
+            $table->decimal('deuda_inicial_fc', 12, 2)->default(0.00);
+            $table->decimal('deuda_fc', 12, 2)->default(0.00);
+            $table->integer('deuda_lab_id')->nullable();
+            $table->string('preferred_lang', 10)->default('es');
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
+            $table->boolean('onboarding_completed')->default(false);
+
             $table->rememberToken();
             $table->timestamps();
         });

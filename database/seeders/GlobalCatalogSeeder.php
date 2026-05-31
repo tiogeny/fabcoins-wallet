@@ -10,14 +10,14 @@ class GlobalCatalogSeeder extends Seeder
 {
     public function run(): void
     {
-        // 🛡️ Desactivamos temporalmente el chequeo de llaves foráneas
-        Schema::disableForeignKeyConstraints();
+        // 🔥 SENTENCIA INFAVIBLE: Forzamos a MySQL a apagar el chequeo de llaves de golpe
+        DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
 
-        // Ahora MySQL te dejará vaciar la tabla sin protestar
+        // Ahora sí limpiará la tabla sin importar qué dependencias existan
         DB::table('global_catalog')->truncate();
 
-        // 🛡️ Volvemos a activar la seguridad de inmediato
-        Schema::enableForeignKeyConstraints();
+        // 🔥 Volvemos a encender la seguridad inmediatamente
+        DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
 
         $items = [
             // --- ⚙️ MÁQUINAS / EQUIPOS ---
