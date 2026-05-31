@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Lab\DashboardController as LabDashboard;
+use App\Http\Controllers\Maker\DashboardController as MakerDashboard;
 
 // --- 🌐 RUTA DE TU LANDING PAGE (fabcoins.co) ---
 // Aplicamos el middleware 'locale' para que las banderas cambien el idioma de la landing
@@ -20,7 +21,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
     // 🛠️ PANEL DE CONTROL DEL MAKER (Exclusivo para rol 'maker')
     Route::middleware(['role:maker'])->prefix('maker')->group(function () {
-        Route::get('/dashboard', function() { return "Aquí irá tu maker.php"; })->name('maker.dashboard');
+        Route::get('/dashboard', [MakerDashboard::class, 'index'])->name('maker.dashboard');
+        Route::post('/p2p', [MakerDashboard::class, 'transferP2P'])->name('maker.p2p');
     });
 
     // 🌐 PANEL DE CONTROL DEL SUPERADMIN (Exclusivo para rol 'superadmin')
