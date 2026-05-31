@@ -6,34 +6,39 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            
-            // 🪙 NUESTRAS COLUMNAS PERSONALIZADAS PARA EL ECOSISTEMA FABCOINS
-            $table->string('slug', 150)->nullable();
-            $table->string('role', 30)->default('maker'); // Puede ser: 'maker', 'lab', 'superadmin'
+            $table->string('email', 100)->unique();
+            $table->string('password', 255);
+            $table->string('name', 100);
+            $table->string('slug', 100)->unique()->nullable();
+            $table->enum('role', ['superadmin', 'lab', 'maker']);
             $table->string('avatar_url', 255)->nullable();
             $table->text('bio')->nullable();
             $table->string('address', 255)->nullable();
-            $table->boolean('force_password_change')->default(false);
-            $table->integer('reputation_score')->default(5); // Sistema de reputación por estrellas
-            $table->decimal('deuda_inicial_fc', 12, 2)->default(0.00);
-            $table->decimal('deuda_fc', 12, 2)->default(0.00);
-            $table->integer('deuda_lab_id')->nullable();
-            $table->string('preferred_lang', 10)->default('es');
+            $table->tinyInteger('force_password_change')->default(1);
+            $table->decimal('reputation_score', 3, 2)->default(0.00);
+            $table->string('location', 100)->nullable();
+            $table->string('profile_pic', 255)->default('default_avatar.png');
+            $table->string('portfolio_url', 255)->nullable();
+            $table->string('github_url', 255)->nullable();
+            $table->string('linkedin_url', 255)->nullable();
+            $table->string('phone', 20)->nullable();
+            $table->string('user_tagline', 100)->nullable();
+            $table->string('social_linkedin', 255)->nullable();
+            $table->string('social_github', 255)->nullable();
+            $table->string('social_portfolio', 255)->nullable();
+            $table->string('social_instagram', 255)->nullable();
+            $table->string('social_fabacademy', 255)->nullable();
+            $table->decimal('deuda_inicial_fc', 10, 2)->default(0.00);
+            $table->decimal('deuda_fc', 10, 2)->default(0.00);
+            $table->unsignedBigInteger('deuda_lab_id')->nullable();
+            $table->string('preferred_lang', 2)->default('es');
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
-            $table->boolean('onboarding_completed')->default(false);
-
+            $table->tinyInteger('onboarding_completed')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });
@@ -54,9 +59,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');
