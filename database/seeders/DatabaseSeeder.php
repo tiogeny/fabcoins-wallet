@@ -2,82 +2,77 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Motor de Hidratación Contable y Adaptación de Ecosistema
+     */
     public function run(): void
     {
+        // 1. Desactivar restricciones de llaves foráneas para permitir la importación masiva cruda
         DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
-        DB::table('global_catalog')->truncate();
-        DB::table('skills_catalog')->truncate();
-        DB::table('global_settings')->truncate();
-        DB::table('users')->truncate();
+
+        // 2. Leer e inyectar el volcado SQL real de producción desde la raíz del proyecto
+        $sqlPath = base_path('fabcoins.sql');
+        if (file_exists($sqlPath)) {
+            DB::unprepared(file_get_contents($sqlPath));
+        }
+
+        // 3. 🛡️ ADAPTACIÓN: Tabla 'users' (Evita errores 1054 de columnas faltantes en Auth/Breeze)
+        if (Schema::hasTable('users')) {
+            Schema::table('users', function (Blueprint $table) {
+                if (!Schema::hasColumn('users', 'updated_at')) {
+                    $table->timestamp('updated_at')->nullable();
+                }
+                if (!Schema::hasColumn('users', 'remember_token')) {
+                    $table->string('remember_token', 100)->nullable();
+                }
+            });
+        }
+
+        // 4. 🛡️ ADAPTACIÓN: Tabla 'lab_assets' (Previene fallos de Eloquent Timestamps al emitir tokens)
+        if (Schema::hasTable('lab_assets')) {
+            Schema::table('lab_assets', function (Blueprint $table) {
+                if (!Schema::hasColumn('lab_assets', 'created_at')) {
+                    $table->timestamp('created_at')->nullable();
+                }
+                if (!Schema::hasColumn('lab_assets', 'updated_at')) {
+                    $table->timestamp('updated_at')->nullable();
+                }
+            });
+        }
+
+        // 5. ⚙️ SISTEMA: Creación de tablas técnicas internas requeridas por el núcleo de Laravel
+        if (!Schema::hasTable('sessions')) {
+            Schema::create('sessions', function (Blueprint $table) {
+                $table->string('id')->primary();
+                $table->unsignedBigInteger('user_id')->nullable()->index();
+                $table->string('ip_address', 45)->nullable();
+                $table->text('user_agent')->nullable();
+                $table->longText('payload');
+                $table->integer('last_activity')->index();
+            });
+        }
+
+        if (!Schema::hasTable('cache')) {
+            Schema::create('cache', function (Blueprint $table) {
+                $table->string('key')->primary();
+                $table->mediumText('value');
+                $table->integer('expiration');
+            });
+            Schema::create('cache_locks', function (Blueprint $table) {
+                $table->string('key')->primary();
+                $table->string('owner');
+                $table->integer('expiration');
+            });
+        }
+
+        // 6. Reactivar restricciones de seguridad de llaves foráneas
         DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
-
-        // 1. Sembrar Configuración Monetaria
-        DB::table('global_settings')->insert(['setting_key' => 'tokenization_pct', 'setting_value' => '35']);
-
-        // 2. Sembrar Catálogo Técnico de Máquinas y Servicios Original
-        DB::table('global_catalog')->insert([
-            ['id' => 1, 'asset_type' => 'machine', 'generic_name' => 'Impresora 3D FDM (Filamento)', 'generic_name_en' => '3D Printer FDM (Filament)', 'measurement_unit' => 'hora', 'suggested_price_fc' => 5.00],
-            ['id' => 2, 'asset_type' => 'machine', 'generic_name' => 'Impresora 3D SLA (Resina)', 'generic_name_en' => '3D Printer SLA (Resin)', 'measurement_unit' => 'hora', 'suggested_price_fc' => 8.00],
-            ['id' => 3, 'asset_type' => 'machine', 'generic_name' => 'Cortadora Láser (CO2)', 'generic_name_en' => 'Laser Cutter (CO2)', 'measurement_unit' => 'hora', 'suggested_price_fc' => 20.00],
-            ['id' => 4, 'asset_type' => 'machine', 'generic_name' => 'Router (Formato Grande)', 'generic_name_en' => 'CNC Router (Large Format)', 'measurement_unit' => 'hora', 'suggested_price_fc' => 35.00],
-            ['id' => 5, 'asset_type' => 'machine', 'generic_name' => 'Plotter de Corte (Vinilo)', 'generic_name_en' => 'Vinyl Cutter', 'measurement_unit' => 'hora', 'suggested_price_fc' => 10.00],
-            ['id' => 6, 'asset_type' => 'machine', 'generic_name' => 'Fresadora de Precisión (PCBs)', 'generic_name_en' => 'Precision Milling (PCBs)', 'measurement_unit' => 'hora', 'suggested_price_fc' => 15.00],
-            ['id' => 7, 'asset_type' => 'machine', 'generic_name' => 'Escáner 3D', 'generic_name_en' => '3D Scanner', 'measurement_unit' => 'hora', 'suggested_price_fc' => 12.00],
-            ['id' => 8, 'asset_type' => 'machine', 'generic_name' => 'Otro Equipo / Maquinaria (Comodín)', 'generic_name_en' => 'Other Equipment / Machinery', 'measurement_unit' => 'hora', 'suggested_price_fc' => 10.00],
-            ['id' => 9, 'asset_type' => 'service', 'generic_name' => 'Consultoría en Modelado 3D (CAD)', 'generic_name_en' => '3D Modeling Consultancy (CAD)', 'measurement_unit' => 'hora', 'suggested_price_fc' => 25.00],
-            ['id' => 10, 'asset_type' => 'service', 'generic_name' => 'Asesoría en Electrónica / Programación', 'generic_name_en' => 'Electronics / Programming Advisory', 'measurement_unit' => 'hora', 'suggested_price_fc' => 30.00],
-            ['id' => 11, 'asset_type' => 'service', 'generic_name' => 'Diseño de Placas Electrónicas (PCB)', 'generic_name_en' => 'PCB Design', 'measurement_unit' => 'hora', 'suggested_price_fc' => 35.00],
-            ['id' => 12, 'asset_type' => 'service', 'generic_name' => 'Acompañamiento en Prototipado', 'generic_name_en' => 'Prototyping Support', 'measurement_unit' => 'hora', 'suggested_price_fc' => 20.00],
-            ['id' => 13, 'asset_type' => 'service', 'generic_name' => 'Operación de Máquina Asistida', 'generic_name_en' => 'Assisted Machine Operation', 'measurement_unit' => 'hora', 'suggested_price_fc' => 15.00],
-            ['id' => 14, 'asset_type' => 'service', 'generic_name' => 'Otro Servicio Profesional (Comodín)', 'generic_name_en' => 'Other Professional Service', 'measurement_unit' => 'hora', 'suggested_price_fc' => 25.00],
-            ['id' => 15, 'asset_type' => 'workshop', 'generic_name' => 'Inducción de Seguridad Básica', 'generic_name_en' => 'Basic Safety Induction', 'measurement_unit' => 'cupo', 'suggested_price_fc' => 15.00],
-            ['id' => 16, 'asset_type' => 'workshop', 'generic_name' => 'Taller Práctico: Impresión 3D', 'generic_name_en' => 'Practical Workshop: 3D Printing', 'measurement_unit' => 'cupo', 'suggested_price_fc' => 40.00],
-            ['id' => 17, 'asset_type' => 'workshop', 'generic_name' => 'Taller Práctico: Corte Láser', 'generic_name_en' => 'Practical Workshop: Laser Cutting', 'measurement_unit' => 'cupo', 'suggested_price_fc' => 50.00],
-            ['id' => 18, 'asset_type' => 'workshop', 'generic_name' => 'Bootcamp Fabricación Digital', 'generic_name_en' => 'Digital Fabrication Bootcamp', 'measurement_unit' => 'cupo', 'suggested_price_fc' => 150.00],
-            ['id' => 19, 'asset_type' => 'workshop', 'generic_name' => 'Curso: Programación con Arduino', 'generic_name_en' => 'Course: Arduino Programming', 'measurement_unit' => 'cupo', 'suggested_price_fc' => 80.00],
-            ['id' => 20, 'asset_type' => 'workshop', 'generic_name' => 'Otro Taller / Evento (Comodín)', 'generic_name_en' => 'Other Workshop / Event', 'measurement_unit' => 'cupo', 'suggested_price_fc' => 50.00],
-            ['id' => 21, 'asset_type' => 'space', 'generic_name' => 'Estación de Trabajo (Coworking Fab)', 'generic_name_en' => 'Workstation (Fab Coworking)', 'measurement_unit' => 'hora', 'suggested_price_fc' => 3.00],
-            ['id' => 22, 'asset_type' => 'space', 'generic_name' => 'Mesa de Ensamblaje / Herramientas', 'generic_name_en' => 'Assembly Table / Tools', 'measurement_unit' => 'hora', 'suggested_price_fc' => 5.00],
-            ['id' => 23, 'asset_type' => 'space', 'generic_name' => 'Cabina de Pintura / Acabados', 'generic_name_en' => 'Paint Booth / Finishing', 'measurement_unit' => 'hora', 'suggested_price_fc' => 8.00],
-            ['id' => 24, 'asset_type' => 'space', 'generic_name' => 'Sala de Reuniones / Ideación', 'generic_name_en' => 'Meeting / Ideation Room', 'measurement_unit' => 'hora', 'suggested_price_fc' => 10.00],
-            ['id' => 25, 'asset_type' => 'space', 'generic_name' => 'Sala de Capacitación / Aulas', 'generic_name_en' => 'Training Room / Classrooms', 'measurement_unit' => 'hora', 'suggested_price_fc' => 15.00],
-            ['id' => 26, 'asset_type' => 'space', 'generic_name' => 'Otro Espacio Físico (Comodín)', 'generic_name_en' => 'Other Space', 'measurement_unit' => 'hora', 'suggested_price_fc' => 5.00]
-        ]);
-
-        // 3. Sembrar Catálogo de Habilidades de Reputación
-        DB::table('skills_catalog')->insert([
-            ['id' => 1, 'name' => 'Impresión 3D (FDM)', 'type' => 'hard'],
-            ['id' => 2, 'name' => 'Impresión 3D (Resina)', 'type' => 'hard'],
-            ['id' => 3, 'name' => 'Corte Láser', 'type' => 'hard'],
-            ['id' => 4, 'name' => 'Mecanizado CNC', 'type' => 'hard'],
-            ['id' => 5, 'name' => 'Diseño CAD / Fusión 360', 'type' => 'hard'],
-            ['id' => 6, 'name' => 'Electrónica / Arduino', 'type' => 'hard'],
-            ['id' => 7, 'name' => 'Soldadura SMD', 'type' => 'hard'],
-            ['id' => 8, 'name' => 'Programación Python', 'type' => 'hard'],
-            ['id' => 9, 'name' => 'Puntualidad Extrema', 'type' => 'soft'],
-            ['id' => 10, 'name' => 'Resolución de Problemas', 'type' => 'soft'],
-            ['id' => 11, 'name' => 'Comunicación Clara', 'type' => 'soft'],
-            ['id' => 12, 'name' => 'Trabajo en Equipo', 'type' => 'soft'],
-            ['id' => 13, 'name' => 'Cuidado de Maquinaria', 'type' => 'soft']
-        ]);
-
-        // 4. 🔥 CREACIÓN SOLICITADA: Tu usuario de pruebas listo para operar
-        User::create([
-            'name' => 'tinkiLab',
-            'email' => 'hola@tinkilab.com',
-            'password' => Hash::make('admin123'),
-            'role' => 'lab',
-            'slug' => 'tinkilab',
-            'force_password_change' => 0,
-            'onboarding_completed' => 1,
-            'preferred_lang' => 'es'
-        ]);
     }
 }
