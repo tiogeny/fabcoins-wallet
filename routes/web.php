@@ -56,9 +56,27 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::post('/credito/cancelar', [\App\Http\Controllers\Lab\CreditController::class, 'cancelCredit'])->name('lab.cancel_credit');
     });
 
-    // 🛠️ PANEL DE CONTROL DEL MAKER (Rol 'maker')
+    // 🎨 PORTAL DE OPERACIONES DEL MAKER (Rol 'maker')
     Route::middleware(['role:maker'])->prefix('maker')->group(function () {
-        Route::get('/dashboard', function() { return "Aquí irá tu maker.php"; })->name('maker.dashboard');
+        // Dashboard Principal y Notificaciones
+        Route::get('/dashboard', [\App\Http\Controllers\Maker\DashboardController::class, 'index'])->name('maker.dashboard');
+        Route::get('/notificaciones/leer', [\App\Http\Controllers\Maker\DashboardController::class, 'readNotifications'])->name('maker.read_notifs');
+        
+        // Gestión de Portafolio e Identidad Técnica
+        Route::post('/perfil/actualizar', [\App\Http\Controllers\Maker\ProfileController::class, 'update'])->name('maker.update_profile');
+        Route::post('/perfil/seguridad', [\App\Http\Controllers\Maker\ProfileController::class, 'security'])->name('maker.change_password');
+
+        // Lógica de Contratación, Créditos e Inyecciones P2P
+        Route::post('/mision/postular', [\App\Http\Controllers\Maker\JobController::class, 'apply'])->name('maker.apply_mission');
+        Route::post('/credito/firmar', [\App\Http\Controllers\Maker\JobController::class, 'signCredit'])->name('maker.sign_credit');
+        Route::post('/transferencia/p2p', [\App\Http\Controllers\Maker\JobController::class, 'transferP2P'])->name('maker.transfer_p2p');
+        Route::get('/p2p/validar-correo', [\App\Http\Controllers\Maker\JobController::class, 'checkEmailP2P'])->name('maker.check_email_p2p');
+
+        // Alquileres de Hardware, Reprogramaciones y Reseñas
+        Route::post('/mercado/reservar', [\App\Http\Controllers\Maker\ReservationController::class, 'book'])->name('maker.book_asset');
+        Route::post('/reserva/aceptar-fecha', [\App\Http\Controllers\Maker\ReservationController::class, 'acceptDate'])->name('maker.accept_date');
+        Route::post('/reserva/cancelar-fecha', [\App\Http\Controllers\Maker\ReservationController::class, 'rejectDate'])->name('maker.reject_date');
+        Route::post('/reserva/calificar', [\App\Http\Controllers\Maker\ReservationController::class, 'rateLab'])->name('maker.rate_lab');
     });
 
     // 🌐 PANEL DE CONTROL DEL SUPERADMIN (Rol 'superadmin')
