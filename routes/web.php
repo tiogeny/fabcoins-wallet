@@ -83,6 +83,11 @@ Route::middleware(['auth', 'locale'])->group(function () {
     Route::middleware(['role:superadmin'])->prefix('admin')->group(function () {
         Route::get('/dashboard', function() { return "Aquí irá tu superadmin.php"; })->name('admin.dashboard');
     });
+
+    // 🌐 EXPEDIENTES PÚBLICOS Y MOTOR DE RECLUTAMIENTO GLOBAL
+    Route::get('/profile/{slugOrId}', [\App\Http\Controllers\PublicProfileController::class, 'show'])->name('public.profile');
+    Route::post('/profile/{slugOrId}/invite', [\App\Http\Controllers\PublicProfileController::class, 'invite'])->name('public.profile.invite');
+
     
 });
 
