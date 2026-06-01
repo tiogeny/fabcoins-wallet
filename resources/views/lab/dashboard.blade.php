@@ -44,10 +44,53 @@
     @endif
 
     <section class="grid-kpis" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-        <div class="kpi-card border-purple"><span class="kpi-label">🪙 {{ __('messages.kpi_wallet') }}</span><span class="kpi-value" style="color: var(--c-green);">{{ number_format($saldoTotal, 2) }} FC</span></div>
-        <div class="kpi-card border-blue"><span class="kpi-label">⚡ {{ __('messages.kpi_capacity') }}</span><span class="kpi-value">{{ $misActivos->where('status', 'active')->count() }} <span class="font-16">{{ __('messages.kpi_assets') }}</span></span></div>
-        <div class="kpi-card border-red"><span class="kpi-label">🎯 {{ __('messages.kpi_missions') }}</span><span class="kpi-value">{{ $misMisiones->count() }}</span></div>
-        <div class="kpi-card border-yellow"><span class="kpi-label">🎓 {{ __('messages.kpi_financed') }}</span><span class="kpi-value">{{ $totalFinanciados }}</span></div>
+        <div class="kpi-card border-purple">
+            <div class="kpi-label">{{ __('messages.kpi_wallet') }}</div>
+            <div class="kpi-value" style="color: var(--c-green);">{{ number_format($saldoTotal, 2) }} <span class="font-16">FC</span></div>
+            
+            <div style="font-size: 11px; color: #bdc3c7; margin-top: 8px; font-weight: normal; text-transform: uppercase;">
+                💎 {{ __('messages.lbl_total_minted_kpi') }}: 
+                <span style="color: #3498db; font-weight: bold;">{{ number_format($totalHistoricoEmitido, 2) }} FC</span>
+            </div>
+        </div>
+        
+        <div class="kpi-card border-blue">
+            <div class="kpi-label">{{ __('messages.kpi_capacity') }}</div>
+            <div class="kpi-value">
+                {{ $misActivos->where('status', 'active')->count() }} 
+                <span class="font-16">{{ __('messages.kpi_assets') }}</span>
+            </div>
+            
+            <div style="font-size: 11px; color: #bdc3c7; margin-top: 8px; font-weight: normal; text-transform: uppercase;">
+                🔥 {{ __('messages.lbl_total_burned_kpi') }}: 
+                <span style="color: #f1c40f; font-weight: bold;">{{ number_format($totalHistoricoQuemado, 2) }} FC</span>
+            </div>
+        </div>
+        
+        <div class="kpi-card border-red">
+            <div class="kpi-label">{{ __('messages.kpi_missions') }}</div>
+            <div class="kpi-value">{{ $misMisiones->count() }}</div>
+            
+            <div style="font-size: 11px; color: #bdc3c7; margin-top: 6px; font-weight: normal; text-transform: uppercase;">
+                🔒 {{ __('messages.lbl_escrow_custody') }}: 
+                <span style="color: var(--c-orange); font-weight: bold;">{{ number_format($escrowRealMisiones, 2) }} FC</span>
+            </div>
+            
+            <div style="font-size: 11px; color: #bdc3c7; margin-top: 4px; font-weight: normal; text-transform: uppercase;">
+                💸 {{ __('messages.lbl_paid_talents') }}: 
+                <span style="color: #2ecc71; font-weight: bold;">{{ number_format($historicoPagadoMisiones, 2) }} FC</span>
+            </div>
+        </div>
+        
+        <div class="kpi-card border-yellow">
+            <span class="kpi-label">{{ __('messages.kpi_financed') }}</span>
+            <div class="kpi-value">{{ $totalFinanciados }}</div>
+            
+            <div style="font-size: 11px; color: #bdc3c7; margin-top: 8px; font-weight: normal; text-transform: uppercase;">
+                🎓 {{ __('messages.lbl_receivable_credits') }}: 
+                <span style="color: #3498db; font-weight: bold;">{{ number_format($totalPorCobrar, 2) }} FC</span>
+            </div>
+        </div>
     </section>
 
     <nav class="tabs-nav">
