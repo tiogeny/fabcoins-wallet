@@ -79,16 +79,29 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::post('/reserva/calificar', [\App\Http\Controllers\Maker\ReservationController::class, 'rateLab'])->name('maker.rate_lab');
     });
 
-    // 🌐 PANEL DE CONTROL DEL SUPERADMIN (Rol 'superadmin')
-    Route::middleware(['role:superadmin'])->prefix('admin')->group(function () {
-        Route::get('/dashboard', function() { return "Aquí irá tu superadmin.php"; })->name('admin.dashboard');
+    // 🌐 CONSOLA MACROECONÓMICA DEL SUPERADMIN (Rol 'superadmin')
+    Route::middleware(['role:superadmin'])->prefix('superadmin')->group(function () {
+        // Dashboard Central (Soporta ambos nombres para evitar conflictos con el Auth del Framework)
+        Route::get('/dashboard', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('superadmin.dashboard');
+        Route::get('/admin-dashboard', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('admin.dashboard'); // 👈 ¡FUSIBLE DE SEGURIDAD AGREGADO!
+
+        Route::get('/desglose', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'getAjaxDesglose'])->name('superadmin.ajax_desglose');
+
+        // Módulo Regulatorio del Catálogo Global
+        Route::post('/catalogo/guardar', [\App\Http\Controllers\SuperAdmin\CatalogController::class, 'storeMultiple'])->name('superadmin.catalog.store');
+        Route::post('/catalogo/precio', [\App\Http\Controllers\SuperAdmin\CatalogController::class, 'updatePrice'])->name('superadmin.catalog.update');
+        Route::post('/catalogo/eliminar', [\App\Http\Controllers\SuperAdmin\CatalogController::class, 'destroy'])->name('superadmin.catalog.destroy');
+
+        // Módulo de Control de Red y Política Monetaria
+        Route::post('/lab/invitar', [\App\Http\Controllers\SuperAdmin\SystemController::class, 'createLab'])->name('superadmin.lab.invite');
+        Route::post('/politica/actualizar', [\App\Http\Controllers\SuperAdmin\SystemController::class, 'updatePolicy'])->name('superadmin.policy.update');
     });
 
     // 🌐 EXPEDIENTES PÚBLICOS Y MOTOR DE RECLUTAMIENTO GLOBAL
     Route::get('/profile/{slugOrId}', [\App\Http\Controllers\PublicProfileController::class, 'show'])->name('public.profile');
     Route::post('/profile/{slugOrId}/invite', [\App\Http\Controllers\PublicProfileController::class, 'invite'])->name('public.profile.invite');
 
-    
+
 });
 
 require __DIR__.'/auth.php';
