@@ -1,0 +1,314 @@
+/* ==========================================================================
+   🪙 FABCOINS VISUAL LANDING INTERFACE - EXTRACTED DESIGN HOLE
+   ========================================================================== */
+
+.landing-page-body {
+    background-color: #0b0c10 !important;
+    color: #c5c6c7 !important;
+    line-height: 1.6;
+}
+.landing-page-body h1, 
+.landing-page-body h2, 
+.landing-page-body h3 { 
+    font-family: 'Rajdhani', sans-serif; 
+    color: #ffffff; 
+    text-transform: uppercase !important; /* Forzado de mayúsculas nativas del index original */
+}
+
+/* --- LOGO & NAV BAR --- */
+.landing-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.landing-nav .logo {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'Rajdhani', sans-serif;
+    color: #ffffff;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px; /* La separación solo aplica entre el icono WebP y la palabra junta */
+}
+.landing-nav .logo img {
+    width: 35px; /* Tamaño perfecto para el menú */
+    height: auto;
+}
+.landing-nav .logo-word {
+    color: #ffffff;
+}
+.landing-nav .logo-word span {
+    color: #3498db !important; /* Azul celeste original */
+}
+.landing-nav .nav-links a {
+    color: #c5c6c7;
+    margin-left: 30px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: 0.2s ease;
+}
+.landing-nav .nav-links a:hover {
+    color: #ffffff;
+}
+.landing-nav .btn-login {
+    color: #0b0c10 !important;
+    background: #ffffff;
+    padding: 8px 20px;
+    border-radius: 4px;
+}
+
+/* --- HERO SECTION --- */
+.landing-hero {
+    padding: 100px 0 80px;
+    text-align: left;
+}
+.landing-hero h1 {
+    font-size: 4rem;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+    font-family: 'Rajdhani', sans-serif;
+    color: #ffffff;
+    text-transform: uppercase;
+}
+.landing-hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin-bottom: 40px;
+    color: #95a5a6;
+}
+.hero-buttons {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+/* --- MARKETING BUTTONS --- */
+.btn-marketing {
+    padding: 15px 30px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    display: inline-block;
+    text-decoration: none;
+    transition: 0.3s ease;
+}
+.btn-marketing.btn-maker {
+    background-color: #2ecc71;
+    color: #0b0c10;
+    border: 2px solid #2ecc71;
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+}
+.btn-marketing.btn-maker:hover {
+    background-color: transparent;
+    color: #2ecc71;
+}
+.btn-marketing.btn-lab {
+    background-color: transparent;
+    color: #3498db;
+    border: 2px solid #3498db;
+}
+.btn-marketing.btn-lab:hover {
+    background-color: #3498db;
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);
+}
+
+/* --- PROBLEMA & SOLUCIÓN --- */
+.prob-sol-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin: 60px 0;
+}
+.prob-sol-grid .card {
+    background: #16181f;
+    padding: 30px;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+.prob-sol-grid .card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+.prob-sol-grid .card-problem { border-left: 4px solid #e74c3c; }
+.prob-sol-grid .card-solution { border-left: 4px solid #2ecc71; }
+
+/* --- PASOS --- */
+.steps {
+    text-align: center;
+    margin: 100px 0;
+}
+.steps h2 {
+    font-size: 2.5rem;
+    margin-bottom: 50px;
+}
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+}
+.step-item {
+    background: #16181f;
+    padding: 40px 20px;
+    border-radius: 8px;
+    border-top: 2px solid #34495e;
+}
+.step-number {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 4rem;
+    font-weight: 700;
+    color: #3498db;
+    line-height: 1;
+    margin-bottom: 10px;
+}
+.step-item h3 {
+    margin-bottom: 15px;
+    color: #ffffff;
+}
+.step-item p {
+    font-size: 0.95rem;
+    color: #95a5a6;
+}
+
+/* --- BENEFICIOS --- */
+.benefits {
+    margin: 100px 0;
+}
+.benefits h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 50px;
+}
+.benefits-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+.b-card {
+    padding: 40px;
+    background: #16181f;
+    border-radius: 8px;
+}
+.b-maker {
+    border: 1px solid rgba(155, 89, 182, 0.3);
+    box-shadow: inset 0 0 50px rgba(155, 89, 182, 0.05);
+}
+.b-maker h3 {
+    color: #9b59b6;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(155, 89, 182, 0.2);
+    padding-bottom: 10px;
+}
+.b-lab {
+    border: 1px solid rgba(243, 156, 18, 0.3);
+    box-shadow: inset 0 0 50px rgba(243, 156, 18, 0.05);
+}
+.b-lab h3 {
+    color: #f39c12;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(243, 156, 18, 0.2);
+    padding-bottom: 10px;
+}
+
+ul.check-list {
+    list-style: none;
+}
+ul.check-list li {
+    margin-bottom: 15px;
+    padding-left: 30px;
+    position: relative;
+    color: #ffffff;
+    font-weight: 600;
+    text-align: left;
+}
+ul.check-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #2ecc71;
+    font-weight: bold;
+}
+ul.check-list li span {
+    display: block;
+    font-weight: 400;
+    color: #95a5a6;
+    font-size: 0.9rem;
+    margin-top: 4px;
+}
+
+/* --- PROMESA --- */
+.token-promise {
+    text-align: center;
+    margin: 100px auto;
+    max-width: 800px;
+    padding: 50px;
+    border: 2px solid #2ecc71;
+    border-radius: 8px;
+    background: rgba(46, 204, 113, 0.05);
+    box-shadow: 0 0 40px rgba(46, 204, 113, 0.1);
+}
+.token-promise h2 {
+    font-size: 2.5rem;
+    color: #2ecc71;
+    margin-bottom: 20px;
+}
+.token-promise p {
+    font-size: 1.1rem;
+    color: #ffffff;
+}
+
+/* --- RE-CENTRADOR DEL FOOTER COMERCIAL --- */
+footer {
+    background: #07080a;
+    padding: 60px 0;
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    width: 100%;
+}
+
+footer .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Fuerza el centrado absoluto de todo el contenido */
+    justify-content: center;
+}
+
+footer .links {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    color: #7f8c8d;
+    gap: 30px;
+}
+
+footer .links a {
+    color: #7f8c8d !important; /* Sincronizado exactamente con el color del copyright */
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+footer .links a:hover {
+    color: #ffffff !important; /* Se encienden a blanco puro en hover */
+}
+
+/* --- MEDIA QUERIES --- */
+@media (max-width: 768px) {
+    .landing-hero h1 { font-size: 2.8rem; }
+    .prob-sol-grid, .steps-grid, .benefits-grid { grid-template-columns: 1fr; gap: 20px; }
+    .landing-nav .nav-links { display: none; }
+    .token-promise { padding: 30px 20px; }
+    .btn-marketing { width: 100%; text-align: center; }
+}

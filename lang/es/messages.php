@@ -1,7 +1,7 @@
 <?php
 
 return [
-    // Alertas y Errores Básicos
+    // --- ALERTAS Y ERRORES BÁSICOS ---
     'err_security' => 'Error de Seguridad',
     'err_session' => 'La sesión expiró o la petición es inválida.',
     'msg_pass_updated' => 'Contraseña actualizada correctamente. Inicia sesión.',
@@ -9,8 +9,8 @@ return [
     'msg_reg_success' => '¡Cuenta creada exitosamente! Revisa tu correo e inicia sesión.',
     'err_reg_dup' => 'Ese correo o nombre ya está en uso.',
 
-    // General UI
-    'app_subtitle' => 'Economía Distribuida para Makers',
+    // --- INTERFAZ GENERAL GENERAL UI ---
+    'app_subtitle' => 'Economía distribuida para Makers',
     'tab_login' => 'Ingresar',
     'tab_register' => 'Crear Billetera',
     'link_home' => 'Volver al Inicio',
@@ -19,7 +19,7 @@ return [
     'reputation' => 'Reputación',
     'no_notifications' => 'Sin notificaciones recientes',
 
-    // Formulario Login / Registro
+    // --- ACCESO Y SEGURIDAD ---
     'ph_email' => 'Correo electrónico',
     'ph_password' => 'Contraseña',
     'btn_login' => 'Ingresar al Panel',
@@ -28,8 +28,6 @@ return [
     'ph_name' => 'Nombre y Apellido',
     'btn_register' => 'Registrarse Gratis',
     'reg_note' => 'Los Labs son invitados por el Super Admin.',
-
-    // Onboarding (Primer inicio de sesión)
     'onb_title' => '¡Te damos la bienvenida!',
     'onb_desc' => 'Por seguridad, debes cambiar la contraseña temporal y completar los datos básicos de tu perfil.',
     'onb_lbl_pass' => 'Nueva Contraseña Segura',
@@ -40,12 +38,17 @@ return [
     'onb_ph_bio' => 'Cuéntanos a qué te dedicas...',
     'onb_btn' => 'Guardar y Entrar',
 
-    // --- LANDING PAGE (index.php) ---
+    // --- RECUPERACIÓN DE CONTRASEÑA (SHORT & CLEAN) ---
+    'h1_forgot' => 'Recuperar Acceso',
+    'desc_forgot' => 'Ingresa tu correo electrónico para recibir un enlace seguro de recuperación.',
+    'btn_send_link' => 'Enviar Enlace',
+
+    // --- LANDING PAGE (MARKETING) ---
     'landing_title' => 'FabCoins | La Economía Circular para la Fabricación Digital',
     'nav_how_it_works' => 'Cómo Funciona',
     'nav_benefits' => 'Beneficios',
     'nav_enter' => 'Entrar',
-    'hero_title' => 'La Economía Circular para la Fabricación Digital',
+    'hero_title' => 'La Economía Circular para la Fabricación Digital.',
     'hero_subtitle' => 'Conecta tu talento con la maquinaria de los mejores Labs. Trabaja, gana FabCoins y alquila capacidad industrial sin gastar dinero fiat.',
     'btn_maker_hero' => 'Soy Maker: Crear Billetera Gratis',
     'btn_lab_hero' => 'Soy Lab: Unir mi Taller a la Red',
@@ -72,7 +75,7 @@ return [
     'ben_lab_1' => 'Monetiza Horas Muertas',
     'ben_lab_1_desc' => 'Convierte el tiempo que tu máquina está apagada en poder adquisitivo real.',
     'ben_lab_2' => 'Contrata Talento a Costo Cero',
-    'ben_lab_2_desc' => 'Paga a diseñadores y técnicos usando el tiempo de tus propias máquinas.',
+    'ben_lab_2_desc' => 'Paga a designers y técnicos usando el tiempo de tus propias máquinas.',
     'ben_lab_3' => 'Atrae Nuevos Clientes Físicos',
     'ben_lab_3_desc' => 'Los Makers que van a tu Lab a usar sus FabCoins, conocerán tus instalaciones y servicios.',
     'token_title' => 'Una Moneda con Valor Físico Real',
@@ -82,122 +85,35 @@ return [
     'btn_start_now' => 'Comenzar Ahora',
     'link_login_ecosystem' => 'Login Ecosistema',
     'link_terms' => 'Términos y Condiciones',
-    'link_contact' => 'Contacto Labs:',
+    'link_contact' => 'Contacto Labs',
     'footer_rights' => 'Todos los derechos reservados.',
 
-    // --- PANEL LAB ---
+    // --- PANEL LAB MASTER CONTROL ---
     'lab_portal' => 'Panel de Control',
+    'edit_profile' => 'Editar Perfil',
+    'global_community' => 'Comunidad Global',
     'frozen_title' => 'BOVEDA CONGELADA (Déficit de Respaldo)',
     'frozen_desc_1' => 'Tu saldo de',
     'frozen_desc_2' => 'está en negativo porque diste de baja un activo. Debes tokenizar nuevos equipos para restaurar tu liquidez.',
     
-    // KPIs del Lab
-    'kpi_wallet' => 'Billetera (FC disponibles)',
-    'kpi_capacity' => 'Capacidad Activa',
-    'kpi_assets' => 'Activos',
-    'kpi_missions' => 'Misiones Publicadas',
-    'kpi_financed' => 'Makers Financiados',
-    'lbl_total_minted_kpi' => 'Total Tokenizado (Emisión Histórica)',
-    'lbl_total_burned_kpi' => 'Total Consumido',
-    'lbl_escrow_custody' => 'En Custodia (Escrow)',
-    'lbl_paid_talents' => 'Pagado a Talentos',
-    'lbl_receivable_credits' => 'Por cobrar',
-
-    // Pestañas Lab
-    'tab_vault' => 'Inventario',
-    'tab_missions_lab' => 'Misiones',
-    'tab_history' => 'Operaciones',
-    'tab_credits' => 'Créditos',
-    'tab_transactions' => 'Movimientos',
-    'tab_talent' => 'Talentos',
-    'tab_profile' => 'Perfil',
-
-    // Formulario Tokenización
-    'vault_title' => 'Tokenizar Activo (Contrato a 2 años)',
-    'vault_desc' => 'Calcula la capacidad operativa de tu equipo para emitir moneda. El contrato expira automáticamente en 2 años.',
-    'lbl_what_offer' => '¿QUÉ OFRECES?',
-    'lbl_global_cat' => 'CATEGORÍA GLOBAL',
-    'lbl_specific_name' => 'NOMBRE ESPECÍFICO',
-    'lbl_capacity' => 'CAPACIDAD',
-    'lbl_backing' => '% RESPALDO',
-    'lbl_total_hours' => 'TOTAL HORAS',
-    'lbl_price_fc' => 'PRECIO FC',
-    'lbl_will_generate' => 'GENERARÁ:',
-    'btn_add_asset' => 'Añadir otro activo',
-    'btn_mint_confirm' => 'CONFIRMAR TOKENIZACIÓN',
-    'swal_empty_fields' => 'Campos vacíos o en cero',
-    'swal_empty_fields_desc' => 'Debes ingresar una cantidad mayor a 0 en al menos un activo para poder tokenizar.',
+    // KPIs del Lab y Hubs de Acción de Beno
+    'hub_activate_title' => 'Activar',
+    'hub_activate_desc' => 'Enlistar activos',
+    'hub_tokenise_title' => 'Tokenizar',
+    'hub_tokenise_desc' => 'Valorizar activos',
+    'hub_offer_title' => 'Ofertar',
+    'hub_offer_desc' => 'Intercambiar activos',
     
-    // Inventario Lab
-    'inv_title' => 'Mi Inventario y Capacidad',
-    'th_category' => 'Categoría',
-    'th_asset' => 'Activo',
-    'th_avail_capacity' => 'Capacidad Disponible',
-    'th_price_hr' => 'Precio Comercial / h',
-    'th_expires' => 'Expira (2 Años)',
-    'th_status' => 'Estado',
-    'th_action' => 'Acción',
-    'inv_empty' => 'No tienes equipos tokenizados.',
-    'btn_retire' => 'Dar de Baja',
-    'status_operative' => 'Operativo',
-    'status_retired' => 'De Baja',
-
-    // Bolsa de Trabajo Lab
-    'miss_create_title' => 'Crear Nueva Misión',
-    'miss_create_desc' => 'Publica una necesidad de tu laboratorio y ofrece FabCoins para que un Maker la resuelva.',
-    'ph_miss_title' => 'Título de la Misión',
-    'ph_miss_desc' => 'Descripción detallada...',
-    'lbl_directed_to' => '¿Dirigida a un deudor específico? (Opcional)',
-    'opt_open_mission' => 'Misión Abierta al Público',
-    'ph_ref_link' => 'Link de referencia - Opcional',
-    'lbl_spots' => 'CUPOS (MAKERS)',
-    'lbl_reward_per_maker' => 'PAGO x MAKER',
-    'btn_publish_miss' => 'Publicar Misión',
-    'lbl_locked' => 'Bloqueado: Bóveda Congelada',
-    
-    'miss_list_title' => 'Mis Misiones Publicadas',
-    'th_miss_details' => 'Misión y Detalles',
-    'th_limit' => 'Límite',
-    'th_reward' => 'Recompensa',
-    'th_applicants' => 'Postulantes / Asignado',
-    'miss_list_empty' => 'Aún no has creado ninguna misión.',
-    'lbl_no_applicants' => 'Nadie se ha postulado aún.',
-    'btn_discard' => 'Descartar',
-    'btn_assign_maker' => 'Asignar Maker',
-    'lbl_assigned_maker' => 'Maker Asignado:',
-    'btn_eval_amortize' => 'Evaluar y Amortizar Deuda',
-    'btn_eval_pay' => 'Evaluar Trabajo y Pagar',
-
-    // --- PANEL MAKER ---
-    'maker_portal' => 'Panel Maker',
-    'lbl_maker' => 'Maker',
-    'kpi_active_apps' => 'Postulaciones Activas',
-    'kpi_completed_missions' => 'Misiones Completadas',
-    'title_p2p' => 'Enviar FabCoins a otro Maker',
-    'lbl_dest_email' => 'Correo del Destinatario',
-    'lbl_amount_send' => 'Monto a enviar',
-    'lbl_transfer_note' => 'Nota o mensaje (opcional)',
-    'ph_p2p_note' => 'Ej: Por el diseño del logo...',
-    'btn_send_now' => 'Confirmar Envío',
-    'err_user_not_found' => 'Usuario no encontrado o no es un Maker.',
-    'err_self_transfer' => 'No puedes enviarte dinero a ti mismo.',
-    'err_insufficient_p2p' => 'Saldo insuficiente para esta transferencia.',
-
-    // Mensajes Flash de Éxito / Alertas
-    'msg_mint_ok' => 'Tokenización exitosa',
-    'msg_retired_ok' => 'Activo retirado.',
-    'msg_price_ok' => 'Precio actualizado.',
-    'msg_mission_ok' => 'Misión publicada.',
-    'msg_mission_ok_targeted' => 'Misión exclusiva.',
-    'msg_mission_del' => 'Misión eliminada.',
-    'msg_escrow_ok' => 'Maker asignado!',
-    'msg_mission_completed' => 'Trabajo terminado.',
-    'msg_mission_completed_credit' => 'Trabajo terminado (Crédito).',
-    'msg_order_approved' => 'Reserva aprobada.',
-    'msg_order_rejected' => 'Reserva rechazada.',
-    'msg_credit_proposed' => 'Propuesta enviada.',
-    'msg_profile_updated' => 'Perfil actualizado.',
-    'msg_pass_ok' => 'Contraseña actualizada correctamente!',
-    'msg_rescheduled_ok' => 'Propuesta de nueva fecha enviada al Maker.',
-    'p2p_ok' => '¡Transferencia enviada y confirmada!',
+    'lbl_assets_unit' => 'Activos',
+    'lbl_machines_bullet' => 'Máquinas',
+    'lbl_services_bullet' => 'Servicios',
+    'lbl_labs_bullet' => 'Labs',
+    'lbl_reserva_bullet' => 'reserva',
+    'lbl_ofertados_bullet' => 'ofertados',
+    'lbl_consumidos_bullet' => 'consumidos',
+    'lbl_missions_unit' => 'Misiones',
+    'lbl_open_bullet' => 'disponibles',
+    'lbl_working_bullet' => 'en ejecución',
+    'lbl_closed_bullet' => 'completadas',
+    'status_retired' => 'dados de baja',
 ];

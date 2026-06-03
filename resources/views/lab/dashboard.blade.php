@@ -2,183 +2,192 @@
 
 @section('title', __('messages.lab_portal'))
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=1.3">
+@endpush
+
 @section('content')
 <div class="container">
     
-    <header class="header">
-        <div style="display: flex; gap: 15px; align-items: center;" class="profile-info">
-            <img src="{{ $lab->avatar_url ?: 'https://via.placeholder.com/60' }}" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--c-green);">
+    <!-- HEADER GENERAL -->
+    <header class="header" style="background: var(--bg-card); border-left: 6px solid var(--c-green); padding: 20px 30px; border-radius: 12px; margin-bottom: 25px;">
+        <div class="profile-info" style="display: flex; gap: 15px; align-items: center;">
+            <img src="{{ $lab->avatar_url ?: 'https://via.placeholder.com/60' }}" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--c-green);">
             <div>
-                <h1 class="m-0" style="font-family: 'Rajdhani', sans-serif; font-weight: 700;">🏢 {{ $lab->name }}</h1>
-                <div class="font-12 text-muted">⭐ {{ number_format($lab->reputation_score, 1) }} {{ __('messages.reputation') }}</div>
+                <a href="{{ route('lab.profile.edit') }}" class="font-bold text-white" style="text-decoration:none; font-size: 18px;">
+                    🏢 {{ $lab->name }} <small style="color: var(--text-muted); font-weight: normal; margin-left: 5px; font-size: 12px;">⚙️ {{ __('messages.edit_profile') }}</small>
+                </a>
+                <div style="color: var(--c-yellow); font-size: 12px; margin-top: 3px;">⭐ {{ number_format($lab->reputation_score, 1) }} {{ __('messages.reputation') }}</div>
             </div>
         </div>
-        <div class="flex-between" style="gap: 20px;">
-            <div style="display: flex; gap: 10px; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px; align-items: center;">
-                <button type="button" onclick="iniciarTourLab()" style="background:transparent; border:none; color:white; cursor:pointer; font-size:18px; padding:0; width:auto; opacity:0.8;">❓</button>
-                <div style="width: 1px; height: 15px; background: rgba(255,255,255,0.2);"></div>
-                <a href="?lang=es" style="opacity: {{ app()->getLocale() == 'es' ? '1' : '0.4' }};">🇪🇸</a>
-                <a href="?lang=en" style="opacity: {{ app()->getLocale() == 'en' ? '1' : '0.4' }};">🇺🇸</a>
-            </div>
-            <div class="notif-wrapper">
-                <a href="{{ route('lab.read_notifs') }}" style="font-size: 24px; position: relative;">
-                    🔔 @if($unreadCount > 0) <span style="position: absolute; top: -5px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; font-weight: bold;">{{ $unreadCount }}</span> @endif
-                </a>
-                <div class="notif-dropdown">
-                    @forelse($notificaciones as $n)
-                        <div class="notif-item {{ !$n->is_read ? 'unread' : '' }}">{{ $n->message }}</div>
-                    @empty
-                        <div class="notif-item" style="text-align: center; color: #7f8c8d;">{{ __('messages.no_notifications') }}</div>
-                    @endforelse
-                </div>
-            </div>
-            <form method="POST" action="{{ route('logout') }}">@csrf<a href="{{ route('logout') }}" class="btn-logout" onclick="event.preventDefault(); this.closest('form').submit();">🚪 {{ __('messages.btn_logout') }}</a></form>
+        
+        <div style="display: flex; align-items: center; gap: 25px;">
+            <a href="#" title="{{ __('messages.global_community') }}" style="text-decoration: none; font-size: 22px;">🌍</a>
+            <div class="notif-wrapper" style="font-size: 22px; cursor: pointer;">🔔</div>
+            <form method="POST" action="{{ route('logout') }}" style="margin:0;"> 
+                @csrf 
+                <button type="submit" class="btn-logout" style="padding: 6px 15px; font-size: 13px;">{{ __('messages.btn_logout') }}</button> 
+            </form>
         </div>
     </header>
 
-    @if($isFrozen)
-        <div class="frozen-overlay">
-            <h2>🚨 {{ __('messages.frozen_title') }}</h2>
-            <p class="m-0 font-13">{{ __('messages.frozen_desc_1') }} <strong>{{ number_format($saldoTotal, 2) }} FC</strong> {{ __('messages.frozen_desc_2') }}</p>
-        </div>
-    @endif
-
-    <section class="grid-kpis" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-        <div class="kpi-card border-purple">
-            <div class="kpi-label">{{ __('messages.kpi_wallet') }}</div>
-            <div class="kpi-value" style="color: var(--c-green);">{{ number_format($saldoTotal, 2) }} <span class="font-16">FC</span></div>
+    <!-- =======================================================================
+         🏠 VISTA 1: CENTRAL HUBS (ALINEACIÓN HORIZONTAL SANADA)
+         ======================================================================= -->
+    <div id="main-home-hub-view" class="home-hubs-wrapper">
+        <div class="action-hubs-grid">
             
-            <div style="font-size: 11px; color: #bdc3c7; margin-top: 8px; font-weight: normal; text-transform: uppercase;">
-                💎 {{ __('messages.lbl_total_minted_kpi') }}: 
-                <span style="color: #3498db; font-weight: bold;">{{ number_format($totalHistoricoEmitido, 2) }} FC</span>
+            <!-- HUB A: ACTIVAR -->
+            <div class="hub-card card-activar-neon" onclick="abrirWorkspaceHub('workspace-activar')">
+                <div>
+                    <div class="hub-image-container">
+                        <img src="{{ asset('images/hubs/icon_activar.webp') }}" alt="{{ __('messages.hub_activate_title') }}">
+                    </div>
+                    <h2>{{ __('messages.hub_activate_title') }}</h2>
+                    <div class="hub-subtitle">{{ __('messages.hub_activate_desc') }}</div>
+                </div>
+                
+                <div class="donut-chart-box">
+                    <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
+                        @php 
+                            $circunferencia = 213.6;
+                            $perimetroM = ($totalMaquinasCount / $totalActivosCount) * $circunferencia;
+                            $perimetroS = ($totalServiciosCount / $totalActivosCount) * $circunferencia;
+                            $perimetroL = ($totalLabsConectados / $totalActivosCount) * $circunferencia;
+                        @endphp
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#1abc9c" stroke-width="12" stroke-dasharray="{{ $perimetroM }} 214"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $perimetroS }} 214" stroke-dashoffset="-{{ $perimetroM }}"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#9b59b6" stroke-width="12" stroke-dasharray="{{ $perimetroL }} 214" stroke-dashoffset="-{{ $perimetroM + $perimetroS }}"></circle>
+                    </svg>
+                </div>
+                
+                <div>
+                    <div class="main-hub-value">{{ $totalActivosCount }} {{ __('messages.lbl_assets_unit') }}</div>
+                    <div class="bullet-metrics-compact">
+                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#1abc9c;"></span> <strong>{{ $totalMaquinasCount }}</strong> {{ __('messages.lbl_machines_bullet') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#3498db;"></span> <strong>{{ $totalServiciosCount }}</strong> {{ __('messages.lbl_services_bullet') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#9b59b6;"></span> <strong>{{ $totalLabsConectados }}</strong> {{ __('messages.lbl_labs_bullet') }}</div>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div class="kpi-card border-blue">
-            <div class="kpi-label">{{ __('messages.kpi_capacity') }}</div>
-            <div class="kpi-value">
-                {{ $misActivos->where('status', 'active')->count() }} 
-                <span class="font-16">{{ __('messages.kpi_assets') }}</span>
-            </div>
-            
-            <div style="font-size: 11px; color: #bdc3c7; margin-top: 8px; font-weight: normal; text-transform: uppercase;">
-                🔥 {{ __('messages.lbl_total_burned_kpi') }}: 
-                <span style="color: #f1c40f; font-weight: bold;">{{ number_format($totalHistoricoQuemado, 2) }} FC</span>
-            </div>
-        </div>
-        
-        <div class="kpi-card border-red">
-            <div class="kpi-label">{{ __('messages.kpi_missions') }}</div>
-            <div class="kpi-value">{{ $misMisiones->count() }}</div>
-            
-            <div style="font-size: 11px; color: #bdc3c7; margin-top: 6px; font-weight: normal; text-transform: uppercase;">
-                🔒 {{ __('messages.lbl_escrow_custody') }}: 
-                <span style="color: var(--c-orange); font-weight: bold;">{{ number_format($escrowRealMisiones, 2) }} FC</span>
-            </div>
-            
-            <div style="font-size: 11px; color: #bdc3c7; margin-top: 4px; font-weight: normal; text-transform: uppercase;">
-                💸 {{ __('messages.lbl_paid_talents') }}: 
-                <span style="color: #2ecc71; font-weight: bold;">{{ number_format($historicoPagadoMisiones, 2) }} FC</span>
-            </div>
-        </div>
-        
-        <div class="kpi-card border-yellow">
-            <span class="kpi-label">{{ __('messages.kpi_financed') }}</span>
-            <div class="kpi-value">{{ $totalFinanciados }}</div>
-            
-            <div style="font-size: 11px; color: #bdc3c7; margin-top: 8px; font-weight: normal; text-transform: uppercase;">
-                🎓 {{ __('messages.lbl_receivable_credits') }}: 
-                <span style="color: #3498db; font-weight: bold;">{{ number_format($totalPorCobrar, 2) }} FC</span>
-            </div>
-        </div>
-    </section>
 
-    <nav class="tabs-nav">
-        <button class="tab-btn active" onclick="openTab(event, 'tab-boveda')">📦 {{ __('messages.tab_vault') }}</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-misiones')">🎯 {{ __('messages.tab_missions_lab') }}</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-historial')">📜 {{ __('messages.tab_history') }}</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-credits')">📊 {{ __('messages.tab_credits') }}</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-movimientos')">💳 {{ __('messages.tab_transactions') }}</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-talentos')">🧠 {{ __('messages.tab_talent') }}</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-perfil-lab')">👤 {{ __('messages.tab_profile') }}</button>
-    </nav>
+            <!-- HUB B: TOKENIZAR (ALINEACIÓN VERTICAL PERFECCIONADA) -->
+            <div class="hub-card card-tokenizar-neon" onclick="abrirWorkspaceHub('workspace-tokenizar')">
+                <div>
+                    <div class="hub-image-container">
+                        <img src="{{ asset('images/hubs/icon_tokenizar.webp') }}" alt="{{ __('messages.hub_tokenise_title') }}">
+                    </div>
+                    <h2>{{ __('messages.hub_tokenise_title') }}</h2>
+                    <div class="hub-subtitle">{{ __('messages.hub_tokenise_desc') }}</div>
+                </div>
+                
+                <div class="donut-chart-box">
+                    <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
+                        @php 
+                            $perimetroReserva = ($enReserva / $totalMinted) * $circunferencia;
+                            $perimetroOfertados = ($ofertadosTotal / $totalMinted) * $circunferencia;
+                            $perimetroBajas = ($dadosDeBajaValor / $totalMinted) * $circunferencia;
+                        @endphp
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $perimetroReserva }} 214"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#f1c40f" stroke-width="12" stroke-dasharray="{{ $perimetroOfertados }} 214" stroke-dashoffset="-{{ $perimetroReserva }}"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#e74c3c" stroke-width="12" stroke-dasharray="{{ $perimetroBajas }} 214" stroke-dashoffset="-{{ $perimetroReserva + $perimetroOfertados }}"></circle>
+                    </svg>
+                </div>
+                
+                <div>
+                    <div class="main-hub-value" style="color: var(--c-green);">{{ number_format($totalMinted, 0, '.', ' ') }} FC</div>
+                    <div class="bullet-metrics-compact">
+                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#3498db;"></span> <strong>{{ number_format($enReserva, 0, '.', ' ') }}</strong> {{ __('messages.lbl_reserve') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#f1c40f;"></span> <strong>{{ number_format($ofertadosTotal, 0, '.', ' ') }}</strong> {{ __('messages.lbl_frozen') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#e74c3c;"></span> <strong>{{ number_format($dadosDeBajaValor, 0, '.', ' ') }}</strong> {{ __('messages.status_retired') }}</div>
+                    </div>
+                </div>
+            </div>
 
-    <div id="tab-boveda" class="tab-content active"> @include('lab.tabs.boveda') </div>
-    <div id="tab-misiones" class="tab-content" style="display:none;"> @include('lab.tabs.misiones') </div>
-    <div id="tab-historial" class="tab-content" style="display:none;"> @include('lab.tabs.historial') </div>
-    <div id="tab-credits" class="tab-content" style="display:none;"> @include('lab.tabs.credits') </div>
-    <div id="tab-movimientos" class="tab-content" style="display:none;"> @include('lab.tabs.movimientos') </div>
-    <div id="tab-talentos" class="tab-content" style="display:none;"> @include('lab.tabs.talentos') </div>
-    <div id="tab-perfil-lab" class="tab-content" style="display:none;"> @include('lab.tabs.perfil') </div>
+            <!-- HUB C: OFERTAR (SINTAXIS POR_ACEPTAR CORREGIDA) -->
+            <div class="hub-card card-ofertar-neon" onclick="abrirWorkspaceHub('workspace-ofertar')">
+                <div>
+                    <div class="hub-image-container">
+                        <img src="{{ asset('images/hubs/icon_ofertar.webp') }}" alt="{{ __('messages.hub_offer_title') }}">
+                    </div>
+                    <h2>{{ __('messages.hub_offer_title') }}</h2>
+                    <div class="hub-subtitle">{{ __('messages.hub_offer_desc') }}</div>
+                </div>
+                
+                <div class="donut-chart-box">
+                    <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
+                        @php 
+                            $perimetroComp = ($statsMisiones['completadas'] / $totalMisionesCount) * $circunferencia;
+                            $perimetroExec = ($statsMisiones['en_ejecucion'] / $totalMisionesCount) * $circunferencia;
+                            $perimetroOpen = (($statsMisiones['abiertas'] + $statsMisiones['por_aceptar']) / $totalMisionesCount) * $circunferencia;
+                        @endphp
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2ecc71" stroke-width="12" stroke-dasharray="{{ $perimetroComp }} 214"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#e84393" stroke-width="12" stroke-dasharray="{{ $perimetroExec }} 214" stroke-dashoffset="-{{ $perimetroComp }}"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $perimetroOpen }} 214" stroke-dashoffset="-{{ $perimetroComp + $perimetroExec }}"></circle>
+                    </svg>
+                </div>
+                
+                <div>
+                    <div class="main-hub-value">{{ $totalMisionesCount }} {{ __('messages.lbl_missions_unit') }}</div>
+                    <div class="bullet-metrics-compact">
+                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#2ecc71;"></span> <strong>{{ $statsMisiones['completadas'] }}</strong> {{ __('messages.lbl_closed_bullet') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#e84393;"></span> <strong>{{ $statsMisiones['en_ejecucion'] }}</strong> {{ __('messages.lbl_working_bullet') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#3498db;"></span> <strong>{{ $statsMisiones['abiertas'] + $statsMisiones['por_aceptar'] }}</strong> {{ __('messages.lbl_open_bullet') }}</div>
+                    </div>
+                </div>
+            </div>
 
-</div>
-
-<div id="modalEvaluacionGlobal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center;">
-    <div class="card" style="width: 420px; text-align: left; position: relative;">
-        <button type="button" onclick="document.getElementById('modalEvaluacionGlobal').style.display='none'" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 20px; cursor: pointer;">✕</button>
-        <h3 id="modalEvalTitulo" style="color:var(--c-blue); margin-top:0;">🎯 {{ __('messages.btn_assign_maker') }}</h3>
-        <p id="modalEvalSub" class="font-12 text-muted"></p>
-        <form action="{{ route('lab.complete_mission') }}" method="POST">
-            @csrf
-            <input type="hidden" name="mission_id" id="modalInputMision">
-            <input type="hidden" name="maker_id" id="modalInputMaker">
-            <label class="font-11 text-muted font-bold mb-5 d-inline-block">{{ __('messages.lbl_general_rating') }}</label>
-            <select name="rating" required class="mb-15">
-                <option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option>
-            </select>
-            <input type="text" name="comment" placeholder="Reseña del entregable..." required class="mb-15">
-            <button type="submit" class="btn-mint" style="background:var(--c-green);">CONFIRMAR EVALUACIÓN</button>
-        </form>
+        </div>
     </div>
-</div>
 
-<div id="modalReprogramarGlobal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center;">
-    <div class="card" style="width: 320px; position: relative;">
-        <button type="button" onclick="document.getElementById('modalReprogramarGlobal').style.display='none'" style="position: absolute; top: 10px; right: 15px; background: none; border: none; color: white; font-size: 20px; cursor: pointer;">✕</button>
-        <h3 style="margin-top:0; color: var(--c-orange);">📅 Reprogramar Reserva</h3>
-        <form action="{{ route('lab.reschedule') }}" method="POST">
-            @csrf <input type="hidden" name="order_id" id="modalReprogInputOrder">
-            <input type="date" name="nueva_fecha" required class="mb-15">
-            <button type="submit" class="btn-apply" style="background:var(--c-orange); color:#1a1a1a;">Enviar Propuesta</button>
-        </form>
+    <!-- =======================================================================
+         🖥️ VISTA 2: ESPACIOS DE TRABAJO (TÍTULO IZQUIERDA / BOTÓN DERECHA COMPACTO)
+         ======================================================================= -->
+    
+    <!-- WORKSPACE A -->
+    <div id="workspace-activar" class="workspace-section">
+        <div class="workspace-active-bar-v2" style="border-bottom: 2px solid #1abc9c;">
+            <div class="workspace-title-node" style="color: #1abc9c;">
+                <img src="{{ asset('images/hubs/icon_activar.webp') }}" alt="Activar">
+                {{ __('messages.hub_activate_title') }}
+            </div>
+            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentral('workspace-activar')">← {{ __('messages.btn_back') }}</button>
+        </div>
+        @include('lab.tabs.boveda')
     </div>
+
+    <!-- WORKSPACE B -->
+    <div id="workspace-tokenizar" class="workspace-section">
+        <div class="workspace-active-bar-v2" style="border-bottom: 2px solid #f1c40f;">
+            <div class="workspace-title-node" style="color: #f1c40f;">
+                <img src="{{ asset('images/hubs/icon_tokenizar.webp') }}" alt="Tokenizar">
+                {{ __('messages.hub_tokenise_title') }}
+            </div>
+            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentral('workspace-tokenizar')">← {{ __('messages.btn_back') }}</button>
+        </div>
+        <div class="card">
+            <p class="text-muted" style="text-align: center; padding: 40px;">[Módulo B: Libro de Registro de Emisiones y Valorización Contable MINT - Listo para programar modularmente]</p>
+        </div>
+    </div>
+
+    <!-- WORKSPACE C -->
+    <div id="workspace-ofertar" class="workspace-section">
+        <div class="workspace-active-bar-v2" style="border-bottom: 2px solid #e84393;">
+            <div class="workspace-title-node" style="color: #e84393;">
+                <img src="{{ asset('images/hubs/icon_ofertar.webp') }}" alt="Ofertar">
+                {{ __('messages.hub_offer_title') }}
+            </div>
+            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentral('workspace-ofertar')">← {{ __('messages.btn_back') }}</button>
+        </div>
+        @include('lab.tabs.misiones')
+    </div>
+
 </div>
 @endsection
 
-@section('scripts')
-<script>
-    function openTab(evt, tabName) {
-        let i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) tabcontent[i].style.display = "none";
-        tablinks = document.getElementsByClassName("tab-btn");
-        for (i = 0; i < tablinks.length; i++) tablinks[i].classList.remove("active");
-        document.getElementById(tabName).style.display = "block";
-        if(evt) evt.currentTarget.classList.add("active");
-        sessionStorage.setItem('activeTabLab', tabName);
-    }
-    document.addEventListener("DOMContentLoaded", function() {
-        let savedTab = sessionStorage.getItem('activeTabLab');
-        if (savedTab && document.getElementById(savedTab)) {
-            let buttons = document.getElementsByClassName("tab-btn");
-            for(let i=0; i<buttons.length; i++) {
-                if(buttons[i].getAttribute('onclick').includes(savedTab)) { buttons[i].click(); break; }
-            }
-        }
-    });
-    function filtrarTalentosLive() {
-        let val = document.getElementById('search-talent').value.toLowerCase();
-        document.querySelectorAll('.maker-card').forEach(c => { c.style.display = c.innerText.toLowerCase().includes(val) ? 'flex' : 'none'; });
-    }
-    function abrirModalEvaluacion(misionId, makerId, makerName, mTitulo) {
-        document.getElementById('modalInputMision').value = misionId;
-        document.getElementById('modalInputMaker').value = makerId;
-        document.getElementById('modalEvalSub').innerHTML = `<strong>${makerName}</strong><br>Misión: ${mTitulo}`;
-        document.getElementById('modalEvaluacionGlobal').style.display = 'flex';
-    }
-    function abrirModalReprogramar(orderId) {
-        document.getElementById('modalReprogInputOrder').value = orderId;
-        document.getElementById('modalReprogramarGlobal').style.display = 'flex';
-    }
-</script>
-@endsection
+@push('scripts')
+    <script src="{{ asset('js/lab-hubs.js') }}?v=1.3"></script>
+@endpush

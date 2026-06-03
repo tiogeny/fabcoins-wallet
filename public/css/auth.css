@@ -1,0 +1,192 @@
+/* ==========================================================================
+   🪙 FABCOINS - SISTEMA DE AUTENTICACIÓN PREMIUM DE NUEVA GENERACIÓN
+   ========================================================================== */
+
+.auth-page-body {
+    background-color: #0b0c10 !important;
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    min-height: 100vh; 
+    flex-direction: column; 
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* 📐 Tarjeta de Acceso Compacta con Brillo de Acento */
+.auth-card-v2 { 
+    background: #16181f; 
+    padding: 40px 30px; 
+    border-radius: 20px; 
+    max-width: 420px; 
+    width: 100%; 
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6); 
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* 🖼️ Área del Isologo Unificado */
+.auth-logo-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+.auth-logo-area img {
+    width: 38px;
+    height: auto;
+    object-fit: contain;
+}
+.auth-logo-area h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+.auth-logo-area h1 span {
+    color: #3498db; /* Azul celeste institucional */
+}
+
+.auth-subtitle {
+    font-size: 13px;
+    color: #7f8c8d;
+    margin: 0 0 30px 0;
+    font-weight: 500;
+}
+
+/* 🎛️ Selectores de Pestañas Snappy */
+.auth-tabs-v2 { 
+    display: flex; 
+    margin-bottom: 25px; 
+    background: #0b0c10; 
+    border-radius: 10px; 
+    padding: 4px;
+}
+.auth-tab-btn { 
+    flex: 1; 
+    text-align: center; 
+    padding: 10px; 
+    cursor: pointer; 
+    background: transparent; 
+    color: #bdc3c7; 
+    transition: all 0.25s ease; 
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    user-select: none;
+}
+.auth-tab-btn.active { 
+    background: #3498db; 
+    color: #ffffff; 
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.25);
+}
+
+/* 📝 Campos de Entrada de Datos */
+.auth-input-group {
+    position: relative;
+    margin-bottom: 20px; /* El contenedor es el único que maneja el espacio hacia abajo */
+    width: 100%;
+}
+.auth-card-v2 .auth-input-group input { 
+    margin-bottom: 0 !important; /* Resetea cualquier margen heredado para no deformar el contenedor */
+    padding: 12px 45px 12px 16px; /* Deja espacio a la derecha para que el texto no choque con el ojo */
+    width: 100%;
+    box-sizing: border-box;
+}
+.auth-card-v2 input, 
+.auth-card-v2 textarea { 
+    padding: 12px 16px; 
+    border-radius: 8px; 
+    border: 1px solid #34495e; 
+    background: #0b0c10; 
+    color: #ffffff; 
+    width: 100%; 
+    box-sizing: border-box; 
+    font-size: 14px; 
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+.auth-card-v2 input:focus, 
+.auth-card-v2 textarea:focus { 
+    outline: none; 
+    border-color: #3498db; 
+}
+
+/* 👁️ INTEGRACIÓN QUIRÚRGICA DEL OJO VECTORIAL MODERNO */
+.password-toggle-wrapper {
+    position: relative;
+    width: 100%;
+}
+/* 👁️ REPARACIÓN QUIRÚRGICA DEL OJO VECTORIAL MODERNO */
+.password-toggle-eye {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%); /* Centrado vertical matemático perfecto */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+    z-index: 10; /* Asegura que quede siempre por encima del input */
+}
+
+.password-toggle-eye:hover {
+    opacity: 0.8;
+}
+
+.password-toggle-eye svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+    stroke: #ffffff !important; /* 🔥 CORRECCIÓN: Fuerza al vector a pintarse en blanco en modo oscuro */
+    fill: none !important;      /* 🔥 CORRECCIÓN: Evita que el fondo del ojo se pinte de negro */
+}
+
+/* ⚡ Botones de Acción */
+.btn-auth-submit {
+    background: #2ecc71;
+    color: #0b0c10;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+.btn-auth-submit:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+.btn-auth-submit.btn-login-theme {
+    background: #3498db;
+    color: #ffffff;
+}
+
+/* Form Secciones Control */
+.auth-form-section { display: none; text-align: left; }
+.auth-form-section.active { display: block; }
+
+.auth-back-link { 
+    display: block; 
+    text-align: center; 
+    margin-top: 25px; 
+    font-size: 13px; 
+    color: #7f8c8d; 
+    text-decoration: none; 
+    font-weight: 600;
+    transition: color 0.2s;
+}
+.auth-back-link:hover { color: #ffffff; }

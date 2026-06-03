@@ -11,7 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v=1.1">
+    @stack('styles')
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
@@ -28,12 +29,8 @@
         <script>
             document.addEventListener("DOMContentLoaded", function() {
                 Swal.fire({
-                    background: '#1a252f',
-                    color: '#fff',
-                    confirmButtonColor: '#3498db',
-                    timer: 4000,
-                    timerProgressBar: true,
-                    icon: 'success',
+                    background: '#1a252f', color: '#fff', confirmButtonColor: '#3498db',
+                    timer: 4000, timerProgressBar: true, icon: 'success',
                     title: '{{ __("messages.msg_" . session("msg")) }}'
                 });
             });
@@ -44,17 +41,14 @@
         <script>
             document.addEventListener("DOMContentLoaded", function() {
                 Swal.fire({
-                    background: '#1a252f',
-                    color: '#fff',
-                    confirmButtonColor: '#e74c3c',
-                    icon: 'error',
-                    title: 'Attention',
-                    text: '{{ session("error") }}'
+                    background: '#1a252f', color: '#fff', confirmButtonColor: '#e74c3c',
+                    icon: 'error', title: 'Attention', text: '{{ session("error") }}'
                 });
             });
         </script>
     @endif
 
+    @stack('scripts')
     @yield('scripts')
 </body>
 </html>

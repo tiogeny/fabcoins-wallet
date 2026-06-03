@@ -201,4 +201,42 @@ return [
     'msg_pass_ok' => 'Password updated successfully!',
     'msg_rescheduled_ok' => 'Proposed new date sent to Maker.',
     'p2p_ok' => 'Transfer sent and confirmed!',
+
+    // --- 🛠️ CONSOLA FINTECH DE ACCIÓN (BENOMICS) ---
+    'hub_activate_title' => 'Activate',
+    'hub_activate_desc' => 'List assets',
+    'hub_tokenise_title' => 'Tokenize',
+    'hub_tokenise_desc' => 'Value assets',
+    'hub_offer_title' => 'Offer',
+    'hub_offer_desc' => 'Exchange assets',
+    
+    // Desgloses métricos de las diapositivas
+    'lbl_assets_unit' => 'Assets',
+    'lbl_machines_bullet' => 'Machines',
+    'lbl_services_bullet' => 'Services',
+    'lbl_labs_bullet' => 'Labs',
+    'lbl_reserva_bullet' => 'reserve',
+    'lbl_ofertados_bullet' => 'offered',
+    'lbl_consumidos_bullet' => 'consumed',
+    'lbl_missions_unit' => 'Missions',
+    'lbl_open_bullet' => 'to execute',
+    'lbl_working_bullet' => 'in execution',
+    'lbl_closed_bullet' => 'completed',
+
+    // --- 🛠️ BENO'S HUBS DEFINITIONS ---
+    'edit_profile' => 'Edit Profile',
+    'global_community' => 'Global Community',
+    'hub_activate_title' => 'Activate',
+    'hub_activate_desc' => 'List assets',
+    'hub_tokenise_title' => 'Tokenize',
+    'hub_tokenise_desc' => 'Value assets',
+    'hub_offer_title' => 'Offer',
+    'hub_offer_desc' => 'Exchange assets',
+    'lbl_reserve' => 'reserve',
+    'lbl_frozen' => 'offered',
+    'lbl_consumed' => 'consumed',
+    'lbl_open_bullet' => 'to execute',
+    'lbl_working_bullet' => 'in execution',
+    'lbl_closed_bullet' => 'completed',
+    'status_working' => 'In Execution',
 ];
