@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Lab\DashboardController as LabDashboard;
+use App\Http\Controllers\Lab\AssetController;
 
 // --- 🌐 RUTA DE TU LANDING PAGE ---
 Route::get('/', function () {
@@ -45,6 +46,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::post('/order/reschedule', function() { return redirect()->back(); })->name('lab.reschedule');
         Route::post('/profile/update', function() { return redirect()->back(); })->name('lab.update_profile');
         Route::post('/profile/password', function() { return redirect()->back(); })->name('lab.change_password');
+
+        Route::post('/lab/asset/store', [AssetController::class, 'store'])->name('lab.asset.store');
     });
 
     // 🎨 PORTAL DE OPERACIONES DEL MAKER (Rol 'maker')

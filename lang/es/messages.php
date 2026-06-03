@@ -101,8 +101,8 @@ return [
     'hub_activate_desc' => 'Enlistar activos',
     'hub_tokenise_title' => 'Tokenizar',
     'hub_tokenise_desc' => 'Valorizar activos',
-    'hub_offer_title' => 'Ofertar',
-    'hub_offer_desc' => 'Intercambiar activos',
+    'hub_publish_title' => 'Publicar',
+    'hub_publish_desc' => 'Generar misiones',
     
     'lbl_assets_unit' => 'Activos',
     'lbl_machines_bullet' => 'Máquinas',
@@ -116,4 +116,6 @@ return [
     'lbl_working_bullet' => 'en ejecución',
     'lbl_closed_bullet' => 'completadas',
     'status_retired' => 'dados de baja',
+
+    'asset_enlisted_ok' => '¡Infraestructura enlistada con éxito! Ya puedes verla en tu inventario.',
 ];

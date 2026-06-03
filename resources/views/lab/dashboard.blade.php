@@ -3,41 +3,63 @@
 @section('title', __('messages.lab_portal'))
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=1.3">
+    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=1.5">
 @endpush
 
 @section('content')
 <div class="container">
     
-    <!-- HEADER GENERAL -->
-    <header class="header" style="background: var(--bg-card); border-left: 6px solid var(--c-green); padding: 20px 30px; border-radius: 12px; margin-bottom: 25px;">
-        <div class="profile-info" style="display: flex; gap: 15px; align-items: center;">
-            <img src="{{ $lab->avatar_url ?: 'https://via.placeholder.com/60' }}" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--c-green);">
-            <div>
-                <a href="{{ route('lab.profile.edit') }}" class="font-bold text-white" style="text-decoration:none; font-size: 18px;">
-                    🏢 {{ $lab->name }} <small style="color: var(--text-muted); font-weight: normal; margin-left: 5px; font-size: 12px;">⚙️ {{ __('messages.edit_profile') }}</small>
-                </a>
-                <div style="color: var(--c-yellow); font-size: 12px; margin-top: 3px;">⭐ {{ number_format($lab->reputation_score, 1) }} {{ __('messages.reputation') }}</div>
-            </div>
-        </div>
+    <header class="lab-header-v2">
         
-        <div style="display: flex; align-items: center; gap: 25px;">
-            <a href="#" title="{{ __('messages.global_community') }}" style="text-decoration: none; font-size: 22px;">🌍</a>
-            <div class="notif-wrapper" style="font-size: 22px; cursor: pointer;">🔔</div>
+        <button type="button" class="lab-profile-trigger" onclick="abrirWorkspaceHub('workspace-perfil')" title="{{ __('messages.edit_profile') }}">
+            <div class="lab-avatar-wrapper {{ ($isFrozen ?? false) ? 'status-frozen' : 'status-active' }}">
+                <img src="{{ $lab->avatar_url ?: 'https://ui-avatars.com/api/?name='.urlencode($lab->name).'&background=1abc9c&color=fff' }}" alt="{{ $lab->name }}">
+            </div>
+            <div class="lab-identity-meta">
+                <h1>{{ $lab->name }}</h1>
+                <div class="lab-reputation-stars">
+                    ⭐ {{ number_format($lab->reputation_score, 1) }} <span>{{ __('messages.reputation') }}</span>
+                </div>
+            </div>
+        </button>
+        
+        <div class="lab-controls-node">
+            
+            <div class="notif-wrapper" style="position: relative;">
+                <button type="button" class="notif-icon-btn" title="Notificaciones" onclick="const dd = this.nextElementSibling; dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex';">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    @if(($unread_count ?? 0) > 0)
+                        <span class="notif-badge-v2">{{ $unread_count }}</span>
+                    @endif
+                </button>
+                
+                <div class="notif-dropdown">
+                    @if(!isset($notificaciones) || $notificaciones->isEmpty())
+                        <div class="notif-item" style="text-align: center; color: #7f8c8d; border-left: none;">{{ __('messages.no_notifications') }}</div>
+                    @else
+                        @foreach($notificaciones as $n)
+                            <div class="notif-item {{ !$n->is_read ? 'unread' : '' }}">
+                                {{ $n->message }}
+                                <div style="font-size: 10px; color: #7f8c8d; margin-top: 5px;">⏱️ {{ date('d M - H:i', strtotime($n->created_at)) }}</div>
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
+            </div>
+            
             <form method="POST" action="{{ route('logout') }}" style="margin:0;"> 
                 @csrf 
-                <button type="submit" class="btn-logout" style="padding: 6px 15px; font-size: 13px;">{{ __('messages.btn_logout') }}</button> 
+                <button type="submit" class="btn-logout-v2">{{ __('messages.btn_logout') }}</button> 
             </form>
         </div>
     </header>
 
-    <!-- =======================================================================
-         🏠 VISTA 1: CENTRAL HUBS (ALINEACIÓN HORIZONTAL SANADA)
-         ======================================================================= -->
     <div id="main-home-hub-view" class="home-hubs-wrapper">
         <div class="action-hubs-grid">
             
-            <!-- HUB A: ACTIVAR -->
             <div class="hub-card card-activar-neon" onclick="abrirWorkspaceHub('workspace-activar')">
                 <div>
                     <div class="hub-image-container">
@@ -52,9 +74,9 @@
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
                         @php 
                             $circunferencia = 213.6;
-                            $perimetroM = ($totalMaquinasCount / $totalActivosCount) * $circunferencia;
-                            $perimetroS = ($totalServiciosCount / $totalActivosCount) * $circunferencia;
-                            $perimetroL = ($totalLabsConectados / $totalActivosCount) * $circunferencia;
+                            $perimetroM = ($totalMaquinasCount / max(1, $totalActivosCount)) * $circunferencia;
+                            $perimetroS = ($totalServiciosCount / max(1, $totalActivosCount)) * $circunferencia;
+                            $perimetroL = ($totalLabsConectados / max(1, $totalActivosCount)) * $circunferencia;
                         @endphp
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#1abc9c" stroke-width="12" stroke-dasharray="{{ $perimetroM }} 214"></circle>
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $perimetroS }} 214" stroke-dashoffset="-{{ $perimetroM }}"></circle>
@@ -72,7 +94,6 @@
                 </div>
             </div>
 
-            <!-- HUB B: TOKENIZAR (ALINEACIÓN VERTICAL PERFECCIONADA) -->
             <div class="hub-card card-tokenizar-neon" onclick="abrirWorkspaceHub('workspace-tokenizar')">
                 <div>
                     <div class="hub-image-container">
@@ -86,9 +107,9 @@
                     <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
                         @php 
-                            $perimetroReserva = ($enReserva / $totalMinted) * $circunferencia;
-                            $perimetroOfertados = ($ofertadosTotal / $totalMinted) * $circunferencia;
-                            $perimetroBajas = ($dadosDeBajaValor / $totalMinted) * $circunferencia;
+                            $perimetroReserva = ($enReserva / max(1, $totalMinted)) * $circunferencia;
+                            $perimetroOfertados = ($ofertadosTotal / max(1, $totalMinted)) * $circunferencia;
+                            $perimetroBajas = ($dadosDeBajaValor / max(1, $totalMinted)) * $circunferencia;
                         @endphp
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $perimetroReserva }} 214"></circle>
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#f1c40f" stroke-width="12" stroke-dasharray="{{ $perimetroOfertados }} 214" stroke-dashoffset="-{{ $perimetroReserva }}"></circle>
@@ -106,23 +127,22 @@
                 </div>
             </div>
 
-            <!-- HUB C: OFERTAR (SINTAXIS POR_ACEPTAR CORREGIDA) -->
-            <div class="hub-card card-ofertar-neon" onclick="abrirWorkspaceHub('workspace-ofertar')">
+            <div class="hub-card card-publicar-neon" onclick="abrirWorkspaceHub('workspace-publicar')">
                 <div>
                     <div class="hub-image-container">
-                        <img src="{{ asset('images/hubs/icon_ofertar.webp') }}" alt="{{ __('messages.hub_offer_title') }}">
+                        <img src="{{ asset('images/hubs/icon_ofertar.webp') }}" alt="{{ __('messages.hub_publish_title') }}">
                     </div>
-                    <h2>{{ __('messages.hub_offer_title') }}</h2>
-                    <div class="hub-subtitle">{{ __('messages.hub_offer_desc') }}</div>
+                    <h2>{{ __('messages.hub_publish_title') }}</h2>
+                    <div class="hub-subtitle">{{ __('messages.hub_publish_desc') }}</div>
                 </div>
                 
                 <div class="donut-chart-box">
                     <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
                         @php 
-                            $perimetroComp = ($statsMisiones['completadas'] / $totalMisionesCount) * $circunferencia;
-                            $perimetroExec = ($statsMisiones['en_ejecucion'] / $totalMisionesCount) * $circunferencia;
-                            $perimetroOpen = (($statsMisiones['abiertas'] + $statsMisiones['por_aceptar']) / $totalMisionesCount) * $circunferencia;
+                            $perimetroComp = ($statsMisiones['completadas'] / max(1, $totalMisionesCount)) * $circunferencia;
+                            $perimetroExec = ($statsMisiones['en_ejecucion'] / max(1, $totalMisionesCount)) * $circunferencia;
+                            $perimetroOpen = (($statsMisiones['abiertas'] + $statsMisiones['por_aceptar']) / max(1, $totalMisionesCount)) * $circunferencia;
                         @endphp
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2ecc71" stroke-width="12" stroke-dasharray="{{ $perimetroComp }} 214"></circle>
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#e84393" stroke-width="12" stroke-dasharray="{{ $perimetroExec }} 214" stroke-dashoffset="-{{ $perimetroComp }}"></circle>
@@ -143,51 +163,137 @@
         </div>
     </div>
 
-    <!-- =======================================================================
-         🖥️ VISTA 2: ESPACIOS DE TRABAJO (TÍTULO IZQUIERDA / BOTÓN DERECHA COMPACTO)
-         ======================================================================= -->
-    
-    <!-- WORKSPACE A -->
     <div id="workspace-activar" class="workspace-section">
         <div class="workspace-active-bar-v2" style="border-bottom: 2px solid #1abc9c;">
+            {{-- 🔥 ALTERNATIVA A: El botón volver va antes para el flujo continuo --}}
+            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentral('workspace-activar')">← {{ __('messages.btn_back') }}</button>
             <div class="workspace-title-node" style="color: #1abc9c;">
                 <img src="{{ asset('images/hubs/icon_activar.webp') }}" alt="Activar">
                 {{ __('messages.hub_activate_title') }}
             </div>
-            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentral('workspace-activar')">← {{ __('messages.btn_back') }}</button>
         </div>
-        @include('lab.tabs.boveda')
+        @include('lab.tabs.activar')
     </div>
 
-    <!-- WORKSPACE B -->
     <div id="workspace-tokenizar" class="workspace-section">
         <div class="workspace-active-bar-v2" style="border-bottom: 2px solid #f1c40f;">
+            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentral('workspace-tokenizar')">← {{ __('messages.btn_back') }}</button>
             <div class="workspace-title-node" style="color: #f1c40f;">
                 <img src="{{ asset('images/hubs/icon_tokenizar.webp') }}" alt="Tokenizar">
                 {{ __('messages.hub_tokenise_title') }}
             </div>
-            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentral('workspace-tokenizar')">← {{ __('messages.btn_back') }}</button>
         </div>
-        <div class="card">
-            <p class="text-muted" style="text-align: center; padding: 40px;">[Módulo B: Libro de Registro de Emisiones y Valorización Contable MINT - Listo para programar modularmente]</p>
-        </div>
+        {{-- En el próximo paso crearemos lab.tabs.tokenizar --}}
+        @include('lab.tabs.boveda')
     </div>
 
-    <!-- WORKSPACE C -->
-    <div id="workspace-ofertar" class="workspace-section">
+    <div id="workspace-publicar" class="workspace-section">
         <div class="workspace-active-bar-v2" style="border-bottom: 2px solid #e84393;">
+            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentral('workspace-publicar')">← {{ __('messages.btn_back') }}</button>
             <div class="workspace-title-node" style="color: #e84393;">
-                <img src="{{ asset('images/hubs/icon_ofertar.webp') }}" alt="Ofertar">
-                {{ __('messages.hub_offer_title') }}
+                <img src="{{ asset('images/hubs/icon_ofertar.webp') }}" alt="Publicar">
+                {{ __('messages.hub_publish_title') }}
             </div>
-            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentral('workspace-ofertar')">← {{ __('messages.btn_back') }}</button>
         </div>
         @include('lab.tabs.misiones')
+    </div>
+
+    <div id="workspace-perfil" class="workspace-section">
+        <div class="workspace-active-bar-v2" style="border-bottom: 2px solid #3498db;">
+            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentral('workspace-perfil')">← {{ __('messages.btn_back') }}</button>
+            <div class="workspace-title-node" style="color: #3498db;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                {{ __('messages.edit_profile') }}
+            </div>
+        </div>
+        @include('lab.tabs.perfil')
     </div>
 
 </div>
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('js/lab-hubs.js') }}?v=1.3"></script>
+    <script src="{{ asset('js/lab-hubs.js') }}?v=1.4"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Capturar variables tanto de redirecciones tradicionales (URL) como de flashes nativos de Laravel
+        const urlParams = new URLSearchParams(window.location.search);
+        const msg = urlParams.get('msg') || "{{ session('msg') }}";
+        const error = "{{ session('error') ?? '' }}";
+        
+        const swalConfig = {
+            background: '#1a252f',
+            color: '#fff',
+            confirmButtonColor: '#3498db',
+            timer: 4000,
+            timerProgressBar: true,
+            customClass: { popup: 'premium-popup' }
+        };
+
+        const alertas = {
+            'asset_enlisted_ok': { icon: 'success', title: '🏢 ' + "{{ __('messages.swal_inv_updated') ?? 'Inventario Actualizado' }}", text: "{{ __('messages.asset_enlisted_ok') ?? 'Tus activos quedaron registrados en estado pendiente.' }}" },
+            'mint_ok': { icon: 'success', title: '🚀 Tokenización exitosa', text: 'Tus activos están listos en la bóveda.' },
+            'retired_ok': { icon: 'warning', title: '⚠️ Activo retirado', text: 'Se aplicó la penalización en tu saldo.' },
+            'price_ok': { icon: 'success', title: '✅ Precio actualizado', text: 'El nuevo precio comercial está activo.' },
+            'mission_ok': { icon: 'success', title: '🎯 Misión publicada', text: 'Tu misión ya está disponible en la red.' },
+            'mission_ok_targeted': { icon: 'success', title: '🎯 Misión Exclusiva', text: 'Misión dirigida enviada al Maker.' },
+            'mission_del': { icon: 'error', title: '🗑️ Misión eliminada', text: 'La misión fue retirada del mercado.' },
+            'escrow_ok': { icon: 'success', title: '🔒 Maker Asignado', text: 'Los fondos están en Custodia (Escrow).' },
+            'mission_completed': { icon: 'success', title: '🎉 Trabajo Terminado', text: 'Se ha liberado el pago al Maker.' },
+            'mission_completed_credit': { icon: 'success', title: '✅ Deuda Amortizada', text: 'Se ha cobrado el crédito exitosamente.' },
+            'order_approved': { icon: 'success', title: '✅ Reserva Aprobada', text: 'Se enviaron los correos de coordinación.' },
+            'order_rejected': { icon: 'error', title: '❌ Reserva Rechazada', text: 'Los FC fueron devueltos al Maker.' },
+            'credit_proposed': { icon: 'success', title: '🎓 Propuesta Enviada', text: 'El Maker debe firmar el crédito.' },
+            'profile_updated': { icon: 'success', title: '✅ Perfil Actualizado', text: 'Tus datos se guardaron correctamente.' },
+            'pass_ok': { icon: 'success', title: '🔑 ¡Éxito!', text: 'Contraseña actualizada correctamente.' },
+            'rescheduled_ok': { icon: 'warning', title: '📅 Propuesta Enviada', text: 'La nueva fecha está en revisión por el Maker.' }
+        };
+
+        if (msg && alertas[msg]) {
+            Swal.fire({ ...swalConfig, icon: alertas[msg].icon, title: alertas[msg].title, text: alertas[msg].text });
+        }
+        
+        if (error) {
+            Swal.fire({ ...swalConfig, icon: 'error', title: '⚠️ Atención', text: error, timer: null });
+        }
+    });
+
+    // Función universal para diálogos de confirmación de formularios
+    function confirmarAccion(event, mensaje, icono = 'warning', colorBoton = '#e74c3c') {
+        event.preventDefault(); 
+        const boton = event.target.closest('button');
+        const form = boton.closest('form');
+
+        Swal.fire({
+            title: "{{ __('messages.swal_are_you_sure') ?? '¿Estás seguro?' }}",
+            text: mensaje,
+            icon: icono,
+            background: '#1a252f',
+            color: '#fff',
+            customClass: { popup: 'premium-popup' },
+            showCancelButton: true,
+            confirmButtonColor: colorBoton,
+            cancelButtonColor: '#7f8c8d',
+            confirmButtonText: "{{ __('messages.swal_confirm') ?? 'Sí, confirmar' }}",
+            cancelButtonText: "{{ __('messages.swal_cancel') ?? 'Cancelar' }}"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const hiddenInput = document.createElement("input");
+                hiddenInput.type = "hidden";
+                hiddenInput.name = boton.name;
+                hiddenInput.value = boton.value || "1";
+                form.appendChild(hiddenInput);
+
+                boton.style.width = boton.offsetWidth + "px";
+                boton.disabled = true;
+                boton.innerHTML = "⏳ ...";
+                boton.style.opacity = "0.7";
+                boton.style.cursor = "not-allowed";
+                form.submit();
+            }
+        });
+    }
+    </script>
 @endpush

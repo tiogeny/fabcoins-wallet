@@ -65,4 +65,46 @@ class AssetController extends Controller
         LabAsset::where('id', $request->input('asset_id'))->where('lab_id', auth()->id())->firstOrFail()->update(['set_price_fc' => floatval($request->input('nuevo_precio'))]);
         return redirect()->route('lab.dashboard')->with('msg', 'price_ok');
     }
+
+    /**
+     * 🏢 ENLISTAR INFRAESTRUCTURA EN EL INVENTARIO (SIN EMISIÓN DE MONEDA)
+     */
+    public function store(Request $request)
+    {
+        $lab = auth()->user();
+        
+        try {
+            DB::transaction(function () use ($request, $lab) {
+                $types = $request->input('asset_type');
+                $catalogIds = $request->input('catalog_id');
+                $names = $request->input('custom_name');
+                $quantities = $request->input('quantity_declared');
+                
+                for ($i = 0; $i < count($names); $i++) {
+                    $cantidad = floatval($quantities[$i]);
+                    
+                    // Filtrar datos basura o filas vacías
+                    if (!empty(trim($names[$i])) && $cantidad > 0 && !empty($catalogIds[$i])) {
+                        
+                        $lab->activos()->create([
+                            'catalog_id'        => $catalogIds[$i],
+                            'asset_type'        => $types[$i],
+                            'custom_name'       => trim($names[$i]),
+                            'useful_life_hours' => $cantidad,
+                            'consumed_hours'    => 0,
+                            'tokenization_pct'  => 0,   // 0% porque aún no está respaldando moneda
+                            'set_price_fc'      => 0.00, // Se fijará recién en el paso de tokenización
+                            'generated_fc'      => 0.00, // No genera liquidez en billetera todavía
+                            'status'            => 'enlisted', // Estado puro de inventario
+                            'expires_at'        => now()->addYears(2),
+                        ]);
+                    }
+                }
+            ]);
+            
+            return redirect()->route('lab.dashboard')->with('msg', 'asset_enlisted_ok');
+        } catch (\Exception $e) {
+            return redirect()->route('lab.dashboard')->with('error', $e->getMessage());
+        }
+    }
 }
