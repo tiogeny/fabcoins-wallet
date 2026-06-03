@@ -9,7 +9,7 @@ return [
     'msg_reg_success' => '¡Cuenta creada exitosamente! Revisa tu correo e inicia sesión.',
     'err_reg_dup' => 'Ese correo o nombre ya está en uso.',
 
-    // --- INTERFAZ GENERAL GENERAL UI ---
+    // --- INTERFAZ GENERAL UI ---
     'app_subtitle' => 'Economía distribuida para Makers',
     'tab_login' => 'Ingresar',
     'tab_register' => 'Crear Billetera',
@@ -18,6 +18,7 @@ return [
     'btn_logout' => 'Cerrar Sesión',
     'reputation' => 'Reputación',
     'no_notifications' => 'Sin notificaciones recientes',
+    'opt_select' => 'Selecciona una opción',
 
     // --- ACCESO Y SEGURIDAD ---
     'ph_email' => 'Correo electrónico',
@@ -38,7 +39,7 @@ return [
     'onb_ph_bio' => 'Cuéntanos a qué te dedicas...',
     'onb_btn' => 'Guardar y Entrar',
 
-    // --- RECUPERACIÓN DE CONTRASEÑA (SHORT & CLEAN) ---
+    // --- RECUPERACIÓN DE CONTRASEÑA ---
     'h1_forgot' => 'Recuperar Acceso',
     'desc_forgot' => 'Ingresa tu correo electrónico para recibir un enlace seguro de recuperación.',
     'btn_send_link' => 'Enviar Enlace',
@@ -89,8 +90,8 @@ return [
     'footer_rights' => 'Todos los derechos reservados.',
 
     // --- PANEL LAB MASTER CONTROL ---
-    'lab_portal' => 'Panel de Control',
-    'edit_profile' => 'Editar Perfil',
+    'lab_portal' => 'Panel de Control del Laboratorio',
+    'edit_profile' => 'Configuración del Perfil',
     'global_community' => 'Comunidad Global',
     'frozen_title' => 'BOVEDA CONGELADA (Déficit de Respaldo)',
     'frozen_desc_1' => 'Tu saldo de',
@@ -98,11 +99,11 @@ return [
     
     // KPIs del Lab y Hubs de Acción de Beno
     'hub_activate_title' => 'Activar',
-    'hub_activate_desc' => 'Enlistar activos',
+    'hub_activate_desc' => 'Enlistar activos y capacidad instalada',
     'hub_tokenise_title' => 'Tokenizar',
-    'hub_tokenise_desc' => 'Valorizar activos',
+    'hub_tokenise_desc' => 'Valorización contable y emisión MINT',
     'hub_publish_title' => 'Publicar',
-    'hub_publish_desc' => 'Generar misiones',
+    'hub_publish_desc' => 'Convocatoria de misiones y bolsa de trabajo',
     
     'lbl_assets_unit' => 'Activos',
     'lbl_machines_bullet' => 'Máquinas',
@@ -117,5 +118,45 @@ return [
     'lbl_closed_bullet' => 'completadas',
     'status_retired' => 'dados de baja',
 
+    // Workspace 1: Activar
+    'register_asset_title' => 'Declarar Infraestructura y Capacidad',
+    'register_asset_desc' => 'Enlista las máquinas, servicios o espacios de tu laboratorio para incorporarlos al inventario antes de su valorización monetaria.',
+    'lbl_category' => 'Categoría Eje',
+    'lbl_global_cat' => 'Especialidad Global',
+    'lbl_specific_name' => 'Nombre Específico / Modelo',
+    'lbl_capacity_declared' => 'Capacidad Base',
+    'btn_add_more' => 'Añadir otra línea',
+    'btn_save_inventory' => 'Enlistar en Inventario',
+    'inv_title' => 'Inventario Completo e Infraestructura',
+    'inv_empty' => 'No tienes infraestructura registrada en este laboratorio.',
+    'th_category' => 'Categoría',
+    'th_asset' => 'Activo Declarado',
+    'th_avail_capacity' => 'Capacidad Declarada',
+    'th_status' => 'Estado Financiero',
+
+    // Asset Types Names
+    'opt_machine' => 'Máquina',
+    'opt_service' => 'Servicio',
+    'opt_lab' => 'Lab',
+
+    // Financial Status Badge
+    'status_enlisted' => 'Enlistado (Sin emitir)',
+    'status_operative' => 'Tokenizado (Activo)',
+    'status_retired' => 'De Baja (Penalizado)',
+    
+    // --- INTERCEPTOR DE ALERTAS DE SWEETALERT2 ---
+    'swal_are_you_sure' => '¿Estás completamente seguro?',
+    'swal_ays_detail' => 'El activo se retirará del inventario.',
+    'swal_confirm' => 'Sí, confirmar',
+    'swal_cancel' => 'Cancelar',
+    'swal_inv_updated' => 'Inventario Actualizado',
     'asset_enlisted_ok' => '¡Infraestructura enlistada con éxito! Ya puedes verla en tu inventario.',
+    'asset_deleted_ok' => 'El activo pendiente ha sido retirado del inventario de forma segura.',
+
+    'lbl_capacity_avail' => 'CAPACIDAD DISPONIBLE',
+    'tooltip_capacity_title' => 'Límites del Activo:',
+    'tooltip_capacity_machine' => 'Horas de disponibilidad física operativa en tu infraestructura.',
+    'tooltip_capacity_service' => 'Se evalúa en Cupos si corresponde a un taller/workshop largo, o en Horas si es consultoría experta.',
+    'ph_select_category' => 'Selecciona categoría...',
+    'ph_capacity_base' => 'Cant. Base',
 ];

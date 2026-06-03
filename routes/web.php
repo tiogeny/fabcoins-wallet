@@ -47,7 +47,10 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::post('/profile/update', function() { return redirect()->back(); })->name('lab.update_profile');
         Route::post('/profile/password', function() { return redirect()->back(); })->name('lab.change_password');
 
-        Route::post('/lab/asset/store', [AssetController::class, 'store'])->name('lab.asset.store');
+        Route::post('/asset/store', [AssetController::class, 'store'])->name('lab.asset.store');
+
+        // Dentro de tu grupo con prefijo 'lab' en routes/web.php:
+        Route::delete('/asset/destroy/{id}', [AssetController::class, 'destroy'])->name('lab.asset.destroy');
     });
 
     // 🎨 PORTAL DE OPERACIONES DEL MAKER (Rol 'maker')

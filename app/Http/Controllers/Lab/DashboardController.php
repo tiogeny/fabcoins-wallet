@@ -21,21 +21,20 @@ class DashboardController extends Controller
         $misMisiones = $lab->misiones()->latest()->get();
         $misTransacciones = $lab->transacciones()->latest()->limit(50)->get();
 
-        // 2. HUB A: Nivelación Demográfica y Activos unificados bajo 3 Macro-Ejes
+        // 2. HUB A: Nivelación Demográfica y Activos unificados bajo 3 Macro-Ejes Strict
         $activosFisicos = $misActivos;
-        $totalActivosCount = $misActivos->where('status', 'active')->count();
+        
+        // 🔥 CORRECCIÓN: Cuenta la infraestructura total disponible (tanto Enlistada como Operativa)
+        $totalActivosCount = $misActivos->whereIn('status', ['enlisted', 'active'])->count();
         
         // Categoría 1: Máquinas (Hardware Puro)
-        $totalMaquinasCount = $misActivos->where('status', 'active')->where('asset_type', 'machine')->count();
+        $totalMaquinasCount = $misActivos->whereIn('status', ['enlisted', 'active'])->where('asset_type', 'machine')->count();
         
-        // 🔥 CORRECCIÓN: Servicios y Talleres se consolidan bajo el mismo ecosistema de "Servicios"
-        $totalServiciosCount = $misActivos->where('status', 'active')->whereIn('asset_type', ['service', 'workshop'])->count();
+        // 🔥 CORRECCIÓN: Servicios y Talleres se consolidan bajo el tipo 'service'
+        $totalServiciosCount = $misActivos->whereIn('status', ['enlisted', 'active'])->where('asset_type', 'service')->count();
         
-        // Categoría 3: Labs representa la infraestructura espacial instalada (Spaces)
-        $totalLabsConectados = $misActivos->where('status', 'active')->where('asset_type', 'space')->count();
-        
-        // Labs conectados unifica talleres (workshops) y estaciones de trabajo (spaces)
-        $totalLabsConectados = $misActivos->where('status', 'active')->whereIn('asset_type', ['workshop', 'space'])->count();
+        // 🔥 CORRECCIÓN: Infraestructura espacial bajo el tipo 'lab'
+        $totalLabsConectados = $misActivos->whereIn('status', ['enlisted', 'active'])->where('asset_type', 'lab')->count();
 
         // 3. HUB B: Libro Contable Automatizado (Fórmulas de Tu Base de Datos Real)
         $totalMinted = $misActivos->sum('generated_fc') ?? 0;
@@ -47,7 +46,7 @@ class DashboardController extends Controller
             ->selectRaw("SUM(CASE WHEN type IN ('income', 'mint') THEN amount ELSE -amount END) as saldo")
             ->value('saldo') ?? 0;
 
-        $enReserva = $saldoTotal; // El saldo líquido disponible en su caja chica
+        $enReserva = $saldoTotal; 
         $isFrozen = ($saldoTotal < 0);
 
         // --- MÓDULO FINANCIERO DE ESCROW VIVO (MISIONES) ---
@@ -135,7 +134,7 @@ class DashboardController extends Controller
             $postulantesPorMision[$p->mission_id][] = $p; 
         }
 
-        // 6. Sistema de Alertas (Corrección de Casing unificado con el Blade)
+        // 6. Sistema de Alertas
         $notificaciones = DB::table('notifications')->where('user_id', $lab->id)->latest()->limit(10)->get();
         $unread_count = $notificaciones->where('is_read', false)->count();
 

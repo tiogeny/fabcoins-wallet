@@ -1,16 +1,12 @@
 /* ==========================================================================
-   🏢 FABCOINS - CONTROLADOR DE INTERFAZ INTEGRAL DEL LAB (FINTECH PREMIUM)
-   ========================================================================== */
-
-/* ==========================================================================
-   🏢 FABCOINS - CONTROLADOR DE ENCABEZADO PREMIUM (FINTECH STYLE)
+   🏢 FABCOINS - HOJA DE ESTILOS OPERATIVA CONSOLIDADA (SISTEMA MAESTRO v1.6)
    ========================================================================== */
 
 /* --- A. ENCABEZADO INDUSTRIAL DE ALTA GAMA --- */
 .lab-header-v2 {
-    background: #222531; /* 🔥 CORRECCIÓN: Tono más claro y contrastado para despegarse del fondo negro */
-    border: 1px solid rgba(255, 255, 255, 0.08); /* Borde más visible */
-    border-top: 1px solid rgba(255, 255, 255, 0.15); /* Reflejo premium superior */
+    background: #1c1f26; 
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid rgba(255, 255, 255, 0.08); 
     padding: 16px 28px; 
     border-radius: 16px; 
     margin-bottom: 30px;
@@ -30,7 +26,7 @@
     border: none;
     padding: 0;
     text-align: left;
-    width: fit-content; /* 🔥 CORRECCIÓN: Contiene el botón a su tamaño justo, eliminando el hover fantasma */
+    width: fit-content;
 }
 
 .lab-avatar-wrapper {
@@ -39,8 +35,8 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    padding: 2px; /* Espacio interno para el anillo neón */
-    border: 2px solid transparent; /* Base del anillo */
+    padding: 2px;
+    border: 2px solid transparent;
     transition: all 0.25s ease;
     box-sizing: border-box;
 }
@@ -53,7 +49,6 @@
     display: block;
 }
 
-/* 🔥 CORRECCIÓN: El anillo neón se aplica directo al contenedor exterior para asegurar su renderizado */
 .lab-avatar-wrapper.status-active {
     border-color: #2ecc71 !important;
     box-shadow: 0 0 12px rgba(46, 204, 113, 0.5);
@@ -64,9 +59,7 @@
     box-shadow: 0 0 12px rgba(231, 76, 60, 0.6);
 }
 
-.lab-profile-trigger:hover img {
-    transform: scale(1.05);
-}
+.lab-profile-trigger:hover img { transform: scale(1.05); }
 
 .lab-identity-meta h1 {
     margin: 0;
@@ -77,10 +70,7 @@
     letter-spacing: 0.5px;
     transition: color 0.2s;
 }
-
-.lab-profile-trigger:hover .lab-identity-meta h1 {
-    color: #3498db;
-}
+.lab-profile-trigger:hover .lab-identity-meta h1 { color: #3498db; }
 
 .lab-reputation-stars {
     font-size: 12px;
@@ -154,12 +144,11 @@
     line-height: 1.4;
     text-align: left;
     transition: background 0.2s;
-    border-left: 3px solid #3498db; /* 🔥 CORRECCIÓN: Línea limpia y estándar válida para navegadores */
+    border-left: 3px solid #3498db;
 }
 .notif-item:hover { background: rgba(255, 255, 255, 0.02); }
 .notif-item.unread { background: rgba(52, 152, 219, 0.03); }
 
-/* Scrollbar premium customizado */
 .notif-dropdown::-webkit-scrollbar { width: 6px; }
 .notif-dropdown::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); border-radius: 0 12px 12px 0; }
 .notif-dropdown::-webkit-scrollbar-thumb { background: #34495e; border-radius: 4px; }
@@ -286,27 +275,34 @@
 }
 .workspace-section.active { display: block; opacity: 1; transform: translateY(0); }
 
-/* 📐 ALTERNATIVA A: Formato SaaS continuo alineado a la izquierda */
 .workspace-active-bar-v2 {
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* 🔥 CORRECCIÓN: Todo el bloque se agrupa al inicio izquierdo */
-    gap: 20px; /* Separación simétrica de componentes */
-    background: #1c1f26; 
+    justify-content: flex-start; 
+    gap: 20px; 
+    background: #1c1f26; /* Fondo gris titanio original */
     border: 1px solid rgba(255, 255, 255, 0.04);
-    border-top: 1px solid rgba(255, 255, 255, 0.08); 
     padding: 12px 24px;
     border-radius: 12px;
     margin-bottom: 25px;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    box-sizing: border-box;
 }
 
-/* 🔙 BOTÓN VOLVER EVOLUCIONADO (ESTILO COMPACTO DE ESCAPE) */
+.workspace-active-bar-v2::before {
+    content: "";
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    order: 1;
+}
+
 .btn-back-minimal {
-    background: rgba(255, 255, 255, 0.02);
-    color: #a0aec0; 
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.03) !important; /* Fuerza el fondo semi-transparente */
+    color: #a0aec0 !important; 
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 8px 16px !important;
     border-radius: 8px;
     font-size: 11px;
     font-family: 'Rajdhani', sans-serif;
@@ -315,24 +311,15 @@
     letter-spacing: 0.5px;
     cursor: pointer;
     transition: all 0.2s ease;
-    width: auto;
+    display: inline-block;
+    width: auto !important; /* 🔥 Evita que se estire a lo ancho de la barra */
+    height: auto;
 }
 .btn-back-minimal:hover {
-    color: #ffffff;
-    background: rgba(231, 76, 60, 0.08); /* Sutil destello carmín de retroceso */
-    border-color: rgba(231, 76, 60, 0.3);
-    transform: translateX(-2px);
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
 }
-
-/* 🧱 SEPARADOR SAAS */
-.workspace-active-bar-v2::before {
-    content: "";
-    width: 1px;
-    height: 20px;
-    background: rgba(255, 255, 255, 0.15);
-    order: 1; /* Se posiciona exactamente entre el botón y el título */
-}
-
 .workspace-title-node {
     display: flex;
     align-items: center;
@@ -342,10 +329,56 @@
     font-size: 18px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    order: 2; /* Se coloca después del separador */
+    order: 2;
 }
-.workspace-title-node img {
-    width: 22px;
-    height: 22px;
-    object-fit: contain;
+.workspace-title-node img { width: 22px; height: 22px; object-fit: contain; }
+
+/* --- 🧠 F. SISTEMA DE TOOLTIPS FINTECH INTELIGENTES CORREGIDOS --- */
+.fx-tooltip {
+    position: relative;
+    cursor: help;
+    background: #232b38;
+    color: #1abc9c;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    font-family: 'Inter', sans-serif;
+}
+
+.fx-tooltip .fx-tooltip-card {
+    visibility: hidden;
+    width: 280px;
+    background: #11151d;
+    color: #cbd5e0;
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 2px solid #1abc9c;
+    padding: 14px;
+    border-radius: 8px;
+    position: absolute;
+    z-index: 200;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    font-size: 11.5px;
+    line-height: 1.5;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    text-transform: none; /* 🔥 CORRECCIÓN: Evita las mayúsculas invasivas */
+    letter-spacing: normal;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    white-space: normal;
+}
+
+.fx-tooltip:hover .fx-tooltip-card {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(-4px);
 }

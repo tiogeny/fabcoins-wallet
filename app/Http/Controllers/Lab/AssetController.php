@@ -3,71 +3,13 @@
 namespace App\Http\Controllers\Lab;
 
 use App\Http\Controllers\Controller;
-use App\Models\LabAsset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AssetController extends Controller
 {
-    public function tokenize(Request $request)
-    {
-        $lab = auth()->user();
-        try {
-            DB::transaction(function () use ($request, $lab) {
-                $names = $request->input('custom_name');
-                $prices = $request->input('set_price_fc');
-                $catalogIds = $request->input('catalog_id');
-                $types = $request->input('asset_type');
-                $quantities = $request->input('quantity_offered');
-                
-                for ($i = 0; $i < count($names); $i++) {
-                    $precio = floatval($prices[$i]);
-                    if (!empty(trim($names[$i])) && $precio > 0 && !empty($catalogIds[$i])) {
-                        $tipo = $types[$i];
-                        $cantidadGuardada = ($tipo === 'machine') ? (4160 * 0.35) : floatval($quantities[$i]);
-                        $montoGenerar = $cantidadGuardada * $precio;
-
-                        if ($cantidadGuardada <= 0 || $montoGenerar <= 0) continue;
-
-                        $lab->activos()->create([
-                            'catalog_id' => $catalogIds[$i], 'asset_type' => $tipo, 'custom_name' => trim($names[$i]),
-                            'useful_life_hours' => $cantidadGuardada, 'tokenization_pct' => ($tipo === 'machine') ? 35 : 100,
-                            'set_price_fc' => $precio, 'generated_fc' => $montoGenerar, 'expires_at' => now()->addYears(2),
-                        ]);
-
-                        $lab->transacciones()->create(['description' => "Emisión (Mint): " . trim($names[$i]), 'amount' => $montoGenerar, 'type' => 'mint']);
-                    }
-                }
-            ]);
-            return redirect()->route('lab.dashboard')->with('msg', 'mint_ok');
-        } catch (\Exception $e) {
-            return redirect()->route('lab.dashboard')->with('error', $e->getMessage());
-        }
-    }
-
-    public function retireAsset(Request $request)
-    {
-        $lab = auth()->user();
-        $asset = LabAsset::where('id', $request->input('asset_id'))->where('lab_id', $lab->id)->firstOrFail();
-
-        if ($asset->status === 'active') {
-            DB::transaction(function () use ($lab, $asset) {
-                $asset->update(['status' => 'retired']);
-                $lab->transacciones()->create(['description' => "PENALIZACIÓN: Retiro de activo " . $asset->custom_name, 'amount' => $asset->generated_fc, 'type' => 'expense']);
-            });
-            return redirect()->route('lab.dashboard')->with('msg', 'retired_ok');
-        }
-        return redirect()->route('lab.dashboard');
-    }
-
-    public function updatePrice(Request $request)
-    {
-        LabAsset::where('id', $request->input('asset_id'))->where('lab_id', auth()->id())->firstOrFail()->update(['set_price_fc' => floatval($request->input('nuevo_precio'))]);
-        return redirect()->route('lab.dashboard')->with('msg', 'price_ok');
-    }
-
     /**
-     * 🏢 ENLISTAR INFRAESTRUCTURA EN EL INVENTARIO (SIN EMISIÓN DE MONEDA)
+     * 🏢 ENLISTAR INFRAESTRUCTURA EN EL INVENTARIO (ESTADO BASE ENLISTED)
      */
     public function store(Request $request)
     {
@@ -80,31 +22,69 @@ class AssetController extends Controller
                 $names = $request->input('custom_name');
                 $quantities = $request->input('quantity_declared');
                 
+                if (!$names || count($names) == 0) {
+                    return;
+                }
+
                 for ($i = 0; $i < count($names); $i++) {
                     $cantidad = floatval($quantities[$i]);
                     
-                    // Filtrar datos basura o filas vacías
                     if (!empty(trim($names[$i])) && $cantidad > 0 && !empty($catalogIds[$i])) {
                         
-                        $lab->activos()->create([
+                        $subcategoria = null;
+                        if ($types[$i] === 'service') {
+                            $catalogItem = DB::table('global_catalog')->where('id', $catalogIds[$i])->first();
+                            if ($catalogItem && str_contains(strtolower($catalogItem->generic_name), 'taller')) {
+                                $subcategoria = 'workshop';
+                            } else {
+                                $subcategoria = 'mentorship';
+                            }
+                        }
+
+                        DB::table('lab_assets')->insert([
+                            'lab_id'            => $lab->id,
                             'catalog_id'        => $catalogIds[$i],
                             'asset_type'        => $types[$i],
+                            'subcategory'       => $subcategoria,
                             'custom_name'       => trim($names[$i]),
                             'useful_life_hours' => $cantidad,
-                            'consumed_hours'    => 0,
-                            'tokenization_pct'  => 0,   // 0% porque aún no está respaldando moneda
-                            'set_price_fc'      => 0.00, // Se fijará recién en el paso de tokenización
-                            'generated_fc'      => 0.00, // No genera liquidez en billetera todavía
-                            'status'            => 'enlisted', // Estado puro de inventario
+                            'consumed_hours'    => 0.00,
+                            'tokenization_pct'  => 0,
+                            'generated_fc'      => 0.00,
+                            'status'            => 'enlisted',
+                            'set_price_fc'      => 0.00,
                             'expires_at'        => now()->addYears(2),
+                            'created_at'        => now(),
+                            'updated_at'        => now()
                         ]);
                     }
                 }
-            ]);
-            
+            }); // 🔥 CORRECCIÓN: Cerrado correctamente con }) en lugar de ]
+
             return redirect()->route('lab.dashboard')->with('msg', 'asset_enlisted_ok');
         } catch (\Exception $e) {
             return redirect()->route('lab.dashboard')->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * 🗑️ ELIMINACIÓN SEGURA DE INFRAESTRUCTURA NO TOKENIZADA
+     */
+    public function destroy($id)
+    {
+        try {
+            $activo = DB::table('lab_assets')->where('id', $id)->where('lab_id', auth()->id())->first();
+            
+            if (!$activo || $activo->status !== 'enlisted') {
+                return redirect()->back()->with('error', 'No se puede eliminar un activo comprometido en el Ledger.');
+            }
+            
+            DB::table('lab_assets')->where('id', $id)->delete();
+            
+            // 🔥 CORRECCIÓN: Cambiado de 'profile_updated' a 'asset_deleted_ok'
+            return redirect()->route('lab.dashboard')->with('msg', 'asset_deleted_ok'); 
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 }

@@ -4,75 +4,75 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Motor de Hidratación Contable y Adaptación de Ecosistema
-     */
     public function run(): void
     {
-        // 1. Desactivar restricciones de llaves foráneas para permitir la importación masiva cruda
         DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
-
-        // 2. Leer e inyectar el volcado SQL real de producción desde la raíz del proyecto
-        $sqlPath = base_path('fabcoins.sql');
-        if (file_exists($sqlPath)) {
-            DB::unprepared(file_get_contents($sqlPath));
-        }
-
-        // 3. 🛡️ ADAPTACIÓN: Tabla 'users' (Evita errores 1054 de columnas faltantes en Auth/Breeze)
-        if (Schema::hasTable('users')) {
-            Schema::table('users', function (Blueprint $table) {
-                if (!Schema::hasColumn('users', 'updated_at')) {
-                    $table->timestamp('updated_at')->nullable();
-                }
-                if (!Schema::hasColumn('users', 'remember_token')) {
-                    $table->string('remember_token', 100)->nullable();
-                }
-            });
-        }
-
-        // 4. 🛡️ ADAPTACIÓN: Tabla 'lab_assets' (Previene fallos de Eloquent Timestamps al emitir tokens)
-        if (Schema::hasTable('lab_assets')) {
-            Schema::table('lab_assets', function (Blueprint $table) {
-                if (!Schema::hasColumn('lab_assets', 'created_at')) {
-                    $table->timestamp('created_at')->nullable();
-                }
-                if (!Schema::hasColumn('lab_assets', 'updated_at')) {
-                    $table->timestamp('updated_at')->nullable();
-                }
-            });
-        }
-
-        // 5. ⚙️ SISTEMA: Creación de tablas técnicas internas requeridas por el núcleo de Laravel
-        if (!Schema::hasTable('sessions')) {
-            Schema::create('sessions', function (Blueprint $table) {
-                $table->string('id')->primary();
-                $table->unsignedBigInteger('user_id')->nullable()->index();
-                $table->string('ip_address', 45)->nullable();
-                $table->text('user_agent')->nullable();
-                $table->longText('payload');
-                $table->integer('last_activity')->index();
-            });
-        }
-
-        if (!Schema::hasTable('cache')) {
-            Schema::create('cache', function (Blueprint $table) {
-                $table->string('key')->primary();
-                $table->mediumText('value');
-                $table->integer('expiration');
-            });
-            Schema::create('cache_locks', function (Blueprint $table) {
-                $table->string('key')->primary();
-                $table->string('owner');
-                $table->integer('expiration');
-            });
-        }
-
-        // 6. Reactivar restricciones de seguridad de llaves foráneas
+        DB::table('financing_agreements')->truncate();
+        DB::table('orders')->truncate();
+        DB::table('transactions')->truncate();
+        DB::table('notifications')->truncate();
+        DB::table('missions')->truncate();
+        DB::table('lab_assets')->truncate();
+        DB::table('global_catalog')->truncate();
+        DB::table('users')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
+
+        // Inyección de Cuentas Maestras
+        DB::table('users')->insert([
+            [
+                'id' => 1,
+                'name' => 'Beno (Super Admin)',
+                'email' => 'beno@fabcoins.org',
+                'password' => Hash::make('admin123'),
+                'role' => 'superadmin',
+                'slug' => 'beno-admin',
+                'reputation_score' => 5.00,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'id' => 2,
+                'name' => 'Fab Lab Perú',
+                'email' => 'contacto@fablabperu.org',
+                'password' => Hash::make('lab123'),
+                'role' => 'lab',
+                'slug' => 'fab-lab-peru',
+                'reputation_score' => 5.00,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
+        ]);
+
+        // 🔥 INYECCIÓN DEL CATÁLOGO SIMPLIFICADO SOLICITADO
+        DB::table('global_catalog')->insert([
+            // 1. MÁQUINAS (Nombres directos del hardware estructural)
+            ['id' => 1, 'asset_type' => 'machine', 'generic_name' => 'Impresora 3D', 'suggested_price_fc' => 15.00],
+            ['id' => 2, 'asset_type' => 'machine', 'generic_name' => 'Cortadora Láser', 'suggested_price_fc' => 45.00],
+            ['id' => 3, 'asset_type' => 'machine', 'generic_name' => 'Fresadora', 'suggested_price_fc' => 60.00],
+            ['id' => 4, 'asset_type' => 'machine', 'generic_name' => 'Escaner', 'suggested_price_fc' => 20.00],
+            ['id' => 5, 'asset_type' => 'machine', 'generic_name' => 'Ploter', 'suggested_price_fc' => 25.00],
+            ['id' => 6, 'asset_type' => 'machine', 'generic_name' => 'Cortadora de Vinil', 'suggested_price_fc' => 15.00],
+
+            // 2. SERVICIOS (Asesorías y Talleres Formativos integrados)
+            ['id' => 7, 'asset_type' => 'service', 'generic_name' => 'Asesoría Especializada', 'suggested_price_fc' => 50.00],
+            ['id' => 8, 'asset_type' => 'service', 'generic_name' => 'Taller Académico Intensivo', 'suggested_price_fc' => 100.00],
+
+            // 3. LABS (Infraestructura Espacial)
+            ['id' => 9, 'asset_type' => 'lab', 'generic_name' => 'Estación de Trabajo / Espacio', 'suggested_price_fc' => 10.00]
+        ]);
+
+        // Alerta inicial de control de la bitácora
+        DB::table('notifications')->insert([
+            'user_id' => 2,
+            'message' => 'Ecosistema listo bajo los 3 Macro-Ejes. Procede con el enlistamiento de infraestructura.',
+            'type' => 'info',
+            'is_read' => 0,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
     }
 }
