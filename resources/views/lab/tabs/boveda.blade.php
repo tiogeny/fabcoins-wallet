@@ -61,7 +61,7 @@
                         
                         <!-- 1. Checkbox desmarcado por defecto para seguridad -->
                         <div style="text-align: center;">
-                            <input type="checkbox" name="transformar_activo[]" value="{{ $asset->id }}" class="check-activo-transformar" onchange="ejecutarCalculoEcuacionBeno()">
+                            <input type="checkbox" name="transformar_activo[]" value="{{ $asset->id }}" class="check-activo-transformar" onchange="ejecutarCalculoEcuacion()">
                         </div>
 
                         <!-- 2. Identidad Visual Coherente -->
@@ -84,11 +84,11 @@
                         <!-- 4. Selector de Porcentaje Contrato -->
                         <div>
                             @if($esTaller)
-                                <select name="percentage_committed[{{ $asset->id }}]" class="select-porcentaje-boveda" onchange="ejecutarCalculoEcuacionBeno()" style="width: 100%; font-weight: 700; margin-bottom: 0; background: #1a1e2a; border: 1px solid rgba(255,255,255,0.1); color: #f1c40f; height: 36px; border-radius: 6px; font-size: 12px;" readonly>
+                                <select name="percentage_committed[{{ $asset->id }}]" class="select-porcentaje-boveda" onchange="ejecutarCalculoEcuacion()" style="width: 100%; font-weight: 700; margin-bottom: 0; background: #1a1e2a; border: 1px solid rgba(255,255,255,0.1); color: #f1c40f; height: 36px; border-radius: 6px; font-size: 12px;" readonly>
                                     <option value="1.00" selected>{{ __('messages.pct_100') }}</option>
                                 </select>
                             @else
-                                <select name="percentage_committed[{{ $asset->id }}]" class="select-porcentaje-boveda" onchange="ejecutarCalculoEcuacionBeno()" style="width: 100%; font-weight: 700; margin-bottom: 0; background: #1c2230; border: 1px solid rgba(255,255,255,0.06); color: #fff; height: 36px; border-radius: 6px; font-size: 12px;">
+                                <select name="percentage_committed[{{ $asset->id }}]" class="select-porcentaje-boveda" onchange="ejecutarCalculoEcuacion()" style="width: 100%; font-weight: 700; margin-bottom: 0; background: #1c2230; border: 1px solid rgba(255,255,255,0.06); color: #fff; height: 36px; border-radius: 6px; font-size: 12px;">
                                     <option value="" selected>-- {{ __('messages.pct_select') }} --</option>
                                     <option value="0.10">{{ __('messages.pct_10') }}</option>
                                     <option value="0.20">{{ __('messages.pct_20') }}</option>
@@ -185,10 +185,10 @@ function conmutarTodosLosCheckboxes(master) {
     document.querySelectorAll('.check-activo-transformar').forEach(cb => {
         cb.checked = master.checked;
     });
-    ejecutarCalculoEcuacionBeno();
+    ejecutarCalculoEcuacion();
 }
 
-function ejecutarCalculoEcuacionBeno() {
+function ejecutarCalculoEcuacion() {
     let granTotal = 0;
     
     document.querySelectorAll('.fila-boveda-token').forEach(fila => {
@@ -217,14 +217,15 @@ function ejecutarCalculoEcuacionBeno() {
         granTotal += subtotal;
 
         pizarraLinea.style.color = '#f1c40f';
-        pizarraLinea.textContent = subtotal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 0 }) + ' FC';
+        // 🔥 SOLUCIÓN: Eliminamos la contradicción de dígitos fraccionarios
+        pizarraLinea.textContent = Math.round(subtotal).toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' FC';
     });
 
     const pizarraGeneral = document.getElementById('pizarra-total-boveda');
     if (pizarraGeneral) {
         if (granTotal > 0) {
-            pizarraGeneral.style.color = '#2ecc71'; // Se enciende en verde cuando hay colateral marcado
-            pizarraGeneral.textContent = granTotal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 0 }) + ' FC';
+            pizarraGeneral.style.color = '#2ecc71'; 
+            pizarraGeneral.textContent = Math.round(granTotal).toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' FC';
         } else {
             pizarraGeneral.style.color = '#4a5568';
             pizarraGeneral.textContent = '0 FC';
@@ -257,6 +258,6 @@ function validarSeleccionBoveda(event) {
 
 // Inicialización reactiva al renderizar
 document.addEventListener("DOMContentLoaded", function() {
-    ejecutarCalculoEcuacionBeno();
+    ejecutarCalculoEcuacion();
 });
 </script>

@@ -116,6 +116,8 @@ return [
     'lbl_open_bullet' => 'disponibles',
     'lbl_working_bullet' => 'en ejecución',
     'lbl_closed_bullet' => 'completadas',
+    'lbl_reserve' => 'Reservados',
+    'lbl_frozen' => 'Ofrecidos',
     'status_retired' => 'dados de baja',
 
     // Workspace 1: Activar
@@ -142,7 +144,6 @@ return [
     // Financial Status Badge
     'status_enlisted' => 'Enlistado (Sin emitir)',
     'status_operative' => 'Tokenizado (Activo)',
-    'status_retired' => 'De Baja (Penalizado)',
     
     // --- INTERCEPTOR DE ALERTAS DE SWEETALERT2 ---
     'swal_are_you_sure' => '¿Estás completamente seguro?',
@@ -231,5 +232,54 @@ return [
     'swal_retired_text' => 'Se aplicó la penalización (Margin Call) correspondiente en tu balance.',
     'swal_price_title' => 'Tarifa Actualizada',
     'swal_price_desc' => 'Ahora los makers sabrán de tu precio actualizado.',
+
+    // --- WORKSPACE 3: MISIONES Y BANCO DE TALENTO ---
+    'miss_create_title' => 'Crear Nueva Misión en la Red',
+    'miss_create_desc' => 'Publica una necesidad de tu laboratorio y ofrece FabCoins en custodia para que un Maker calificado la resuelva.',
+    'ph_miss_title' => 'Título de la Misión (Ej: Optimización de Perfiles de Impresión)',
+    'ph_miss_desc' => 'Describe con detalle los entregables esperados, requerimientos técnicos y condiciones de aceptación...',
+    'lbl_directed_to' => '¿Dirigida a un deudor específico? (Crédito a Amortizar)',
+    'opt_open_mission' => '-- Misión Abierta a la Comunidad --',
+    'lbl_only_for' => 'Exclusivo para:',
+    'ph_ref_link' => 'Enlace a planos, repositorio o documentación (Opcional)',
+    'lbl_spots' => 'CUPOS (MAKERS)',
+    'lbl_reward_per_maker' => 'PAGO POR MAKER',
+    'btn_publish_miss' => '🚀 Publicar Misión y Congelar Escrow',
+    'miss_list_title' => 'Mis Misiones Publicadas',
+    'th_miss_details' => 'Misión y Detalles',
+    'th_limit' => 'Límite',
+    'th_reward' => 'Recompensa',
+    'th_applicants' => 'Postulantes / Estado',
+    'miss_list_empty' => 'Aún no has lanzado ninguna convocatoria al ecosistema.',
+    'lbl_no_applicants' => 'Nadie se ha postulado a esta vacante todavía.',
+    'lbl_financiado' => '🎓 ALUMNO FINANCIADO',
+    'btn_discard' => 'Descartar',
+    'btn_assign_maker' => 'Asignar Maker',
+    'lbl_assigned_maker' => 'Maker Asignado:',
+    'btn_eval_amortize' => '✅ Evaluar y Amortizar Deuda',
+    'btn_eval_pay' => '✅ Evaluar Trabajo y Pagar',
+    'lbl_evaluate_maker' => 'Evaluar y Calificar Talento',
+    'lbl_what_skills' => '¿Qué habilidades demostró fehacientemente en esta misión?',
+    'lbl_hard_skills' => 'Habilidades Técnicas (Hard)',
+    'lbl_soft_skills' => 'Habilidades Blandas (Soft)',
+    'lbl_no_skills_registered' => 'Este Maker no ha indexado habilidades en su perfil público.',
+    'lbl_general_rating' => 'Calificación General de Entrega:',
+    'ph_comment_work' => 'Escribe una reseña honesta sobre la calidad del entregable...',
+    'btn_approve_amortize' => 'CONFIRMAR Y REDUCIR DEUDA',
+    'btn_pay_rate' => 'CONFIRMAR LIBERACIÓN DE PAGO',
+    'lbl_mission_completed_by' => '🎉 MISIÓN COMPLETADA POR:',
+    'lbl_rating_sent' => 'Calificación asentada en el portafolio del Maker',
+
+    // SweetAlerts del Workspace 3
+    'swal_insufficient_escrow' => 'Saldo Insuficiente para Escrow',
+    'swal_insufficient_escrow_desc' => 'Tu billetera no cuenta con los FabCoins requeridos para cubrir el total de los cupos declarados.',
+    'swal_mission_published' => '🎯 Convocatoria Abierta',
+    'swal_mission_published_desc' => 'La misión se ha publicado con éxito y los fondos han sido aislados en custodia.',
+    'swal_mission_assigned' => '🔒 Contrato Asignado',
+    'swal_mission_assigned_desc' => 'El Maker ha sido notificado y el canal de coordinación está activo.',
+    'swal_mission_completed' => '🎉 Fondos Liberados',
+    'swal_mission_completed_desc' => 'Se ha enviado el pago de forma líquida al monedero del Maker.',
+    'swal_amortize_completed' => '📉 Deuda Amortizada',
+    'swal_amortize_completed_desc' => 'El pago se ha retenido con éxito y se aplicó como abono directo a tu favor en el contrato educativo.',
 
 ];

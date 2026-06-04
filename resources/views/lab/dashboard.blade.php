@@ -276,7 +276,10 @@
             'asset_deleted_ok': { icon: 'success', title: '🗑️ ' + "{{ __('messages.swal_success') }}", text: "{{ __('messages.asset_deleted_ok') }}" },
             'mint_ok': { icon: 'success', title: "{{ __('messages.swal_mint_title') }}", text: "{{ __('messages.swal_mint_text') }}" },
             'retired_ok': { icon: 'warning', title: "{{ __('messages.swal_retired_title') }}", text: "{{ __('messages.swal_retired_text') }}" },
-            'price_ok': { icon: 'success', title: "{{ __('messages.swal_price_title') }}", text: "{{ __('messages.swal_price_desc') }}" }
+            'price_ok': { icon: 'success', title: "{{ __('messages.swal_price_title') }}", text: "{{ __('messages.swal_price_desc') }}" },
+            'mission_published_ok': { icon: 'success', title: "{{ __('messages.swal_mission_published') }}", text: "{{ __('messages.swal_mission_published_desc') }}" },
+            'mission_assigned_ok': { icon: 'success', title: "{{ __('messages.swal_mission_assigned') }}", text: "{{ __('messages.swal_mission_assigned_desc') }}" },
+            'amortize_completed': { icon: 'success', title: "{{ __('messages.swal_amortize_completed') }}", text: "{{ __('messages.swal_amortize_completed_desc') }}" },
         };
 
         if (msg && alertas[msg]) {

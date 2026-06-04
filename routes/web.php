@@ -54,6 +54,12 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::post('/asset/tokenise', [App\Http\Controllers\Lab\AssetController::class, 'tokenise'])->name('lab.asset.tokenise');
 
         Route::post('/asset/update-price', [App\Http\Controllers\Lab\AssetController::class, 'updatePrice'])->name('lab.asset.updatePrice');
+
+        // 🎯 CONTROL DE CONTRATACIÓN Y ESCROW (WORKSPACE 3)
+        Route::post('/mission/store', [App\Http\Controllers\Lab\MissionController::class, 'store'])->name('lab.mission.store');
+        Route::post('/mission/assign', [App\Http\Controllers\Lab\MissionController::class, 'assignMaker'])->name('lab.mission.assign');
+        Route::post('/mission/reject', [App\Http\Controllers\Lab\MissionController::class, 'rejectMaker'])->name('lab.mission.reject');
+        Route::post('/mission/complete', [App\Http\Controllers\Lab\MissionController::class, 'completeMission'])->name('lab.mission.complete');
     });
 
     // 🎨 PORTAL DE OPERACIONES DEL MAKER (Rol 'maker')
