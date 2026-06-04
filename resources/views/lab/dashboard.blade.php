@@ -3,7 +3,7 @@
 @section('title', __('messages.lab_portal'))
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=1.9">
+    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=2.0">
 @endpush
 
 @section('content')
@@ -237,6 +237,22 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
+        // 🧠 DETECTOR DE COLISIÓN FLOTANTE (SMART TOOLTIPS V1.0)
+        document.body.addEventListener('mouseenter', function(e) {
+            // Buscamos si el cursor entró a un icono de tooltip
+            const tooltip = e.target.closest('.fx-tooltip');
+            if (!tooltip) return;
+
+            const rect = tooltip.getBoundingClientRect();
+            
+            // Si hay menos de 160px de espacio libre entre el icono y el techo del navegador
+            if (rect.top < 160) {
+                tooltip.classList.add('to-bottom'); // Lo obliga a abrirse hacia abajo
+            } else {
+                tooltip.classList.remove('to-bottom'); // Lo deja abrirse hacia arriba por defecto
+            }
+        }, true); // Usamos capture true para escuchar eventos dinámicos en caliente
+        
         const workspaceGuardado = sessionStorage.getItem('active_lab_workspace');
         if (workspaceGuardado) {
             abrirWorkspaceHubPersistente(workspaceGuardado);
@@ -255,11 +271,12 @@
             customClass: { popup: 'premium-popup' }
         };
 
-        const alertas = {
+       const alertas = {
             'asset_enlisted_ok': { icon: 'success', title: '🏢 ' + "{{ __('messages.swal_inv_updated') }}", text: "{{ __('messages.asset_enlisted_ok') }}" },
-            'asset_deleted_ok': { icon: 'success', title: '🗑️ Éxito', text: "{{ __('messages.asset_deleted_ok') }}" },
-            'mint_ok': { icon: 'success', title: '🚀 Tokenización exitosa', text: 'Tus activos están listos en la bóveda.' },
-            'retired_ok': { icon: 'warning', title: '⚠️ Activo retirado', text: 'Se aplicó la penalización en tu saldo.' }
+            'asset_deleted_ok': { icon: 'success', title: '🗑️ ' + "{{ __('messages.swal_success') }}", text: "{{ __('messages.asset_deleted_ok') }}" },
+            'mint_ok': { icon: 'success', title: "{{ __('messages.swal_mint_title') }}", text: "{{ __('messages.swal_mint_text') }}" },
+            'retired_ok': { icon: 'warning', title: "{{ __('messages.swal_retired_title') }}", text: "{{ __('messages.swal_retired_text') }}" },
+            'price_ok': { icon: 'success', title: "{{ __('messages.swal_price_title') }}", text: "{{ __('messages.swal_price_desc') }}" }
         };
 
         if (msg && alertas[msg]) {

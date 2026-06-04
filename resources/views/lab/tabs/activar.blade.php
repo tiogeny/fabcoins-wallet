@@ -15,8 +15,8 @@
             <label style="font-size: 10px; font-weight: 700; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px;">{{ __('messages.lbl_specific_name') }}</label>
             <label style="font-size: 10px; font-weight: 700; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
                 {{ __('messages.lbl_capacity_avail') }}
-                <span class="fx-tooltip">?
-                    <span class="fx-tooltip-card">
+                <span class="fx-tooltip to-bottom to-left">?
+                    <span class="fx-tooltip-card" style="border-top: 2px solid #1abc9c;">
                         <strong>{{ __('messages.tooltip_capacity_title') }}</strong><br>
                         • <strong>{{ __('messages.opt_machine') }} / {{ __('messages.opt_lab') }}:</strong> {{ __('messages.tooltip_capacity_machine') }}<br>
                         • <strong>{{ __('messages.opt_service') }}:</strong> {{ __('messages.tooltip_capacity_service') }}
@@ -171,17 +171,17 @@ function adaptarFilaEcosistema(selectMacro) {
     }
     
     if (tipo === 'machine') {
-        inputModelo.placeholder = "Ej: Ultimaker S5";
-        inputCapacidad.placeholder = "Horas (Ej: 1000)";
-        badgeUnidad.textContent = "Hrs";
+        inputModelo.placeholder = "{{ __('messages.ph_model_machine') }}";
+        inputCapacidad.placeholder = "{{ __('messages.ph_capacity_machine') }}";
+        badgeUnidad.textContent = "{{ __('messages.unit_hours') }}";
     } else if (tipo === 'service') {
-        inputModelo.placeholder = "Ej: Fab Academy / Mentoría";
-        inputCapacidad.placeholder = "Selecciona especialidad...";
-        badgeUnidad.textContent = "Und";
+        inputModelo.placeholder = "{{ __('messages.ph_model_service') }}";
+        inputCapacidad.placeholder = "{{ __('messages.ph_capacity_service') }}";
+        badgeUnidad.textContent = "{{ __('messages.lbl_unit_generic') }}";
     } else if (tipo === 'lab') {
-        inputModelo.placeholder = "Ej: Estación CNC";
-        inputCapacidad.placeholder = "Horas (Ej: 100)";
-        badgeUnidad.textContent = "Hrs";
+        inputModelo.placeholder = "{{ __('messages.ph_model_lab') }}";
+        inputCapacidad.placeholder = "{{ __('messages.ph_capacity_lab') }}";
+        badgeUnidad.textContent = "{{ __('messages.unit_hours') }}";
     }
 
     const itemsFiltrados = catalogoGlobalActivar.filter(item => item.asset_type === tipo);

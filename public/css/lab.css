@@ -59,7 +59,9 @@
     box-shadow: 0 0 12px rgba(231, 76, 60, 0.6);
 }
 
-.lab-profile-trigger:hover img { transform: scale(1.05); }
+.lab-profile-trigger:hover img { 
+    transform: scale(1.05); 
+}
 
 .lab-identity-meta h1 {
     margin: 0;
@@ -70,7 +72,9 @@
     letter-spacing: 0.5px;
     transition: color 0.2s;
 }
-.lab-profile-trigger:hover .lab-identity-meta h1 { color: #3498db; }
+.lab-profile-trigger:hover .lab-identity-meta h1 { 
+    color: #3498db; 
+}
 
 .lab-reputation-stars {
     font-size: 12px;
@@ -81,8 +85,16 @@
     align-items: center;
     gap: 4px;
 }
-.lab-reputation-stars span { color: #bdc3c7; font-weight: 500; }
-.lab-controls-node { display: flex; align-items: center; gap: 22px; }
+.lab-reputation-stars span { 
+    color: #bdc3c7; 
+    font-weight: 500; 
+}
+
+.lab-controls-node { 
+    display: flex; 
+    align-items: center; 
+    gap: 22px; 
+}
 
 /* --- 🔔 B. INTERFAZ DE ALERTAS Y SCROLL AUTOMATIZADO --- */
 .notif-icon-btn {
@@ -104,7 +116,10 @@
     fill: none;
     transition: stroke 0.2s, transform 0.2s;
 }
-.notif-icon-btn:hover svg { stroke: #ffffff; transform: rotate(10deg); }
+.notif-icon-btn:hover svg { 
+    stroke: #ffffff; 
+    transform: rotate(10deg); 
+}
 
 .notif-badge-v2 {
     position: absolute;
@@ -280,7 +295,7 @@
     align-items: center;
     justify-content: flex-start; 
     gap: 20px; 
-    background: #1c1f26; /* Fondo gris titanio original */
+    background: #1c1f26;
     border: 1px solid rgba(255, 255, 255, 0.04);
     padding: 12px 24px;
     border-radius: 12px;
@@ -299,7 +314,7 @@
 }
 
 .btn-back-minimal {
-    background: rgba(255, 255, 255, 0.03) !important; /* Fuerza el fondo semi-transparente */
+    background: rgba(255, 255, 255, 0.03) !important;
     color: #a0aec0 !important; 
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     padding: 8px 16px !important;
@@ -312,7 +327,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
     display: inline-block;
-    width: auto !important; /* 🔥 Evita que se estire a lo ancho de la barra */
+    width: auto !important;
     height: auto;
 }
 .btn-back-minimal:hover {
@@ -320,6 +335,7 @@
     background: rgba(255, 255, 255, 0.08) !important;
     border-color: rgba(255, 255, 255, 0.2) !important;
 }
+
 .workspace-title-node {
     display: flex;
     align-items: center;
@@ -357,7 +373,6 @@
     color: #cbd5e0;
     text-align: left;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 2px solid #1abc9c;
     padding: 14px;
     border-radius: 8px;
     position: absolute;
@@ -371,14 +386,69 @@
     line-height: 1.5;
     font-weight: 500;
     font-family: 'Inter', sans-serif;
-    text-transform: none; /* 🔥 CORRECCIÓN: Evita las mayúsculas invasivas */
+    text-transform: none;
     letter-spacing: normal;
     box-shadow: 0 10px 25px rgba(0,0,0,0.6);
     white-space: normal;
 }
 
+/* 🔥 CORRECCIÓN: Inyección del punto de clase fundamental para disparar el hover */
 .fx-tooltip:hover .fx-tooltip-card {
     visibility: visible;
     opacity: 1;
     transform: translateX(-50%) translateY(-4px);
+}
+
+/* Alineación extrema derecha: crece de forma segura hacia la izquierda */
+.fx-tooltip.to-left .fx-tooltip-card {
+    left: auto;
+    right: 0;
+    transform: translateX(0) translateY(0);
+}
+.fx-tooltip.to-left:hover .fx-tooltip-card {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(0) translateY(-4px);
+}
+
+/* Alineación extrema izquierda: crece de forma segura hacia la derecha */
+.fx-tooltip.to-right .fx-tooltip-card {
+    left: 0;
+    transform: translateX(0) translateY(0);
+}
+.fx-tooltip.to-right:hover .fx-tooltip-card {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(0) translateY(-4px);
+}
+
+/* 🚀 INYECCIÓN VERTICAL: Fuerza al tooltip a desplegarse hacia abajo si está en el techo */
+.fx-tooltip.to-bottom .fx-tooltip-card {
+    bottom: auto;
+    top: 130%;
+}
+.fx-tooltip.to-bottom:hover .fx-tooltip-card {
+    transform: translateX(-50%) translateY(4px);
+}
+
+/* Combinaciones direccionales blindadas (Esquinas superiores) */
+.fx-tooltip.to-bottom.to-left .fx-tooltip-card {
+    bottom: auto;
+    top: 130%;
+    left: auto;
+    right: 0;
+    transform: translateX(0) translateY(0);
+}
+.fx-tooltip.to-bottom.to-left:hover .fx-tooltip-card {
+    transform: translateX(0) translateY(4px);
+}
+
+.fx-tooltip.to-bottom.to-right .fx-tooltip-card {
+    bottom: auto;
+    top: 130%;
+    left: 0;
+    transform: translateX(0) translateY(0);
+}
+.fx-tooltip.to-bottom.to-right:hover .fx-tooltip-card {
+    transform: translateX(0) translateY(4px);
 }

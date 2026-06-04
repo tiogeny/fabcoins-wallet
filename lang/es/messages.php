@@ -154,9 +154,82 @@ return [
     'asset_deleted_ok' => 'El activo pendiente ha sido retirado del inventario de forma segura.',
 
     'lbl_capacity_avail' => 'CAPACIDAD DISPONIBLE',
-    'tooltip_capacity_title' => 'Límites del Activo:',
+    'tooltip_capacity_title' => '1 AÑO:',
     'tooltip_capacity_machine' => 'Horas de disponibilidad física operativa en tu infraestructura.',
     'tooltip_capacity_service' => 'Se evalúa en Cupos si corresponde a un taller/workshop largo, o en Horas si es consultoría experta.',
     'ph_select_category' => 'Selecciona categoría...',
     'ph_capacity_base' => 'Cant. Base',
+
+    // --- CONSOLA DE TRANSFORMACIÓN (WORKSPACE 2) ---
+    'tokenise_title' => 'Consola de Transformación de Activos',
+    'tokenise_desc' => 'Selecciona la infraestructura de tu inventario base, define el porcentaje de capacidad anual que vas a comprometer al sistema y valida la proyección contable antes de emitir tus FabCoins.',
+    'th_asset_name' => 'Activo Registrado',
+    'th_capacity_year' => 'Capacidad Anual',
+    'th_committed_qty' => 'Compromiso',
+    'th_commitment_pct' => 'Porcentaje a Transformar',
+    'th_estimated_fc' => 'Valorización',
+    'tooltip_real_capacity' => 'Esta es la capacidad operativa total declarada por tu laboratorio para el periodo de 1 año.',
+    'tooltip_commitment' => 'El sistema limita automáticamente la transformación a un máximo del 50% de tu capacidad anual.',
+    'tooltip_val_comercial' => 'Recuerda que este es un compromiso y contrato vinculante que asumes con el ecosistema.',
+    'btn_calculate_fc' => 'Calcular Proyección',
+    'btn_execute_tokenise' => 'Transformar en FabCoins',
+    'empty_tokenise' => 'No tienes infraestructura enlistada esperando ser transformada.',
+    'empty_tokenise_sub' => 'Ve al espacio de Activar para registrar nuevos activos en tu bitácora.',
+    'txt_require_calc' => 'Requiere cálculo...',
+    'th_price_unit' => 'Precio Unitario',
+    'lbl_total_to_emit' => 'MONTO TOTAL A EMITIR',
+    'tokenise_select' => 'Selecciona',
+
+    // --- SOPORTE INDUSTRIAL DE INTERNACIONALIZACIÓN (WS 1 Y WS 2) ---
+    'lbl_actions' => 'ACCIONES',
+    'lbl_tokenize_action' => 'TOKENIZAR',
+    'lbl_tokenized_hours' => 'Tokenizadas',
+    'lbl_unit_generic' => 'Und',
+    'ph_capacity_machine' => 'Horas (Ej: 1000)',
+    'ph_capacity_service' => 'Selecciona especialidad...',
+    'ph_capacity_lab' => 'Horas (Ej: 100)',
+    'ph_model_machine' => 'Ej: Ultimaker S5',
+    'ph_model_service' => 'Ej: Fab Academy',
+    'ph_model_lab' => 'Ej: Estación CNC',
+    
+    // Alertas de validación de Bóveda
+    'swal_no_assets_selected' => 'Ningún activo seleccionado',
+    'swal_no_assets_selected_desc' => 'Debes marcar al menos una casilla de verificación para poder transformar infraestructura en FabCoins.',
+    'tooltip_val_comercial' => 'Este valor representa la multiplicación directa de tu capacidad comprometida por el precio comercial unitario fijado.',
+    'tokenise_select' => 'Elige %',
+
+    // --- SOPORTE MULTIDIOMA DE TARIFAS DE MERCADO ---
+    'rates_reg_title' => 'Regulación de Tarifas Activas en el Mercado',
+    'rates_reg_desc' => 'Si el mercado local fluctúa, puedes actualizar el precio por hora de tus activos operativos. Solo afectará a las reservas de las horas o cupos restantes.',
+    'lbl_hours_remaining' => 'Horas restantes',
+    'lbl_slots_remaining' => 'Cupos restantes',
+    'btn_update_rate' => 'Actualizar',
+    'empty_active_rates' => 'No tienes activos en circulación colateral en este momento.',
+    'tooltip_unit_price' => 'Fija el valor comercial unitario que pagarán los Makers al reservar tu activo en el mercado de fabricación.',
+    'tooltip_rates_change' => 'Cambiar la tarifa modifica el costo de reserva en el mercado. NO altera los FabCoins históricos ya emitidos ni encoge las horas firmadas en tu contrato.',
+    'tooltip_committed_qty_detail' => 'Representa la cantidad neta de horas o cupos físicos que estás aislando y congelando de tu inventario base para respaldar este contrato de 1 año.',
+    'swal_confirm_price_change' => '¿Estás seguro de actualizar la tarifa comercial de este activo? Impactará de forma inmediata en las próximas órdenes de la red.',
+    'pass_ok' => 'Perfil Actualizado', // O el título comercial de tu preferencia
+    
+    // --- PARSEO INTERNACIONAL DE LA CONSOLA FINANCIERA ---
+    'unit_hours' => 'Hrs',
+    'unit_slots' => 'Cupos',
+    'pct_select' => '-- Elige % --',
+    'pct_10' => '10% del total anual',
+    'pct_20' => '20% del total anual',
+    'pct_30' => '30% del total anual',
+    'pct_40' => '40% del total anual',
+    'pct_50' => '50% (Máximo Base)',
+    'pct_100' => '100% (Cupos Totales)',
+    'swal_confirm_tokenise' => '¿Deseas transformar el colateral seleccionado en FabCoins oficiales de presupuesto? Quedarán asentados permanentemente en el Libro contable.',
+
+    // --- ALERTAS DE TRANSACCIÓN ---
+    'swal_success' => 'Éxito',
+    'swal_mint_title' => 'Transformación exitosa',
+    'swal_mint_text' => 'Tus activos han sido respaldados y los FabCoins inyectados a tu saldo.',
+    'swal_retired_title' => 'Activo retirado',
+    'swal_retired_text' => 'Se aplicó la penalización (Margin Call) correspondiente en tu balance.',
+    'swal_price_title' => 'Tarifa Actualizada',
+    'swal_price_desc' => 'Ahora los makers sabrán de tu precio actualizado.',
+
 ];
