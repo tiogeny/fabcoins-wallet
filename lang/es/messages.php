@@ -227,7 +227,7 @@ return [
     // Alertas de validación de Bóveda
     'swal_no_assets_selected' => 'Ningún activo seleccionado',
     'swal_no_assets_selected_desc' => 'Debes marcar al menos una casilla de verificación para poder transformar infraestructura en FabCoins.',
-    'tooltip_val_comercial' => 'Este valor representa la multiplicación directa de tu capacidad comprometida por el precio comercial unitario fijado.',
+    'tooltip_val_comercial' => 'Este valor representa la multiplicación directa de tu capacidad comprometida por el precio comercial unitario fijado',
     'tokenise_select' => 'Elige %',
 
     // --- SOPORTE MULTIDIOMA DE TARIFAS DE MERCADO ---
