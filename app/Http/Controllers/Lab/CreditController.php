@@ -21,11 +21,11 @@ class CreditController extends Controller
             DB::transaction(function () use ($order, $accion, $lab) {
                 if ($accion === 'aprobar') {
                     DB::table('orders')->where('id', $order->id)->update(['status' => 'completed']);
-                    DB::table('transactions')->where('user_id', $order->creador_id)->where('amount', $order->total_fc)->where('type', 'escrow')->latest('id')->limit(1)->update(['type' => 'burn', 'description' => '🔥 Servicio consumido (Quema): ' . $order->custom_name]);
+                    DB::table('transactions')->where('user_id', $order->creator_id)->where('amount', $order->total_fc)->where('type', 'escrow')->latest('id')->limit(1)->update(['type' => 'burn', 'description' => '🔥 Servicio consumido (Quema): ' . $order->custom_name]);
                     DB::table('lab_assets')->where('id', $order->asset_id)->increment('consumed_hours', $order->hours_requested);
                 } else {
                     DB::table('orders')->where('id', $order->id)->update(['status' => 'rejected']);
-                    DB::table('transactions')->insert(['user_id' => $order->creador_id, 'description' => "Reembolso: " . $order->custom_name, 'amount' => $order->total_fc, 'type' => 'income', 'created_at' => now()]);
+                    DB::table('transactions')->insert(['user_id' => $order->creator_id, 'description' => "Reembolso: " . $order->custom_name, 'amount' => $order->total_fc, 'type' => 'income', 'created_at' => now()]);
                 }
             });
             return redirect()->route('lab.dashboard')->with('msg', $accion === 'aprobar' ? 'order_approved' : 'order_rejected');
@@ -41,12 +41,12 @@ class CreditController extends Controller
 
     public function proposeCredit(Request $request)
     {
-        $creador = User::where('email', trim($request->input('email_creador')))->where('role', 'creador')->first();
-        if (!$creador) return redirect()->route('lab.dashboard')->with('error', "No se encontró ningún creador registrado con ese correo.");
+        $creator = User::where('email', trim($request->input('email_creator')))->where('role', 'creator')->first();
+        if (!$creator) return redirect()->route('lab.dashboard')->with('error', "No se encontró ningún creator registrado con ese correo.");
 
         $monto = floatval($request->input('monto_fc'));
         DB::table('financing_agreements')->insert([
-            'lab_id' => auth()->id(), 'creador_id' => $creador->id, 'amount_initial' => $monto, 'amount_remaining' => $monto,
+            'lab_id' => auth()->id(), 'creator_id' => $creator->id, 'amount_initial' => $monto, 'amount_remaining' => $monto,
             'description' => trim($request->input('motivo')), 'status' => 'pending', 'created_at' => now(), 'updated_at' => now()
         ]);
         return redirect()->route('lab.dashboard')->with('msg', 'credit_proposed');

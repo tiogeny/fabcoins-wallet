@@ -23,6 +23,7 @@ return [
     // --- ACCESO Y SEGURIDAD ---
     'ph_email' => 'Correo electrónico',
     'ph_password' => 'Contraseña',
+    'ph_password_confirm' => 'Confirmar contraseña',
     'btn_login' => 'Ingresar al Panel',
     'link_forgot' => '¿Olvidaste tu contraseña?',
     'reg_desc' => 'Únete como Creador y accede a la red de Labs.',
@@ -103,7 +104,7 @@ return [
     'hub_tokenise_title' => 'Tokenizar',
     'hub_tokenise_desc' => 'Valorización contable y emisión MINT',
     'hub_publish_title' => 'Publicar',
-    'hub_publish_desc' => 'Convocatoria de misiones y bolsa de trabajo',
+    'hub_publish_desc' => 'Convocatoria de misiones',
     
     'lbl_assets_unit' => 'Activos',
     'lbl_machines_bullet' => 'Máquinas',
@@ -142,6 +143,10 @@ return [
     'lbl_tell_creators' => 'Cuéntale a los Creadores sobre la infraestructura de tu Lab',
     'btn_search_map'    => 'BUSCAR',
     'ph_map_search' => 'Ej: Centro Cultural Ricardo Palma, Miraflores',
+    
+    // 📊 Soporte de Consumo de Bóveda
+    'lbl_total_burned_kpi' => 'Capacidad Consumida (Quema Histórica)',
+    'lbl_status_consumed'  => 'consumidos en producción',
 
     // Asset Types Names
     'opt_machine' => 'Máquina',
@@ -175,7 +180,17 @@ return [
     'th_amount'          => 'Monto (FC)',
     'empty_transactions' => 'No hay movimientos en tu bóveda aún.',
 
-  
+    // 🔵 TRADUCCIONES DEL CREATOR - HUB 1: MERCADO
+    'map_explorer_title'       => 'Explorador de Nodos y Células de Manufactura (Red Global)',
+    'map_explorer_desc'        => 'Reservar Activos',
+    'ph_map_creator_search'    => 'Buscar por distrito, ciudad o región de manufactura...',
+    'market_capacity_title'    => 'Mercado de Capacidad Industrial Instalada',
+    'market_capacity_desc'     => 'Aplicar a misiones globales',
+    'opt_all_tech'             => 'Todas las tecnologías disponibles',
+    'ph_market_grid_search'    => 'Buscar nodo por máquina, tecnología o ubicación...',
+    'btn_book'                 => 'Reservar',
+    'market_empty'             => 'No se registran activos operativos en circulación en el mercado global en este momento.',
+    'btn_filter_this_lab'      => 'Ver Máquinas de este Lab',
 
     // --- CONSOLA DE TRANSFORMACIÓN (WORKSPACE 2) ---
     'tokenise_title' => 'Consola de Transformación de Activos',
@@ -217,7 +232,7 @@ return [
 
     // --- SOPORTE MULTIDIOMA DE TARIFAS DE MERCADO ---
     'rates_reg_title' => 'Regulación de Tarifas Activas en el Mercado',
-    'rates_reg_desc' => 'Si el mercado local fluctúa, puedes actualizar el precio por hora de tus activos operativos. Solo afectará a las reservas de las horas o cupos restantes.',
+    'rates_reg_desc' => 'Balance y Movimientos',
     'lbl_hours_remaining' => 'Horas restantes',
     'lbl_slots_remaining' => 'Cupos restantes',
     'btn_update_rate' => 'Actualizar',
@@ -317,4 +332,42 @@ return [
     'swal_amortize_completed_desc' => 'El pago se ha retenido con éxito y se aplicó como abono directo a tu favor en el contrato educativo.',
     'swal_profile_completed_desc' => '¡Perfil y coordenadas de geolocalización guardados correctamente!',
 
+    // 🎨 ORQUESTADOR GENERAL CREATOR - DASHBOARD
+    'creator_portal'         => 'Panel del Creator',
+    'hub_market_btn'         => 'Mercado',
+    'hub_missions_btn'       => 'Misiones',
+    'hub_wallet_btn'         => 'Billetera',
+    'kpi_active_apps'        => 'Postulaciones Activas',
+    'kpi_finished_missions'  => 'Misiones Completadas',
+    'isa_proposal_title'     => 'Financiación de Crédito Educativo ISA Ofertado',
+    'isa_proposal_desc1'     => 'La sede',
+    'isa_proposal_desc2'     => 'te propone un financiamiento de honor por un monto de',
+    'isa_proposal_desc3'     => 'para tu formación técnica bajo el concepto:',
+    'btn_sign_isa'           => 'Firmar y Activar Crédito Educativo',
+    'lbl_original_amount'    => 'Monto Financiado Original:',
+    'lbl_progress'           => 'Porcentaje del Contrato Amortizado:',
+    'lbl_debt'               => 'Saldo Restante por Retornar:',
+    'isa_payment_history'    => 'Historial de Amortizaciones (Retorno Mediante Trabajo)',
+
+    // 🎨 Soporte Bilingüe de la Consola del Alumno
+    'kpi_wallet'            => 'Balance Líquido Disponible',
+    'isa_active_title'      => 'Contrato de Crédito Educativo Vigente',
+    'lbl_original_amount'   => 'Monto Financiado de Honor:',
+    'lbl_progress'          => 'Progreso de Amortización:',
+    'lbl_debt'              => 'Deuda Restante:',
+    'isa_payment_history'   => 'Historial de Abonos Recientes',
+
+    // 🌐 Alertas bilingües del ecosistema Creator
+    'swal_attention'             => 'Atención',
+    'swal_applied_ok_desc'       => '¡Tu postulación ha sido enviada al laboratorio con éxito!',
+    'swal_credit_accepted_desc'  => '¡Crédito Educativo firmado con éxito! Tu saldo de deuda ha sido cargado.',
+    'swal_p2p_ok_desc'           => '¡Transferencia contable P2P enviada exitosamente!',
+    'swal_profile_completed_desc'=> '¡Perfil, biografía y especialidades técnicas guardados correctamente!',
+    'swal_pass_ok_desc'          => '¡Tu contraseña de seguridad ha sido cambiada!',
+    'swal_rental_pending_desc'   => 'Tu orden de alquiler de maquinaria ha entrado en custodia. Esperando aprobación del Lab.',
+    'swal_date_accepted_desc'    => 'Has aceptado los nuevos términos de calendario propuestos.',
+    'swal_refunded_title'        => 'Reembolsado',
+    'swal_date_rejected_desc'    => 'Reserva cancelada. El colateral en custodia ha sido devuelto a tu balance.',
+    'swal_reviewed_title'        => 'Calificado',
+    'swal_review_ok_desc'        => 'Tu reseña ha sido guardada en la bitácora de reputación de ese nodo.',
 ];

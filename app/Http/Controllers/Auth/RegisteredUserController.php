@@ -40,6 +40,8 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'creator', // <-- OBLIGAR A QUE SEA ROLES CREATOR
+            'slug' => \Illuminate\Support\Str::slug($request->name), // <-- GENERAR EL SLUG AUTOMÁTICO
         ]);
 
         event(new Registered($user));

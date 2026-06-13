@@ -8,7 +8,7 @@
                         <span style="font-size: 11px; color: #3498db; font-weight: bold; text-transform: uppercase;">AULA: {{ $m->lab_name }}</span>
                         <span style="color: #f1c40f; font-weight: bold; font-size: 18px;">{{ number_format($m->reward_fc, 0) }} FC</span>
                     </div>
-                    @if($m->target_maker_id == auth()->id())
+                    @if($m->target_creator_id == auth()->id())
                         <span style="background: #f1c40f; color: #1a1a1a; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: bold; margin-bottom: 5px; display: inline-block;">
                             🎯 MISIÓN DIRIGIDA (PARA TU CRÉDITO)
                         </span>
@@ -17,7 +17,7 @@
                     <span style="font-size: 11px; font-weight: bold; color: #3498db; display: block; margin-top: 5px;">👥 {{ $m->spots_filled }}/{{ $m->spots_total }} Cupos</span>
                     <p style="font-size: 13px; color: #bdc3c7; margin-bottom: 10px;">{{ $m->description }}</p>
                 </div>
-                <form action="{{ route('maker.apply_mission') }}" method="POST">
+                <form action="{{ route('creator.apply_mission') }}" method="POST">
                     @csrf <input type="hidden" name="mission_id" value="{{ $m->id }}">
                     <textarea name="message" rows="2" placeholder="¿Por qué eres el co-inventor ideal para resolver este reto?" required></textarea>
                     <button type="submit" class="btn-apply" style="background:#3498db;">Enviar Postulación</button>

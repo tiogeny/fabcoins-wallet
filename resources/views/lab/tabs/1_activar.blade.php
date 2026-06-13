@@ -76,7 +76,13 @@
 </div>
 
 <div class="card" style="background: #1c2230; border: 1px solid rgba(255, 255, 255, 0.04); padding: 24px; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-    <h2 style="font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 18px; color: #ffffff; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.5px;">📦 {{ __('messages.inv_title') }}</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <h2 style="font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 18px; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">📦 {{ __('messages.inv_title') }}</h2>
+        <span style="font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 12px; background: rgba(231, 76, 60, 0.06); border: 1px solid rgba(231, 76, 60, 0.15); color: #e74c3c; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+            🔥 {{ __('messages.lbl_total_burned_kpi') }}: <strong>{{ number_format($totalHistoricoQuemado, 0) }} FC</strong>
+        </span>
+    </div>
+    
     <div class="table-container">
         <table style="width: 100%; border-collapse: collapse;">
             <thead>
@@ -125,6 +131,12 @@
                                 @endphp
                                 <div style="width: 90%; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden;">
                                     <div style="width: {{ $pct }}%; height: 100%; background: {{ $cBar }}; border-radius: 2px;"></div>
+
+                                    @if($activo->consumed_hours > 0)
+                                        <div style="font-size: 10.5px; color: #7f8c8d; margin-top: 5px; display: flex; align-items: center; gap: 4px;">
+                                            <span>🔥 {{ number_format($activo->consumed_hours, 0) }} {{ $activo->asset_type === 'service' && $activo->subcategory === 'workshop' ? __('messages.unit_slots') : __('messages.unit_hours') }} {{ __('messages.lbl_status_consumed') }}</span>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
                             

@@ -1,0 +1,103 @@
+/* =========================================================
+   🔵 HOJA DE ESTILOS PREMIUM PARA EL HUB 1: MERCADO (CREATOR)
+   ========================================================= */
+
+.focus-glow-blue input:focus, 
+.focus-glow-blue select:focus {
+    border-color: #3498db !important;
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.3) !important;
+    background-color: #1a1f2c !important;
+    outline: none !important;
+}
+
+.market-search-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.market-search-bar input,
+.market-filters select {
+    padding: 10px 15px;
+    background: #131722;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    height: 40px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.market-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.creator-mission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.creator-asset-card {
+    background: #131722;
+    border: 1px solid rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease-in-out;
+}
+
+.creator-asset-card:hover {
+    border-color: rgba(52, 152, 219, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.creator-asset-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.creator-asset-header strong {
+    font-size: 11px;
+    color: #3498db;
+    letter-spacing: 0.5px;
+}
+
+.creator-asset-header .price-tag {
+    color: #2ecc71;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+}
+
+.btn-blue-hub {
+    background: #3498db;
+    border: 1px solid #3498db;
+    color: #ffffff !important;
+    padding: 0 20px;
+    height: 40px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.15);
+    transition: all 0.2s;
+}
+
+.btn-blue-hub:hover {
+    background: #2980b9;
+    border-color: #2980b9;
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.25);
+}

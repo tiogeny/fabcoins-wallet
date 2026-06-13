@@ -91,7 +91,7 @@
             </div>
         </form>
 
-        {{-- FORMULARIO DE REGISTRO (MAKERS) --}}
+        {{-- FORMULARIO DE REGISTRO (CREATORS) --}}
         <form id="register-form-block" class="auth-form-section" method="POST" action="{{ route('register') }}">
             @csrf
             <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin: 0 0 15px 0;">
@@ -115,6 +115,16 @@
                     </svg>
                 </span>
             </div>
+
+            <div class="auth-input-group password-toggle-wrapper">
+                <input type="password" name="password_confirmation" placeholder="{{ __('messages.ph_password_confirm') }}" required>
+                <span class="password-toggle-eye" onclick="toggleAuthPassword(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open-icon">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </span>
+            </div>
             
             <button type="submit" class="btn-auth-submit">{{ __('messages.btn_register') }}</button>
             
@@ -123,32 +133,6 @@
             </p>
         </form>
 
-        {{-- FORMULARIO DE REGISTRO (MAKERS) --}}
-        <form id="register-form-block" class="auth-form-section" method="POST" action="{{ route('register') }}">
-            @csrf
-            <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin: 0 0 15px 0;">
-                {{ __('messages.reg_desc') }}
-            </p>
-
-            <div class="auth-input-group">
-                <input type="text" name="name" placeholder="{{ __('messages.ph_name') }}" required>
-            </div>
-            
-            <div class="auth-input-group">
-                <input type="email" name="email" placeholder="{{ __('messages.ph_email') }}" required>
-            </div>
-            
-            <div class="auth-input-group">
-                <input type="password" name="password" placeholder="{{ __('messages.ph_password') }}" required>
-                <span class="password-toggle-eye" onclick="toggleAuthPassword(this)">👁️</span>
-            </div>
-            
-            <button type="submit" class="btn-auth-submit">{{ __('messages.btn_register') }}</button>
-            
-            <p style="font-size: 11px; color: var(--c-gray); text-align: center; margin-top: 15px; line-height: 1.3;">
-                {{ __('messages.reg_note') }}
-            </p>
-        </form>
     @endif
 </div>
 
@@ -200,10 +184,14 @@ function toggleAuthPassword(iconElement) {
 
 // Escucha automática de hashes para redirección externa (Ej: enlaces del footer)
 document.addEventListener("DOMContentLoaded", function() {
-    if (window.location.hash === '#register' || window.location.search.includes('tab=register')) {
-        const registerTabBtn = document.querySelectorAll('.auth-tab-btn')[1];
-        if (registerTabBtn) switchAuthTab('register', registerTabBtn);
-    }
+    // 🚀 INYECCIÓN QUIRÚRGICA: Si el servidor devuelve errores de registro, forzamos la pestaña correcta
+    @if($errors->has('name') || $errors->has('email') || old('name'))
+        // Cambia esto por el id de tu contenedor o la función que abras para cambiar de pestaña
+        // Ejemplo si usas una función: openTab(null, 'tab-register');
+        // O si simulas un clic en el botón de Crear Billetera:
+        const botonRegistro = document.querySelector('[onclick*="register"]');
+        if (botonRegistro) botonRegistro.click();
+    @endif
 });
 </script>
 @endsection
