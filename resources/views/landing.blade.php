@@ -34,8 +34,8 @@
         <h1>{!! __('messages.hero_title') !!}</h1>
         <p>{{ __('messages.hero_subtitle') }}</p>
         <div class="hero-buttons">
-            <a href="{{ route('login') }}?tab=register" class="btn-marketing btn-maker">
-                {{ __('messages.btn_maker_hero') }}
+            <a href="{{ route('login') }}?tab=register" class="btn-marketing btn-creador">
+                {{ __('messages.btn_creador_hero') }}
             </a>
             <a href="#contacto" class="btn-marketing btn-lab">
                 {{ __('messages.btn_lab_hero') }}
@@ -81,20 +81,20 @@
     <section id="beneficios" class="benefits">
         <h2>{{ __('messages.ben_title') }}</h2>
         <div class="benefits-grid">
-            <div class="b-card b-maker">
-                <h3>{{ __('messages.ben_maker_title') }}</h3>
+            <div class="b-card b-creador">
+                <h3>{{ __('messages.ben_creador_title') }}</h3>
                 <ul class="check-list">
                     <li>
-                        {{ __('messages.ben_maker_1') }}
-                        <span>{{ __('messages.ben_maker_1_desc') }}</span>
+                        {{ __('messages.ben_creador_1') }}
+                        <span>{{ __('messages.ben_creador_1_desc') }}</span>
                     </li>
                     <li>
-                        {{ __('messages.ben_maker_2') }}
-                        <span>{{ __('messages.ben_maker_2_desc') }}</span>
+                        {{ __('messages.ben_creador_2') }}
+                        <span>{{ __('messages.ben_creador_2_desc') }}</span>
                     </li>
                     <li>
-                        {{ __('messages.ben_maker_3') }}
-                        <span>{{ __('messages.ben_maker_3_desc') }}</span>
+                        {{ __('messages.ben_creador_3') }}
+                        <span>{{ __('messages.ben_creador_3_desc') }}</span>
                     </li>
                 </ul>
             </div>
@@ -130,7 +130,7 @@
 <footer id="contacto">
     <div class="container">
         <h2>{{ __('messages.footer_title') }}</h2>
-        <a href="{{ route('login') }}?tab=register" class="btn-marketing btn-maker" style="padding: 15px 50px;">{{ __('messages.btn_start_now') }}</a>
+        <a href="{{ route('login') }}?tab=register" class="btn-marketing btn-creador" style="padding: 15px 50px;">{{ __('messages.btn_start_now') }}</a>
         
         <div class="links">
             <a href="{{ route('login') }}">{{ __('messages.link_login_ecosystem') }}</a>

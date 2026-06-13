@@ -21,8 +21,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
         
         if ($role === 'lab') {
             return redirect()->route('lab.dashboard');
-        } elseif ($role === 'maker') {
-            return redirect()->route('maker.dashboard');
+        } elseif ($role === 'creator') {
+            return redirect()->route('creator.dashboard');
         } elseif ($role === 'superadmin') {
             return redirect()->route('admin.dashboard');
         }
@@ -44,7 +44,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::post('/mission/create', function() { return redirect()->back(); })->name('lab.create_mission');
         Route::post('/mission/complete', function() { return redirect()->back(); })->name('lab.complete_mission');
         Route::post('/order/reschedule', function() { return redirect()->back(); })->name('lab.reschedule');
-        Route::post('/profile/update', function() { return redirect()->back(); })->name('lab.update_profile');
+        Route::post('/profile/update', [\App\Http\Controllers\Lab\DashboardController::class, 'updateProfile'])->name('lab.update_profile');
+        Route::post('/profile/export-csv', [\App\Http\Controllers\Lab\DashboardController::class, 'exportCSV'])->name('lab.profile.export_csv');
         Route::post('/profile/password', function() { return redirect()->back(); })->name('lab.change_password');
 
         Route::post('/asset/store', [AssetController::class, 'store'])->name('lab.asset.store');
@@ -57,32 +58,32 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
         // 🎯 CONTROL DE CONTRATACIÓN Y ESCROW (WORKSPACE 3)
         Route::post('/mission/store', [App\Http\Controllers\Lab\MissionController::class, 'store'])->name('lab.mission.store');
-        Route::post('/mission/assign', [App\Http\Controllers\Lab\MissionController::class, 'assignMaker'])->name('lab.mission.assign');
-        Route::post('/mission/reject', [App\Http\Controllers\Lab\MissionController::class, 'rejectMaker'])->name('lab.mission.reject');
+        Route::post('/mission/assign', [App\Http\Controllers\Lab\MissionController::class, 'assignCreator'])->name('lab.mission.assign');
+        Route::post('/mission/reject', [App\Http\Controllers\Lab\MissionController::class, 'rejectCreator'])->name('lab.mission.reject');
         Route::post('/mission/complete', [App\Http\Controllers\Lab\MissionController::class, 'completeMission'])->name('lab.mission.complete');
     });
 
-    // 🎨 PORTAL DE OPERACIONES DEL MAKER (Rol 'maker')
-    Route::middleware(['role:maker'])->prefix('maker')->group(function () {
+    // 🎨 PORTAL DE OPERACIONES DEL CREATOR (Rol 'creator')
+    Route::middleware(['role:creator'])->prefix('creator')->group(function () {
         // Dashboard Principal y Notificaciones
-        Route::get('/dashboard', [\App\Http\Controllers\Maker\DashboardController::class, 'index'])->name('maker.dashboard');
-        Route::get('/notificaciones/leer', [\App\Http\Controllers\Maker\DashboardController::class, 'readNotifications'])->name('maker.read_notifs');
+        Route::get('/dashboard', [\App\Http\Controllers\Creator\DashboardController::class, 'index'])->name('creator.dashboard');
+        Route::get('/notificaciones/leer', [\App\Http\Controllers\Creator\DashboardController::class, 'readNotifications'])->name('creator.read_notifs');
         
         // Gestión de Portafolio e Identidad Técnica
-        Route::post('/perfil/actualizar', [\App\Http\Controllers\Maker\ProfileController::class, 'update'])->name('maker.update_profile');
-        Route::post('/perfil/seguridad', [\App\Http\Controllers\Maker\ProfileController::class, 'security'])->name('maker.change_password');
+        Route::post('/perfil/actualizar', [\App\Http\Controllers\Creator\ProfileController::class, 'update'])->name('creator.update_profile');
+        Route::post('/perfil/seguridad', [\App\Http\Controllers\Creator\ProfileController::class, 'security'])->name('creator.change_password');
 
         // Lógica de Contratación, Créditos e Inyecciones P2P
-        Route::post('/mision/postular', [\App\Http\Controllers\Maker\JobController::class, 'apply'])->name('maker.apply_mission');
-        Route::post('/credito/firmar', [\App\Http\Controllers\Maker\JobController::class, 'signCredit'])->name('maker.sign_credit');
-        Route::post('/transferencia/p2p', [\App\Http\Controllers\Maker\JobController::class, 'transferP2P'])->name('maker.transfer_p2p');
-        Route::get('/p2p/validar-correo', [\App\Http\Controllers\Maker\JobController::class, 'checkEmailP2P'])->name('maker.check_email_p2p');
+        Route::post('/mision/postular', [\App\Http\Controllers\Creator\JobController::class, 'apply'])->name('creator.apply_mission');
+        Route::post('/credito/firmar', [\App\Http\Controllers\Creator\JobController::class, 'signCredit'])->name('creator.sign_credit');
+        Route::post('/transferencia/p2p', [\App\Http\Controllers\Creator\JobController::class, 'transferP2P'])->name('creator.transfer_p2p');
+        Route::get('/p2p/validar-correo', [\App\Http\Controllers\Creator\JobController::class, 'checkEmailP2P'])->name('creator.check_email_p2p');
 
         // Alquileres de Hardware, Reprogramaciones y Reseñas
-        Route::post('/mercado/reservar', [\App\Http\Controllers\Maker\ReservationController::class, 'book'])->name('maker.book_asset');
-        Route::post('/reserva/aceptar-fecha', [\App\Http\Controllers\Maker\ReservationController::class, 'acceptDate'])->name('maker.accept_date');
-        Route::post('/reserva/cancelar-fecha', [\App\Http\Controllers\Maker\ReservationController::class, 'rejectDate'])->name('maker.reject_date');
-        Route::post('/reserva/calificar', [\App\Http\Controllers\Maker\ReservationController::class, 'rateLab'])->name('maker.rate_lab');
+        Route::post('/mercado/reservar', [\App\Http\Controllers\Creator\ReservationController::class, 'book'])->name('creator.book_asset');
+        Route::post('/reserva/aceptar-fecha', [\App\Http\Controllers\Creator\ReservationController::class, 'acceptDate'])->name('creator.accept_date');
+        Route::post('/reserva/cancelar-fecha', [\App\Http\Controllers\Creator\ReservationController::class, 'rejectDate'])->name('creator.reject_date');
+        Route::post('/reserva/calificar', [\App\Http\Controllers\Creator\ReservationController::class, 'rateLab'])->name('creator.rate_lab');
     });
 
     // 🌐 CONSOLA MACROECONÓMICA DEL SUPERADMIN (Rol 'superadmin')

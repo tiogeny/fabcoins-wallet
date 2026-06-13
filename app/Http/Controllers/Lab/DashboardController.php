@@ -100,33 +100,33 @@ class DashboardController extends Controller
 
         // 5. Estructuras Secundarias Operativas (Tablas Internas)
         $misReservas = DB::table('orders')
-            ->join('users', 'orders.maker_id', '=', 'users.id')
+            ->join('users', 'orders.creator_id', '=', 'users.id')
             ->join('lab_assets', 'orders.asset_id', '=', 'lab_assets.id')
             ->where('lab_assets.lab_id', $lab->id)
-            ->select('orders.*', 'users.name as maker_name', 'users.slug as maker_slug', 'lab_assets.custom_name')
+            ->select('orders.*', 'users.name as creator_name', 'users.slug as creator_slug', 'lab_assets.custom_name')
             ->orderBy('orders.created_at', 'desc')
             ->get();
 
         $misFinanciamientos = DB::table('financing_agreements')
-            ->join('users', 'financing_agreements.maker_id', '=', 'users.id')
+            ->join('users', 'financing_agreements.creator_id', '=', 'users.id')
             ->where('financing_agreements.lab_id', $lab->id)
             ->whereIn('financing_agreements.status', ['pending', 'active'])
-            ->select('financing_agreements.*', 'users.name as maker_name', 'users.slug as maker_slug', 'users.email as maker_email')
+            ->select('financing_agreements.*', 'users.name as creator_name', 'users.slug as creator_slug', 'users.email as creator_email')
             ->orderBy('financing_agreements.created_at', 'desc')
             ->get();
 
-        $makersExplorador = User::where('role', 'maker')
+        $creatorsExplorador = User::where('role', 'creator')
             ->select('users.*')
             ->selectRaw('(SELECT COUNT(*) FROM reviews WHERE reviews.reviewee_id = users.id) as total_resenas')
-            ->selectRaw('(SELECT COUNT(*) FROM mission_applications WHERE mission_applications.maker_id = users.id AND mission_applications.status = "accepted") as misiones_completadas')
+            ->selectRaw('(SELECT COUNT(*) FROM mission_applications WHERE mission_applications.creator_id = users.id AND mission_applications.status = "accepted") as misiones_completadas')
             ->orderBy('reputation_score', 'desc')
             ->get();
         
         $postulantesData = DB::table('mission_applications')
-            ->join('users', 'mission_applications.maker_id', '=', 'users.id')
+            ->join('users', 'mission_applications.creator_id', '=', 'users.id')
             ->join('missions', 'mission_applications.mission_id', '=', 'missions.id')
             ->where('missions.lab_id', $lab->id)
-            ->select('mission_applications.*', 'users.name as maker_name', 'users.slug as maker_slug', 'users.reputation_score')
+            ->select('mission_applications.*', 'users.name as creator_name', 'users.slug as creator_slug', 'users.reputation_score')
             ->get();
 
         $postulantesPorMision = [];
@@ -142,11 +142,11 @@ class DashboardController extends Controller
         $totalHistoricoEmitido = $totalMinted; 
         $totalFinanciados = $misFinanciamientos->where('status', 'active')->count(); 
         $totalPorCobrar = $misFinanciamientos->sum('amount_remaining') ?? 0; 
-        $makerSkills = [];
+        $creatorSkills = [];
 
         return view('lab.dashboard', compact(
             'lab', 'misActivos', 'activosFisicos', 'misMisiones', 'misTransacciones', 'misReservas', 
-            'misFinanciamientos', 'makersExplorador', 'makerSkills', 'postulantesPorMision', 
+            'misFinanciamientos', 'creatorsExplorador', 'creatorSkills', 'postulantesPorMision', 
             'notificaciones', 'unread_count', 'totalActivosCount', 'totalMaquinasCount', 
             'totalServiciosCount', 'totalLabsConectados', 'totalMinted', 'ofertadosCongelados', 
             'enReserva', 'statsMisiones', 'totalMisionesCount', 'dadosDeBajaValor', 'escrowRealMisiones', 
@@ -159,5 +159,101 @@ class DashboardController extends Controller
     {
         DB::table('notifications')->where('user_id', auth()->id())->update(['is_read' => true]);
         return redirect()->route('lab.dashboard');
+    }
+
+    /**
+     * 👤 GUARDAR PERFIL DEL LAB Y COORDENADAS DEL MAPA (HUB 1)
+     */
+    public function updateProfile(Request $request)
+    {
+        $labId = auth()->id();
+
+        // Conservamos tu regla exacta de limpieza de etiquetas permitidas para la Bio
+        $nuevaBio = strip_tags($request->input('bio'), '<b><strong><i><em><u><ul><li><ol><br><p>');
+        
+        try {
+            DB::table('users')->where('id', $labId)->update([
+                'bio'               => $nuevaBio,
+                'address'           => trim($request->input('address')),
+                'social_fabacademy' => trim($request->input('social_fabacademy')),
+                'social_linkedin'   => trim($request->input('social_linkedin')),
+                'social_github'     => trim($request->input('social_github')),
+                'social_portfolio'  => trim($request->input('social_portfolio')),
+                'social_instagram'  => trim($request->input('social_instagram')),
+                'latitude'          => $request->input('latitude') ? floatval($request->input('latitude')) : null,
+                'longitude'         => $request->input('longitude') ? floatval($request->input('longitude')) : null,
+                'updated_at'        => now()
+            ]);
+
+            return redirect()->route('lab.dashboard')->with('msg', 'profile_updated');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * 📊 EXPORTAR ESTADO DE CUENTA A CSV COMERCIAL (CONVERTIDO DE TU MOTOR ANTIGUO)
+     */
+    public function exportCSV()
+    {
+        $lab = auth()->user();
+        $fileName = 'Estado_Cuenta_Lab_' . date('Ymd_His') . '.csv';
+        
+        $headers = [
+            "Content-type"        => "text/csv; charset=utf-8",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use ($lab) {
+            $file = fopen('php://output', 'w');
+            
+            // Inyectar el BOM UTF-8 exacto de tu código viejo para soporte de eñes y tildes en Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Encabezados multiidioma dinámicos
+            if (app()->getLocale() === 'en') {
+                fputcsv($file, ['Date and Time', 'Concept / Description', 'Operation Type', 'Amount (FC)']);
+            } else {
+                fputcsv($file, ['Fecha y Hora', 'Concepto / Descripción', 'Tipo de Operación', 'Monto (FC)']);
+            }
+
+            // Consulta al libro contable de Laravel
+            $transactions = DB::table('transactions')
+                ->where('user_id', $lab->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            foreach ($transactions as $row) {
+                $tipo_texto = $row->type;
+                
+                if (app()->getLocale() === 'es') {
+                    if ($row->type === 'income') $tipo_texto = 'Ingreso (Recibido)';
+                    elseif ($row->type === 'expense') $tipo_texto = 'Egreso (Gasto)';
+                    elseif ($row->type === 'mint') $tipo_texto = 'Emisión [MINT]';
+                    elseif ($row->type === 'escrow') $tipo_texto = 'Reserva [ESCROW]';
+                } else {
+                    if ($row->type === 'income') $tipo_texto = 'Income';
+                    elseif ($row->type === 'expense') $tipo_texto = 'Expense';
+                    elseif ($row->type === 'mint') $tipo_texto = 'Tokenization [MINT]';
+                    elseif ($row->type === 'escrow') $tipo_texto = 'Guarantee [ESCROW]';
+                }
+
+                $signo = in_array($row->type, ['income', 'mint']) ? '+' : '-';
+                $monto_contable = $signo . number_format($row->amount, 2, '.', '');
+
+                fputcsv($file, [
+                    date('d/m/Y H:i:s', strtotime($row->created_at)),
+                    $row->description,
+                    $tipo_texto,
+                    $monto_contable
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

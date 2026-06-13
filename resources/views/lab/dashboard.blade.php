@@ -11,7 +11,9 @@
     
     <!-- HEADER INDUSTRIAL DE ALTA GAMA -->
     <header class="lab-header-v2">
-        <button type="button" class="lab-profile-trigger" onclick="abrirWorkspaceHubPersistente('workspace-perfil')" title="{{ __('messages.edit_profile') }}">
+       <button type="button" class="lab-profile-trigger" 
+        onclick="abrirWorkspaceHubPersistente('workspace-activar'); setTimeout(() => { document.getElementById('seccion-perfil-mapa').scrollIntoView({ behavior: 'smooth' }); }, 250);" 
+        title="{{ __('messages.edit_profile') }}">
             <div class="lab-avatar-wrapper {{ ($isFrozen ?? false) ? 'status-frozen' : 'status-active' }}">
                 <img src="{{ $lab->avatar_url ?: 'https://ui-avatars.com/api/?name='.urlencode($lab->name).'&background=1abc9c&color=fff' }}" alt="{{ $lab->name }}">
             </div>
@@ -160,7 +162,7 @@
                 {{ __('messages.hub_activate_title') }}
             </div>
         </div>
-        @include('lab.tabs.activar')
+        @include('lab.tabs.1_activar')
     </div>
 
     <div id="workspace-tokenizar" class="workspace-section">
@@ -171,7 +173,7 @@
                 {{ __('messages.hub_tokenise_title') }}
             </div>
         </div>
-        @include('lab.tabs.boveda')
+        @include('lab.tabs.2_tokenizar')
     </div>
 
     <div id="workspace-publicar" class="workspace-section">
@@ -182,18 +184,7 @@
                 {{ __('messages.hub_publish_title') }}
             </div>
         </div>
-        @include('lab.tabs.misiones')
-    </div>
-
-    <div id="workspace-perfil" class="workspace-section">
-        <div class="workspace-active-bar-v2" style="border-bottom: 2px solid #3498db;">
-            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('workspace-perfil')">← {{ __('messages.btn_back') }}</button>
-            <div class="workspace-title-node" style="color: #3498db;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                {{ __('messages.edit_profile') }}
-            </div>
-        </div>
-        @include('lab.tabs.perfil')
+        @include('lab.tabs.3_publicar')
     </div>
 
 </div>
@@ -280,6 +271,7 @@
             'mission_published_ok': { icon: 'success', title: "{{ __('messages.swal_mission_published') }}", text: "{{ __('messages.swal_mission_published_desc') }}" },
             'mission_assigned_ok': { icon: 'success', title: "{{ __('messages.swal_mission_assigned') }}", text: "{{ __('messages.swal_mission_assigned_desc') }}" },
             'amortize_completed': { icon: 'success', title: "{{ __('messages.swal_amortize_completed') }}", text: "{{ __('messages.swal_amortize_completed_desc') }}" },
+            'profile_updated': { icon: 'success', title: "{{ __('messages.swal_success') }}", text: "{{ __('messages.swal_profile_completed_desc') }}" },
         };
 
         if (msg && alertas[msg]) {

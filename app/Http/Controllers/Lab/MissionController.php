@@ -14,13 +14,12 @@ class MissionController extends Controller
     public function store(Request $request)
     {
         $labId = auth()->id();
-        $rewardUnit = floatval($request->input('reward_fc'));
-        $targetMakerId = $request->input('target_maker_id') ? intval($request->input('target_maker_id')) : null;
+        $rewardUnit = floatval($request->input('reward_fc', 0));
+        $targetCreatorId = $request->input('target_creator_id') ? intval($request->input('target_creator_id')) : null;
         
-        $spots = $targetMakerId ? 1 : intval($request->input('spots_total', 1));
+        $spots = $targetCreatorId ? 1 : intval($request->input('spots_total', 1));
         $totalEscrowRequired = $rewardUnit * $spots;
 
-        // Cálculo del Saldo Real del Lab (Ingresos + Mints - Egresos)
         $saldo = DB::table('transactions')
             ->where('user_id', $labId)
             ->selectRaw("SUM(CASE WHEN type IN ('income', 'mint') THEN amount ELSE -amount END) as total")
@@ -31,24 +30,22 @@ class MissionController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($labId, $request, $rewardUnit, $targetMakerId, $spots, $totalEscrowRequired) {
-                // Insertar la misión en la red
-                DB::table('missions')->insertGetId([
-                    'lab_id'          => $labId,
-                    'title'           => trim($request->input('title')),
-                    'description'     => trim($request->input('description')),
-                    'deadline'        => $request->input('deadline'),
-                    'reference_link'  => trim($request->input('reference_link')),
-                    'reward_fc'       => $rewardUnit,
-                    'target_maker_id' => $targetMakerId,
-                    'spots_total'     => $spots,
-                    'spots_filled'    => 0,
-                    'status'          => 'open',
-                    'created_at'      => now(),
-                    'updated_at'      => now()
+            DB::transaction(function () use ($labId, $request, $rewardUnit, $targetCreatorId, $spots, $totalEscrowRequired) {
+                DB::table('missions')->insert([
+                    'lab_id'            => $labId,
+                    'title'             => trim($request->input('title')),
+                    'description'       => trim($request->input('description')),
+                    'deadline'          => $request->input('deadline'),
+                    'reference_link'    => trim($request->input('reference_link')),
+                    'reward_fc'         => $rewardUnit,
+                    'target_creator_id' => $targetCreatorId,
+                    'spots_total'       => $spots,
+                    'spots_filled'      => 0,
+                    'status'            => 'open',
+                    'created_at'        => now(),
+                    'updated_at'        => now()
                 ]);
 
-                // Asentamiento del bloqueo contable en Escrow
                 DB::table('transactions')->insert([
                     'user_id'     => $labId,
                     'description' => "Reserva en Escrow: " . trim($request->input('title')) . " ($spots cupos)",
@@ -58,15 +55,15 @@ class MissionController extends Controller
                     'updated_at'  => now()
                 ]);
 
-                if ($targetMakerId) {
+                if ($targetCreatorId) {
                     DB::table('notifications')->insert([
-                        'user_id'    => $targetMakerId,
-                        'message'    => "🎯 El Lab " . auth()->user()->name . " te ha enviado una misiones exclusiva para amortizar tu deuda.",
+                        'user_id'    => $targetCreatorId,
+                        'message'    => "🎯 Misión exclusiva enviada para amortizar tu deuda.",
                         'type'       => 'info',
                         'created_at' => now()
                     ]);
                 }
-            ]);
+            });
 
             return redirect()->route('lab.dashboard')->with('msg', 'mission_published_ok');
         } catch (\Exception $e) {
@@ -75,18 +72,18 @@ class MissionController extends Controller
     }
 
     /**
-     * 🔒 2. ASIGNAR UN TALENTO A UN CUPO (CIERRE AUTOMÁTICO DE FILAS)
+     * 🔒 2. ASIGNAR UN TALENTO A UN CUPO
      */
-    public function assignMaker(Request $request)
+    public function assignCreator(Request $request)
     {
         $missionId = $request->input('mission_id');
-        $makerId = $request->input('maker_id');
+        $creatorId = $request->input('creator_id');
 
         try {
-            DB::transaction(function () use ($missionId, $makerId) {
+            DB::transaction(function () use ($missionId, $creatorId) {
                 DB::table('mission_applications')
                     ->where('mission_id', $missionId)
-                    ->where('maker_id', $makerId)
+                    ->where('creator_id', $creatorId)
                     ->update(['status' => 'accepted', 'updated_at' => now()]);
 
                 DB::table('missions')->where('id', $missionId)->increment('spots_filled');
@@ -101,12 +98,12 @@ class MissionController extends Controller
                 }
 
                 DB::table('notifications')->insert([
-                    'user_id'    => $makerId,
-                    'message'    => "¡Felicidades! Has sido asignado a la misiones: " . $mission->title,
+                    'user_id'    => $creatorId,
+                    'message'    => "¡Felicidades! Has sido asignado a la misión: " . $mission->title,
                     'type'       => 'success',
                     'created_at' => now()
                 ]);
-            ]);
+            });
 
             return redirect()->route('lab.dashboard')->with('msg', 'mission_assigned_ok');
         } catch (\Exception $e) {
@@ -117,50 +114,50 @@ class MissionController extends Controller
     /**
      * 🗑️ 3. DESCARTAR UN POSTULANTE
      */
-    public function rejectMaker(Request $request)
+    public function rejectCreator(Request $request)
     {
         DB::table('mission_applications')
             ->where('mission_id', $request->input('mission_id'))
-            ->where('maker_id', $request->input('maker_id'))
+            ->where('creator_id', $request->input('creator_id'))
             ->update(['status' => 'rejected', 'updated_at' => now()]);
 
         return redirect()->route('lab.dashboard');
     }
 
     /**
-     * 📉 4. LIQUIDACIÓN CONTABLE FINAL (PAGO LÍQUIDO O RETENCIÓN POR DEUDA)
+     * 📉 4. LIQUIDACIÓN CONTABLE FINAL (AMORTIZACIÓN O TRANSFERENCIA)
      */
     public function completeMission(Request $request)
     {
         $missionId = $request->input('mission_id');
-        $makerId = $request->input('maker_id');
+        $creatorId = $request->input('creator_id');
         $rating = intval($request->input('rating'));
         $comment = trim($request->input('comment'));
         $labId = auth()->id();
 
         try {
-            $msgRedirect = DB::transaction(function () use ($missionId, $makerId, $rating, $comment, $labId) {
+            $msgRedirect = DB::transaction(function () use ($missionId, $creatorId, $rating, $comment, $labId) {
                 $mission = DB::table('missions')->where('id', $missionId)->first();
-                $maker = DB::table('users')->where('id', $makerId)->first();
+                $creator = DB::table('users')->where('id', $creatorId)->first();
 
                 $pagoRestante = $mission->reward_fc;
-                $esMisionDeRetorno = ($mission->target_maker_id == $makerId);
+                $esMisionDeRetorno = ($mission->target_creator_id == $creatorId);
                 $retornoEjecutado = 0;
 
-                if ($maker->deuda_lab_id == $labId && $maker->deuda_fc > 0 && $esMisionDeRetorno) {
-                    if ($pagoRestante >= $maker->deuda_fc) {
-                        $retornoEjecutado = $maker->deuda_fc;
-                        $pagoRestante -= $maker->deuda_fc;
+                if ($creator->deuda_lab_id == $labId && $creator->deuda_fc > 0 && $esMisionDeRetorno) {
+                    if ($pagoRestante >= $creator->deuda_fc) {
+                        $retornoEjecutado = $creator->deuda_fc;
+                        $pagoRestante -= $creator->deuda_fc;
                         
-                        DB::table('users')->where('id', $makerId)->update(['deuda_lab_id' => null, 'deuda_fc' => 0]);
-                        DB::table('financing_agreements')->where('maker_id', $makerId)->where('lab_id', $labId)->where('status', 'active')->update(['status' => 'completed', 'amount_remaining' => 0, 'updated_at' => now()]);
+                        DB::table('users')->where('id', $creatorId)->update(['deuda_lab_id' => null, 'deuda_fc' => 0]);
+                        DB::table('financing_agreements')->where('creator_id', $creatorId)->where('lab_id', $labId)->where('status', 'active')->update(['status' => 'completed', 'amount_remaining' => 0, 'updated_at' => now()]);
                     } else {
                         $retornoEjecutado = $pagoRestante;
-                        $nuevoSaldoDeuda = $maker->deuda_fc - $pagoRestante;
+                        $nuevoSaldoDeuda = $creator->deuda_fc - $pagoRestante;
                         $pagoRestante = 0;
 
-                        DB::table('users')->where('id', $makerId)->update(['deuda_fc' => $nuevoSaldoDeuda]);
-                        DB::table('financing_agreements')->where('maker_id', $makerId)->where('lab_id', $labId)->where('status', 'active')->update(['amount_remaining' => $nuevoSaldoDeuda, 'updated_at' => now()]);
+                        DB::table('users')->where('id', $creatorId)->update(['deuda_fc' => $nuevoSaldoDeuda]);
+                        DB::table('financing_agreements')->where('creator_id', $creatorId)->where('lab_id', $labId)->where('status', 'active')->update(['amount_remaining' => $nuevoSaldoDeuda, 'updated_at' => now()]);
                     }
 
                     DB::table('transactions')->insert([
@@ -175,7 +172,7 @@ class MissionController extends Controller
 
                 if ($pagoRestante > 0) {
                     DB::table('transactions')->insert([
-                        'user_id'     => $makerId,
+                        'user_id'     => $creatorId,
                         'description' => "Pago recibido por Misiones #" . $missionId . " de " . auth()->user()->name,
                         'amount'      => $pagoRestante,
                         'type'        => 'income',
@@ -186,17 +183,16 @@ class MissionController extends Controller
 
                 DB::table('transactions')->insert([
                     'user_id'     => $labId,
-                    'description' => "Liberación (Misiones #$missionId): " . ($esMisionDeRetorno ? "Amortizados " . number_format($mission->reward_fc) . " FC de deuda." : "Transferidos a " . $maker->name),
+                    'description' => "Liberación (Misiones #$missionId): " . ($esMisionDeRetorno ? "Amortizados " . number_format($mission->reward_fc) . " FC de deuda." : "Transferidos a " . $creator->name),
                     'amount'      => 0.00,
                     'type'        => 'info',
                     'created_at'  => now(),
                     'updated_at'  => now()
                 ]);
 
-                // Asentar calificaciones en la tabla reviews existente
                 DB::table('reviews')->insertGetId([
                     'reviewer_id'  => $labId,
-                    'reviewee_id'  => $makerId,
+                    'reviewee_id'  => $creatorId,
                     'context_type' => 'mission',
                     'context_id'   => $missionId,
                     'rating'       => $rating,
@@ -204,10 +200,9 @@ class MissionController extends Controller
                     'created_at'   => now()
                 ]);
 
-                // 🔥 PROTECCIÓN COHERENTE: Omitimos el bucle skill_endorsements para evitar el error de tabla no encontrada
-                DB::table('mission_applications')->where('mission_id', $missionId)->where('maker_id', $makerId)->update(['is_reviewed' => true]);
-                $nuevoPromedio = DB::table('reviews')->where('reviewee_id', $makerId)->avg('rating');
-                DB::table('users')->where('id', $makerId)->update(['reputation_score' => round($nuevoPromedio, 1)]);
+                DB::table('mission_applications')->where('mission_id', $missionId)->where('creator_id', $creatorId)->update(['is_reviewed' => true]);
+                $nuevoPromedio = DB::table('reviews')->where('reviewee_id', $creatorId)->avg('rating');
+                DB::table('users')->where('id', $creatorId)->update(['reputation_score' => round($nuevoPromedio, 1)]);
 
                 $pendientesDeEvaluacion = DB::table('mission_applications')->where('mission_id', $missionId)->where('status', 'accepted')->where('is_reviewed', false)->count();
                 if ($pendientesDeEvaluacion == 0 && $mission->spots_filled >= $mission->spots_total) {
@@ -215,7 +210,7 @@ class MissionController extends Controller
                 }
 
                 return $retornoEjecutado > 0 ? 'amortization_ok' : 'payout_ok';
-            ]);
+            });
 
             $routeMsg = ($msgRedirect === 'amortization_ok') ? 'amortize_completed' : 'mission_completed';
             return redirect()->route('lab.dashboard')->with('msg', $routeMsg);
