@@ -3,7 +3,7 @@
 @section('title', __('messages.lab_portal'))
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=2.0">
+    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=2.7">
 @endpush
 
 @section('content')
@@ -111,7 +111,7 @@
                     </svg>
                 </div>
                 <div>
-                    <div class="main-hub-value" style="color: var(--c-green);">{{ number_format($totalMinted, 0, '.', ' ') }} FC</div>
+                    <div class="main-hub-value text-success-neon">{{ number_format($totalMinted, 0, '.', ' ') }} FC</div>
                     <div class="bullet-metrics-compact">
                         <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#3498db;"></span> <strong>{{ number_format($enReserva, 0, '.', ' ') }}</strong> {{ __('messages.lbl_reserve') }}</div>
                         <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#f1c40f;"></span> <strong>{{ number_format($ofertadosTotal, 0, '.', ' ') }}</strong> {{ __('messages.lbl_frozen') }}</div>
@@ -155,9 +155,9 @@
     
     <!-- ACTIVAR (ESMERALDA SOLIDO) -->
     <div id="workspace-activar" class="workspace-section">
-        <div class="workspace-active-bar-v2" style="border-bottom: 2px solid #1abc9c;">
+        <div class="workspace-active-bar-v2 workspace-bar-verde">
             <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('workspace-activar')">← {{ __('messages.btn_back') }}</button>
-            <div class="workspace-title-node" style="color: #1abc9c;">
+            <div class="workspace-title-node workspace-text-verde">
                 <img src="{{ asset('images/hubs/icon_activar.webp') }}" alt="">
                 {{ __('messages.hub_activate_title') }}
             </div>
@@ -166,9 +166,9 @@
     </div>
 
     <div id="workspace-tokenizar" class="workspace-section">
-        <div class="workspace-active-bar-v2" style="border-bottom: 2px solid #f1c40f;">
+        <div class="workspace-active-bar-v2 workspace-bar-amarillo">
             <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('workspace-tokenizar')">← {{ __('messages.btn_back') }}</button>
-            <div class="workspace-title-node" style="color: #f1c40f;">
+            <div class="workspace-title-node workspace-text-amarillo">
                 <img src="{{ asset('images/hubs/icon_tokenizar.webp') }}" alt="">
                 {{ __('messages.hub_tokenise_title') }}
             </div>
@@ -177,9 +177,9 @@
     </div>
 
     <div id="workspace-publicar" class="workspace-section">
-        <div class="workspace-active-bar-v2" style="border-bottom: 2px solid #e84393;">
+        <div class="workspace-active-bar-v2 workspace-bar-rosado">
             <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('workspace-publicar')">← {{ __('messages.btn_back') }}</button>
-            <div class="workspace-title-node" style="color: #e84393;">
+            <div class="workspace-title-node workspace-text-rosado">
                 <img src="{{ asset('images/hubs/icon_ofertar.webp') }}" alt="">
                 {{ __('messages.hub_publish_title') }}
             </div>
