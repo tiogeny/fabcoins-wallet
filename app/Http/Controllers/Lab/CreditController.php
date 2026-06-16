@@ -3,58 +3,90 @@
 namespace App\Http\Controllers\Lab;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class CreditController extends Controller
 {
-    public function processReservation(Request $request)
+    /**
+     * El Lab APRUEBA la solicitud de crédito del Creador.
+     */
+    public function approve(Request $request)
     {
-        $lab = auth()->user();
-        $orderId = $request->input('order_id');
-        $accion = $request->input('accion');
+        $creditId = $request->input('credit_id');
+        $labId = auth()->id();
 
-        $order = DB::table('orders')->join('lab_assets', 'orders.asset_id', '=', 'lab_assets.id')->where('orders.id', $orderId)->where('lab_assets.lab_id', $lab->id)->where('orders.status', 'pending')->select('orders.*', 'lab_assets.custom_name')->first();
+        // Buscamos el crédito pendiente que pertenece a este Lab
+        $credit = DB::table('financing_agreements')
+            ->where('id', $creditId)
+            ->where('lab_id', $labId)
+            ->where('status', 'pending')
+            ->first();
 
-        if ($order) {
-            DB::transaction(function () use ($order, $accion, $lab) {
-                if ($accion === 'aprobar') {
-                    DB::table('orders')->where('id', $order->id)->update(['status' => 'completed']);
-                    DB::table('transactions')->where('user_id', $order->creator_id)->where('amount', $order->total_fc)->where('type', 'escrow')->latest('id')->limit(1)->update(['type' => 'burn', 'description' => '🔥 Servicio consumido (Quema): ' . $order->custom_name]);
-                    DB::table('lab_assets')->where('id', $order->asset_id)->increment('consumed_hours', $order->hours_requested);
-                } else {
-                    DB::table('orders')->where('id', $order->id)->update(['status' => 'rejected']);
-                    DB::table('transactions')->insert(['user_id' => $order->creator_id, 'description' => "Reembolso: " . $order->custom_name, 'amount' => $order->total_fc, 'type' => 'income', 'created_at' => now()]);
-                }
-            });
-            return redirect()->route('lab.dashboard')->with('msg', $accion === 'aprobar' ? 'order_approved' : 'order_rejected');
+        if (!$credit) {
+            return redirect()->back()->with('error', 'El crédito no existe o ya fue procesado.');
         }
-        return redirect()->route('lab.dashboard');
+
+        DB::transaction(function() use ($credit) {
+            // 1. Activar el crédito formalmente
+            DB::table('financing_agreements')
+                ->where('id', $credit->id)
+                ->update([
+                    'status' => 'active',
+                    'updated_at' => now()
+                ]);
+
+            // 2. Avisarle al alumno por la campanita
+            $idAlumno = $credit->maker_id ?? $credit->creator_id;
+            DB::table('notifications')->insert([
+                'user_id' => $idAlumno, 
+                'message' => '✅ El Lab ha aprobado tu solicitud de financiamiento. ¡Tu reserva está lista para ser liberada!',
+                'type' => 'success',
+                'created_at' => now()
+            ]);
+        });
+
+        // Retornamos con un mensaje de éxito para el SweetAlert
+        return redirect()->back()->with('msg', 'credit_accepted');
     }
 
-    public function reschedule(Request $request)
+    /**
+     * El Lab RECHAZA la solicitud de crédito del Creador.
+     */
+    public function reject(Request $request)
     {
-        DB::table('orders')->where('id', $request->input('order_id'))->update(['status' => 'rescheduled', 'reservation_date' => $request->input('nueva_fecha')]);
-        return redirect()->route('lab.dashboard')->with('msg', 'rescheduled_ok');
-    }
+        $creditId = $request->input('credit_id');
+        $labId = auth()->id();
 
-    public function proposeCredit(Request $request)
-    {
-        $creator = User::where('email', trim($request->input('email_creator')))->where('role', 'creator')->first();
-        if (!$creator) return redirect()->route('lab.dashboard')->with('error', "No se encontró ningún creator registrado con ese correo.");
+        $credit = DB::table('financing_agreements')
+            ->where('id', $creditId)
+            ->where('lab_id', $labId)
+            ->where('status', 'pending')
+            ->first();
 
-        $monto = floatval($request->input('monto_fc'));
-        DB::table('financing_agreements')->insert([
-            'lab_id' => auth()->id(), 'creator_id' => $creator->id, 'amount_initial' => $monto, 'amount_remaining' => $monto,
-            'description' => trim($request->input('motivo')), 'status' => 'pending', 'created_at' => now(), 'updated_at' => now()
-        ]);
-        return redirect()->route('lab.dashboard')->with('msg', 'credit_proposed');
-    }
+        if (!$credit) {
+            return redirect()->back();
+        }
 
-    public function cancelCredit(Request $request)
-    {
-        DB::table('financing_agreements')->where('id', $request->input('contract_id'))->where('lab_id', auth()->id())->where('status', 'pending')->update(['status' => 'cancelled']);
-        return redirect()->route('lab.dashboard')->with('msg', 'credit_cancelled');
+        DB::transaction(function() use ($credit) {
+            // 1. Cancelar el crédito
+            DB::table('financing_agreements')
+                ->where('id', $credit->id)
+                ->update([
+                    'status' => 'cancelled',
+                    'updated_at' => now()
+                ]);
+
+            // 2. Avisarle al alumno del rechazo
+            $idAlumno = $credit->maker_id ?? $credit->creator_id;
+            DB::table('notifications')->insert([
+                'user_id' => $idAlumno,
+                'message' => '❌ El Lab ha rechazado tu solicitud de crédito ISA.',
+                'type' => 'error',
+                'created_at' => now()
+            ]);
+        });
+
+        return redirect()->back()->with('msg', 'credit_cancelled');
     }
 }

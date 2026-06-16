@@ -123,7 +123,7 @@ return [
     'status_approved'          => 'Aprobado y Pagado',
     'status_approved_consumed' => 'Aprobado y Consumido',
     'status_waiting_creator'   => 'Esperando al Creador',
-    'status_rejected'          => 'Rechazado / Cancelado',
+    'status_rejected'          => 'Cancelado',
     'status_rescheduled'       => 'Reprogramación Ofertada',
     'status_pending'           => 'En Custodia (Espera)',
     'status_completed'         => 'Servicio Consumido',
@@ -145,6 +145,8 @@ return [
     'hub_tokenise_desc'        => 'Valorización contable y emisión MINT',
     'hub_publish_title'        => 'Publicar',
     'hub_publish_desc'         => 'Convocatoria de misiones',
+    'hub_missions_sub'         => 'Aplicar a Misiones Globales',
+    'hub_wallet_sub'           => 'Balance y Movimientos',
     
     // Métricas Lab
     'lbl_assets_unit'          => 'Activos',
@@ -155,7 +157,7 @@ return [
     'lbl_ofertados_bullet'     => 'Ofertados',
     'lbl_consumidos_bullet'    => 'Consumidos',
     'lbl_missions_unit'        => 'Misiones',
-    'lbl_open_bullet'          => 'Disponibles / Abiertas',
+    'lbl_open_bullet'          => 'Abiertas',
     'lbl_working_bullet'       => 'En Ejecución',
     'lbl_closed_bullet'        => 'Completadas',
     'lbl_reserve'              => 'En Reserva',
@@ -166,7 +168,7 @@ return [
     // Workspace 1: Activar
     'register_asset_title'     => 'Declarar Infraestructura y Capacidad',
     'register_asset_desc'      => 'Enlista las máquinas, servicios o espacios de tu laboratorio para incorporarlos al inventario.',
-    'lbl_category'             => 'Categoría Eje',
+    'lbl_category'             => 'Categoría',
     'lbl_global_cat'           => 'Especialidad Global',
     'lbl_specific_name'        => 'Nombre / Modelo',
     'lbl_capacity_declared'    => 'Capacidad Base',
@@ -218,6 +220,10 @@ return [
     'rates_reg_desc'           => 'Balance y Movimientos',
     'btn_update_rate'          => 'Actualizar',
     'empty_active_rates'       => 'No tienes activos en circulación colateral en este momento.',
+    'swal_are_you_sure'     => '¿Estás completamente seguro?',
+    'swal_confirm_approve'  => '¿Estás seguro de aprobar la reserva de :asset para el creador :creator?',
+    'msg_applied_ok'        => '¡Postulación enviada con éxito al Laboratorio!',
+    'msg_credit_accepted'   => 'Crédito aprobado (los FabCoins se recuperarán mediante misiones). Ahora ve a la sección "Solicitudes de Alquiler" y aprueba la reserva.',
 
     // Workspace 3: Publicar & Misiones
     'miss_create_title'        => 'Crear Nueva Misión en la Red',
@@ -230,13 +236,14 @@ return [
     'ph_ref_link'              => 'Enlace a planos, repositorio o documentación (Opcional)',
     'lbl_spots'                => 'Cupos (Creadores)',
     'lbl_reward_per_creador'   => 'Pago por Creador',
-    'btn_publish_miss'         => 'Publicar Misión y Congelar Escrow',
+    'btn_publish_miss'         => 'Publicar msión y congelar',
     'miss_list_title'          => 'Mis Misiones Publicadas',
     'th_miss_details'          => 'Misión y Detalles',
     'th_reward'                => 'Recompensa',
     'th_applicants'            => 'Postulantes / Estado',
     'miss_list_empty'          => 'Aún no has lanzado ninguna convocatoria al ecosistema.',
     'lbl_no_applicants'        => 'Nadie se ha postulado a esta vacante todavía.',
+    'lbl_view_attachment' => 'Ver Documento Adjunto',
     'lbl_financiado'           => 'Alumno Financiado',
     'btn_assign_creador'       => 'Asignar Creador',
     'lbl_assigned_creador'     => 'Creador Asignado:',
@@ -259,13 +266,35 @@ return [
     'th_time'                  => 'Tiempo Estimado',
     'lbl_for_date'             => 'Para el:',
     'hist_empty'               => 'No hay solicitudes de reserva en tu bitácora contable.',
+    'btn_assign_creator'     => 'Asignar Misión',
     
     // Contratos ISA (Educativos)
     'title_isa_portfolio'      => 'Cartera de Financiamientos e ISA Activos',
     'isa_portfolio_empty'      => 'No registras financiamientos vigentes con ningún alumno de la red.',
     'th_concept'               => 'Concepto / Motivo',
-    'lbl_waiting_signature'    => 'Esperando firma del alumno...',
+    'lbl_waiting_signature'    => 'Pendiente de tu Aprobación',
     'lbl_recovered'            => 'recuperado mediante misiones',
+
+    // Billetera P2P
+    'title_send_fc'         => 'Transferencia P2P (Peer-to-Peer)',
+    'desc_send_fc'          => 'Envía FabCoins a otro creador de la red sin comisiones.',
+    'ph_receiver_email'     => 'Correo del creador destino...',
+    'ph_amount_fc'          => 'Monto FC',
+    'btn_transfer'          => 'Enviar Fondos',
+    'lbl_receiver_not_found'=> 'Usuario no encontrado',
+
+    // Billetera P2P
+    'lbl_recipient_email' => 'Destinatario (Email)',
+    'lbl_amount_to_send'  => 'Monto a Enviar',
+    'swal_confirm_p2p'    => '¿Confirmas el envío irrecuperable de estos fondos?',
+    'lbl_searching'       => 'Buscando...',
+    'lbl_send_to'         => 'Enviar a:',
+    
+    // Perfil Creador
+    'title_my_profile'    => 'Identidad y Habilidades',
+    'lbl_my_bio'          => 'Tu Biografía Profesional',
+    'ph_my_bio'           => 'Cuéntale a la red sobre tu experiencia y visión...',
+    'lbl_my_skills'       => 'Tus Habilidades (Skills)',
 
     // =========================================================
     // 7. PORTAL DEL CREADOR (DASHBOARD & WORKSPACES)
@@ -282,6 +311,8 @@ return [
     'hub_wallet_btn'           => 'Billetera',
     
     // ISA Creator
+    // Para la vista del Creador (Título de la tabla de crédito)
+    'title_isa_portfolio_creator' => 'Estado de Solicitudes y Créditos',
     'isa_proposal_title'       => 'Financiación de Crédito Educativo ISA Ofertado',
     'isa_proposal_desc1'       => 'La sede',
     'isa_proposal_desc2'       => 'te propone un financiamiento de honor por un monto de',
@@ -293,7 +324,7 @@ return [
     'lbl_debt'                 => 'Deuda Restante:',
     'isa_payment_history'      => 'Historial de Abonos Recientes',
 
-    // Workspace 1: Mercado Creator
+    // HUB 1: Mercado Creator
     'map_explorer_title'       => 'Explorador de Nodos (Red Global)',
     'map_explorer_desc'        => 'Reservar Activos',
     'ph_map_creator_search'    => 'Buscar por distrito, ciudad o región de manufactura...',
@@ -305,7 +336,7 @@ return [
     'btn_filter_this_lab'      => 'Ver Activos de este Lab',
     'btn_clear_filter'         => 'Mostrar todos los Labs',
     'monitor_title'            => 'Monitor de Custodia y Órdenes de Alquiler',
-    'monitor_desc'             => 'Audita tus depósitos en fondos de garantía (Escrow), responde a solicitudes de reprogramación y califica los servicios completados.',
+    'monitor_desc'             => 'Audita tus depósitos en fondos de garantía, responde a solicitudes de reprogramación y califica los servicios completados.',
     'th_lab'                   => 'Laboratorio Dueño',
     'btn_accept_date'          => 'Aceptar Fecha',
     'btn_reject_date'          => 'Rechazar Términos',
@@ -317,6 +348,84 @@ return [
     'ph_search_asset'          => 'Buscar máquina, tecnología o ubicación...',
     'monitor_empty'            => 'No se registran activos operativos en circulación en tu historial en este momento.',
     'th_total_cost'            => 'Costo de Reserva',
+    'title_transactions'       => 'Historial de Transacciones',
+    'btn_export_excel'         => 'Exportar a Excel',
+    'btn_reserve'              => 'Reservar',
+    'kpi_life_useful'   => 'Vida Útil Restante',
+    'th_build_volume'   => 'Volumen de Impresión',
+    'th_technology'     => 'Tecnología',
+    'materials'         => 'Materiales Compatibles',
+    'lbl_avail_capacity' => 'Capacidad disponible:',
+    // El error original que te salió
+    'swal_insufficient_escrow_desc' => 'Saldo insuficiente para completar esta reserva.',
+
+    // Notificaciones y Alertas Generales
+    'no_notifications'    => 'Sin notificaciones recientes',
+    'swal_are_you_sure'   => '¿Estás completamente seguro?',
+    
+    // Confirmación de Crédito personalizada
+    'swal_confirm_approve_credit' => '¿Aprobar y activar este crédito por :amount FC para :creator?',
+
+    // Badges del Historial de Transacciones (Billetera)
+    'badge_mint'             => 'EMISIÓN',
+    'badge_escrow'           => 'CUSTODIA',
+    'badge_consumed'         => 'CONSUMIDO',
+    'lbl_consumed' => 'Consumo Histórico',
+    
+    // Alertas del nuevo flujo de Crédito
+    'swal_credit_title'      => 'Fondos Insuficientes',
+    'swal_credit_desc_1'     => 'Esta reserva requiere',
+    'swal_credit_desc_2'     => 'pero solo tienes',
+    'swal_credit_desc_3'     => '¿Deseas enviar una propuesta de crédito al Lab por los',
+    'btn_req_credit'         => 'Solicitar Crédito',
+    
+    // Textos para la Base de Datos (Controlador)
+    'tx_reserve_partial'     => 'Reserva parcial en custodia: :asset',
+    'isa_desc_auto'          => 'Financiamiento automático para uso de :asset por :hours horas.',
+    'notif_reserve_credit'   => ':creator ha solicitado reservar :asset pero necesita un crédito de :credit FC. Revisa las propuestas de financiamiento.',
+    'th_progress' => 'Progreso / Estado',
+
+    'isa_requested_title'   => 'Solicitud de Crédito en Proceso',
+    'isa_requested_desc1'   => 'Has solicitado a la sede',
+    'isa_requested_desc2'   => 'un financiamiento por',
+    'isa_requested_desc3'   => 'Firma tu compromiso de honor para que el Lab pueda aprobar tu reserva.',
+    'swal_confirm_sign_isa' => '¿Confirmas tu compromiso de pago por este crédito? El Lab será notificado para liberar la máquina.',
+    'swal_pending_credit_lab' => 'El creador aún no firma el contrato de crédito. No puedes aprobar la reserva hasta que lo firme.',
+    'swal_reprogram_title'  => 'Reprogramar Reserva',
+    'swal_reprogram_desc'   => 'Selecciona la nueva fecha propuesta para el creador:',
+    'btn_send_proposal'     => 'Enviar Propuesta',
+    'empty_transactions' => 'No hay movimientos en tu billetera aún.',
+    'status_waiting_approval' => 'Esperando aprobación del Lab',
+    'swal_insufficient_escrow_desc' => 'Saldo líquido insuficiente. El sistema ha congelado tus FabCoins disponibles y ha generado una solicitud de crédito por la diferencia hacia el Lab.',
+    'swal_confirm_approve'          => '¿Estás seguro de aprobar esta reserva de maquinaria?',
+    'swal_confirm_reject'           => '¿Confirmas el rechazo de esta reserva? Los FabCoins en custodia serán devueltos de inmediato al Creador.',
+    'lbl_evaluate_credit_first'     => 'Evaluar Crédito Primero',
+
+    // KPIs y Títulos Misiones
+    'kpi_completed_missions' => 'Misiones Completadas',
+    'kpi_active_apps'        => 'Postulaciones Activas',
+    'kpi_available_missions' => 'Nuevas Oportunidades',
+    'title_my_apps_status'   => 'Estado de Mis Postulaciones',
+    'title_explore_missions' => 'Explorador de Misiones Globales',
+    'desc_explore_missions'  => 'Aplica a retos de co-creación y obtén FabCoins como recompensa.',
+    
+    // Tabla y Tarjetas
+    'th_mission'             => 'Misión / Reto',
+    'th_deadline'            => 'Límite de Entrega',
+    'th_app_status'          => 'Estado',
+    'badge_directed_mission' => 'Misión Dirigida (Abono de Crédito)',
+    'lbl_spots_status'       => 'Cupos',
+    'ph_why_ideal_creator'   => '¿Por qué eres el co-creador ideal para resolver este reto?',
+    'btn_send_application'   => 'Enviar Postulación',
+    'empty_my_apps'          => 'Aún no te has postulado a ninguna misión.',
+    'empty_open_missions'    => 'No hay retos abiertos en este momento. ¡Vuelve pronto!',
+
+    // Estados
+    'status_accepted_working'=> 'Aceptado (Trabajando)',
+    'status_not_selected'    => 'No Seleccionado',
+    'status_mission_finished'=> 'Misión Terminada',
+
+    'swal_mission_applied_ok' => '¡Postulación enviada! El Lab la revisará pronto.',
     
 
     // =========================================================
@@ -332,6 +441,7 @@ return [
     'tooltip_unit_price'           => 'Fija el valor comercial unitario que pagarán los Creadores al reservar tu activo en el mercado de fabricación.',
     'tooltip_rates_change'         => 'Cambiar la tarifa modifica el costo de reserva en el mercado. NO altera los FabCoins históricos ya emitidos.',
     'tooltip_committed_qty_detail' => 'Representa la cantidad neta de horas o cupos físicos que estás aislando y congelando de tu inventario base.',
+    'tooltip_select_all'           => 'Seleccionar todos',
 
     // =========================================================
     // 9. ALERTAS Y SWEETALERT2 (UI INTERACTIVA)

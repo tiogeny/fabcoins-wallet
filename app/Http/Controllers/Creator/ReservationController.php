@@ -17,6 +17,7 @@ class ReservationController extends Controller
         $assetId = $request->input('asset_id');
         $horas = floatval($request->input('hours'));
         $fecha = $request->input('reservation_date');
+        $isCreditRequest = $request->has('request_credit'); // Detectar si pide crédito
 
         $asset = DB::table('lab_assets')->where('id', $assetId)->first();
         if (!$asset) {
@@ -28,11 +29,14 @@ class ReservationController extends Controller
         $querySaldo = DB::select("SELECT SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END) as saldo FROM transactions WHERE user_id = ?", [$creator->id]);
         $saldoTotal = $querySaldo[0]->saldo ?? 0;
 
-        if ($saldoTotal < $costoTotal) {
+        // Si no tiene saldo y tampoco pidió crédito, lo rebotamos por seguridad
+        if ($saldoTotal < $costoTotal && !$isCreditRequest) {
             return redirect()->route('creator.dashboard')->with('error', __('messages.swal_insufficient_escrow_desc'));
         }
 
-        DB::transaction(function() use ($creator, $assetId, $horas, $fecha, $costoTotal, $asset) {
+        DB::transaction(function() use ($creator, $assetId, $horas, $fecha, $costoTotal, $asset, $saldoTotal, $isCreditRequest) {
+            
+            // 1. Insertar siempre la Orden de Reserva
             DB::table('orders')->insert([
                 'creator_id'       => $creator->id, 
                 'asset_id'         => $assetId, 
@@ -44,27 +48,69 @@ class ReservationController extends Controller
                 'updated_at'       => now()
             ]);
             
-            DB::table('transactions')->insert([
-                'user_id'     => $creator->id, 
-                'description' => __('messages.tx_reserve_desc', ['asset' => $asset->custom_name]), 
-                'amount'      => $costoTotal, 
-                'type'        => 'expense', 
-                'created_at'  => now()
-            ]);
-            
-            DB::table('notifications')->insert([
-                'user_id'    => $asset->lab_id, 
-                'message'    => __('messages.notif_reserve_req', [
-                                    'creator' => $creator->name, 
-                                    'asset' => $asset->custom_name, 
-                                    'hours' => $horas, 
-                                    'date' => date('d/m', strtotime($fecha))
-                                ]), 
-                'type'       => 'warning', 
-                'created_at' => now()
-            ]);
+            if ($isCreditRequest && $saldoTotal < $costoTotal) {
+                $diferencia = $costoTotal - $saldoTotal;
+
+                // Si tiene algo de saldo (> 0), se lo congelamos como "Pago Parcial"
+                if ($saldoTotal > 0) {
+                    DB::table('transactions')->insert([
+                        'user_id'     => $creator->id, 
+                        'description' => __('messages.tx_reserve_partial', ['asset' => $asset->custom_name]), 
+                        'amount'      => $saldoTotal, 
+                        'type'        => 'expense', 
+                        'created_at'  => now()
+                    ]);
+                }
+
+                // Generamos la propuesta de financiamiento (ISA) para el Lab
+                DB::table('financing_agreements')->insert([
+                    'creator_id' => $creator->id,
+                    'lab_id' => $asset->lab_id,
+                    'amount_initial' => $diferencia,
+                    'amount_remaining' => $diferencia,
+                    'description' => __('messages.isa_desc_auto', ['asset' => $asset->custom_name, 'hours' => $horas]),
+                    'status' => 'pending', 
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                // Notificamos al Lab sobre la reserva con crédito
+                DB::table('notifications')->insert([
+                    'user_id'    => $asset->lab_id, 
+                    'message'    => __('messages.notif_reserve_credit', [
+                                        'creator' => $creator->name, 
+                                        'asset' => $asset->custom_name, 
+                                        'credit' => number_format($diferencia, 0)
+                                    ]), 
+                    'type'       => 'warning', 
+                    'created_at' => now()
+                ]);
+
+            } else {
+                // FLUJO NORMAL: Se le descuenta el 100% y se notifica normal
+                DB::table('transactions')->insert([
+                    'user_id'     => $creator->id, 
+                    'description' => __('messages.tx_reserve_desc', ['asset' => $asset->custom_name]), 
+                    'amount'      => $costoTotal, 
+                    'type'        => 'expense', 
+                    'created_at'  => now()
+                ]);
+                
+                DB::table('notifications')->insert([
+                    'user_id'    => $asset->lab_id, 
+                    'message'    => __('messages.notif_reserve_req', [
+                                        'creator' => $creator->name, 
+                                        'asset' => $asset->custom_name, 
+                                        'hours' => $horas, 
+                                        'date' => date('d/m', strtotime($fecha))
+                                    ]), 
+                    'type'       => 'warning', 
+                    'created_at' => now()
+                ]);
+            }
         });
 
+        // Podemos usar el mismo mensaje de éxito por ahora
         return redirect()->route('creator.dashboard')->with('msg', 'rental_pending');
     }
 

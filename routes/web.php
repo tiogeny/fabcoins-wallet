@@ -43,7 +43,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::post('/tokenize', function() { return redirect()->back(); })->name('lab.tokenize');
         Route::post('/mission/create', function() { return redirect()->back(); })->name('lab.create_mission');
         Route::post('/mission/complete', function() { return redirect()->back(); })->name('lab.complete_mission');
-        Route::post('/order/reschedule', function() { return redirect()->back(); })->name('lab.reschedule');
+        
         Route::post('/profile/update', [\App\Http\Controllers\Lab\DashboardController::class, 'updateProfile'])->name('lab.update_profile');
         Route::post('/profile/export-csv', [\App\Http\Controllers\Lab\DashboardController::class, 'exportCSV'])->name('lab.profile.export_csv');
         Route::post('/profile/password', function() { return redirect()->back(); })->name('lab.change_password');
@@ -56,11 +56,20 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
         Route::post('/asset/update-price', [App\Http\Controllers\Lab\AssetController::class, 'updatePrice'])->name('lab.asset.updatePrice');
 
+        // 🎯 CONTROL DE RESERVAS Y ALQUILERES (ÓRDENES)
+        Route::post('/order/approve', [App\Http\Controllers\Lab\OrderController::class, 'approve'])->name('lab.order.approve');
+        Route::post('/order/reject', [App\Http\Controllers\Lab\OrderController::class, 'reject'])->name('lab.order.reject');
+        Route::post('/order/reschedule', [App\Http\Controllers\Lab\OrderController::class, 'reschedule'])->name('lab.order.reschedule');
+
         // 🎯 CONTROL DE CONTRATACIÓN Y ESCROW (WORKSPACE 3)
         Route::post('/mission/store', [App\Http\Controllers\Lab\MissionController::class, 'store'])->name('lab.mission.store');
         Route::post('/mission/assign', [App\Http\Controllers\Lab\MissionController::class, 'assignCreator'])->name('lab.mission.assign');
         Route::post('/mission/reject', [App\Http\Controllers\Lab\MissionController::class, 'rejectCreator'])->name('lab.mission.reject');
         Route::post('/mission/complete', [App\Http\Controllers\Lab\MissionController::class, 'completeMission'])->name('lab.mission.complete');
+
+        // 🎓 CONTROL DE CRÉDITOS ISA
+        Route::post('/credit/approve', [\App\Http\Controllers\Lab\CreditController::class, 'approve'])->name('lab.credit.approve');
+        Route::post('/credit/reject', [\App\Http\Controllers\Lab\CreditController::class, 'reject'])->name('lab.credit.reject');
     });
 
     // 🎨 PORTAL DE OPERACIONES DEL CREATOR (Rol 'creator')

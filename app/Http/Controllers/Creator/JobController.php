@@ -11,28 +11,43 @@ class JobController extends Controller
     public function apply(Request $request)
     {
         $creator = auth()->user();
-        $misionId = $request->input('mission_id');
+        $missionId = $request->input('mission_id');
 
-        $existe = DB::table('mission_applications')->where('mission_id', $misionId)->where('creator_id', $creator->id)->exists();
-        if ($existe) {
-            return redirect()->route('creator.dashboard')->with('error', "Ya te has postulado a esta misión.");
+        $mission = DB::table('missions')->where('id', $missionId)->where('status', 'open')->first();
+
+        if (!$mission) {
+            return redirect()->route('creator.dashboard')->with('error', 'La misión ya no está disponible.');
         }
 
-        DB::transaction(function() use ($creator, $misionId, $request) {
+        // Evitar postulación doble
+        $yaPostulado = DB::table('mission_applications')
+            ->where('mission_id', $missionId)
+            ->where('creator_id', $creator->id)
+            ->exists();
+
+        if ($yaPostulado) {
+            return redirect()->route('creator.dashboard')->with('error', 'Ya te has postulado a esta misión.');
+        }
+
+        DB::transaction(function() use ($creator, $mission, $request) {
             DB::table('mission_applications')->insert([
-                'mission_id' => $misionId, 'creator_id' => $creator->id,
-                'message' => trim($request->input('message')), 'status' => 'pending', 'created_at' => now(), 'updated_at' => now()
+                'mission_id' => $mission->id,
+                'creator_id' => $creator->id,
+                'cover_letter' => $request->input('message'),
+                'status' => 'pending',
+                'created_at' => now(),
+                'updated_at' => now()
             ]);
 
-            $mision = DB::table('missions')->where('id', $misionId)->first();
             DB::table('notifications')->insert([
-                'user_id' => $mision->lab_id,
-                'message' => "El Creator " . $creator->name . " se ha postulado a la misión: " . $mision->title,
-                'type' => 'info', 'created_at' => now()
+                'user_id' => $mission->lab_id,
+                'message' => '🚀 Nueva postulación de ' . $creator->name . ' a la misión: ' . $mission->title,
+                'type' => 'info',
+                'created_at' => now()
             ]);
-        ]);
+        });
 
-        return redirect()->route('creator.dashboard')->with('msg', 'applied_ok');
+        return redirect()->route('creator.dashboard')->with('msg', 'mission_applied_ok');
     }
 
     public function signCredit(Request $request)

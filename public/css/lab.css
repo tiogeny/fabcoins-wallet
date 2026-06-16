@@ -1,7 +1,84 @@
 /* ==========================================================================
-   🏢 FABCOINS - HOJA DE ESTILOS OPERATIVA CONSOLIDADA (SISTEMA MAESTRO v1.6)
+   🏢 FABCOINS - HOJA DE ESTILOS OPERATIVA CONSOLIDADA (SISTEMA MAESTRO v3.7)
    ========================================================================== */
 
+/* ==========================================================================
+   0. CLASES PREMIUM BASE (TARJETAS, INPUTS, TABLAS Y BADGES)
+   ========================================================================== */
+.premium-glass-card {
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: #1c2230;
+    padding: 24px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    margin-bottom: 25px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.premium-glass-card-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.04); padding-bottom: 12px;
+}
+
+.premium-glass-card-title {
+    font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 19px;
+    color: #ffffff; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 8px;
+}
+
+.premium-glass-card-subtitle {
+    font-size: 12.5px; color: #a0aec0; margin-bottom: 20px; line-height: 1.4;
+}
+
+.premium-input, .premium-select {
+    width: 100%; background: #1c2230; border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #ffffff; height: 38px; border-radius: 6px; font-size: 12.5px; padding: 0 15px;
+    box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s; margin-bottom: 0;
+}
+.premium-select { font-weight: 700; }
+
+.premium-textarea {
+    width: 100%; background: #131722; border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #ffffff; border-radius: 6px; font-size: 12.5px; padding: 10px 12px;
+    resize: none; font-family: 'Inter', sans-serif; box-sizing: border-box;
+}
+.premium-input:focus, .premium-select:focus, .premium-textarea:focus { outline: none !important; }
+
+.premium-label {
+    font-size: 10px; font-weight: 700; color: #7f8c8d; text-transform: uppercase;
+    letter-spacing: 0.5px; display: block; margin-bottom: 6px;
+}
+
+.table-container { overflow-x: auto; width: 100%; }
+.premium-data-table { width: 100%; border-collapse: collapse; }
+.premium-data-table th {
+    padding: 12px; font-size: 10px; color: #7f8c8d; text-transform: uppercase;
+    text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.08); letter-spacing: 0.5px;
+}
+.premium-data-table td {
+    padding: 14px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.02); vertical-align: middle;
+}
+.premium-data-table tr:hover td { background: rgba(255, 255, 255, 0.01); }
+.premium-data-table .empty-state { text-align: center; padding: 40px; color: #7f8c8d; font-size: 13px; font-style: italic; }
+
+.btn-premium {
+    height: 38px; padding: 0 20px; font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; cursor: pointer; transition: all 0.2s ease-in-out;
+    border: 1px solid transparent; color: #ffffff; margin: 0;
+}
+
+.badge-semantic {
+    padding: 3px 8px; border-radius: 4px; font-size: 9px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; white-space: nowrap; color: white !important;
+}
+.badge-machine { background: #1abc9c; }
+.badge-service { background: #3498db; }
+.badge-lab     { background: #9b59b6; }
+.badge-space   { background: #2ecc71; }
+.badge-status-enlisted { background: rgba(160, 174, 192, 0.08); color: #a0aec0; }
+.badge-status-operative { background: rgba(46, 204, 113, 0.1); color: #2ecc71; }
+.badge-status-retired { background: rgba(231, 76, 60, 0.1); color: #e74c3c; }
 
 /* ==========================================================================
    1. ENCABEZADO INDUSTRIAL DE ALTA GAMA Y PERFIL
@@ -230,6 +307,41 @@
     border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
+/* --- Utilidad para columnas de progreso en Tablas --- */
+.capacity-progress-wrapper {
+    color: #ffffff;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+}
+.capacity-progress-unit {
+    font-size: 10px;
+    color: #a0aec0;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    margin-left: 4px;
+}
+.capacity-progress-tokenized {
+    font-size: 11px;
+    color: #f1c40f;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    margin-left: auto;
+}
+.capacity-progress-burned {
+    font-size: 10.5px;
+    color: #7f8c8d;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
 
 /* ==========================================================================
    4. CUADRÍCULA CENTRAL DE HUBS (DASHBOARD)
@@ -331,20 +443,88 @@
 .metric-compact-row strong { font-family: 'Rajdhani', sans-serif; font-size: 14px; color: #ffffff; }
 .color-dot-indicator { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
+/* --- Auxiliares extraídos de 1_activar.blade.php --- */
+.btn-text-amarillo {
+    background: transparent; border: none; color: #f1c40f; 
+    font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 11px; 
+    cursor: pointer; padding: 0; text-transform: uppercase; 
+    letter-spacing: 0.5px; white-space: nowrap; display: inline-flex; align-items: center;
+}
+.btn-text-amarillo:hover { color: #d4ac0d; }
+
+.btn-delete-icon {
+    background: transparent; border: none; color: #e74c3c; font-size: 16px; 
+    cursor: pointer; padding: 4px; line-height: 1; transition: transform 0.2s;
+}
+.btn-delete-icon:hover { transform: scale(1.2); }
+
+.asset-progress-bar {
+    width: 90%; height: 3px; background: rgba(255,255,255,0.06); 
+    border-radius: 2px; overflow: hidden;
+}
+.asset-progress-fill { height: 100%; border-radius: 2px; }
+.asset-progress-high { background: #1abc9c; }
+.asset-progress-med { background: #f1c40f; }
+.asset-progress-low { background: #e74c3c; }
+
+.map-section-container {
+    display: flex; flex-direction: column; gap: 12px; 
+    border-top: 1px solid rgba(255,255,255,0.02); padding-top: 15px;
+}
+
+/* --- Insignias de Alerta y Quema Histórica --- */
+.badge-alert-neon {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    background: rgba(231, 76, 60, 0.06);
+    border: 1px solid rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.badge-unit-dynamic {
+    position: absolute;
+    right: 10px;
+    font-size: 10px;
+    color: #1abc9c;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* --- Botón transparente de Agregar Fila --- */
+.btn-transparent-action {
+    background: transparent;
+    border: none;
+    color: #f1c40f;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+}
+.btn-transparent-action:hover { color: #d4ac0d; }
 
 /* ==========================================================================
-   5. CONTROL DE CAPAS DE TRABAJO (WORKSPACES) Y ENVOLTORIOS
+   5. CONTROL DE CAPAS DE TRABAJO (HUBS) Y ENVOLTORIOS
    ========================================================================== */
-.workspace-section {
+.hub-section {
     display: none;
     opacity: 0;
     transform: translateY(10px);
     transition: all 0.3s ease;
 }
 
-.workspace-section.active { display: block; opacity: 1; transform: translateY(0); }
+.hub-section.active { display: block; opacity: 1; transform: translateY(0); }
 
-.workspace-active-bar-v2 {
+.hub-active-bar-v2 {
     display: flex;
     align-items: center;
     justify-content: flex-start; 
@@ -359,7 +539,7 @@
     box-sizing: border-box;
 }
 
-.workspace-active-bar-v2::before {
+.hub-active-bar-v2::before {
     content: "";
     width: 1px;
     height: 20px;
@@ -367,7 +547,7 @@
     order: 1;
 }
 
-.workspace-title-node {
+.hub-title-node {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -379,7 +559,7 @@
     order: 2;
 }
 
-.workspace-title-node img { width: 22px; height: 22px; object-fit: contain; }
+.hub-title-node img { width: 22px; height: 22px; object-fit: contain; }
 
 /* Contenedores Genéricos de los Tabs */
 .hub-card-container {
@@ -545,15 +725,6 @@
     margin: 0;
 }
 
-/* --- Clases extraídas de 1_activar.blade.php --- */
-.profile-panoramic-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 25px;
-    align-items: start;
-    margin-bottom: 20px;
-}
-
 .social-links-grid-activar {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -564,18 +735,42 @@
     border: 1px solid rgba(255,255,255,0.01);
 }
 
-.grid-headers-enlistar {
-    display: grid;
-    grid-template-columns: 1.4fr 1.6fr 2fr 1.2fr 40px;
+/* --- Contenedores Específicos (Mapa y Botones de Formulario) --- */
+.form-actions-row {
+    display: flex;
     gap: 15px;
-    margin-bottom: 10px;
-    padding: 0 5px;
+    align-items: center;
+    margin-top: 20px;
+}
+.map-container {
+    height: 360px;
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.04);
+    z-index: 1;
+    background: #131722;
+}
+.address-input-wrapper {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    align-items: center;
 }
 
-.row-token-enlistar {
+/* --- Grillas específicas de 2_tokenizar.blade.php --- */
+.grid-tokenise-headers {
     display: grid;
-    grid-template-columns: 1.4fr 1.6fr 2fr 1.2fr 40px;
-    gap: 15px;
+    grid-template-columns: 40px 1.6fr 0.9fr 1.3fr 1fr 1fr 1.1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 0 5px;
+    align-items: center;
+}
+
+.row-tokenise-item {
+    display: grid;
+    grid-template-columns: 40px 1.6fr 0.9fr 1.3fr 1fr 1fr 1.1fr;
+    gap: 12px;
     background: #131722;
     padding: 10px;
     border-radius: 8px;
@@ -584,6 +779,14 @@
     border: 1px solid rgba(255,255,255,0.01);
 }
 
+.tokenise-total-wrapper {
+    display: grid;
+    grid-template-columns: 40px 1.6fr 0.9fr 1.3fr 1fr 1fr 1.1fr;
+    gap: 12px;
+    margin-top: 20px;
+    align-items: center;
+    padding-right: 5px;
+}
 
 /* ==========================================================================
    8. ESTADOS DE FOCO (GLOW) Y BOTONES POR COLOR DE HUB
@@ -632,6 +835,29 @@
     outline: none !important;
 }
 
+.btn-amarillo-hub {
+    background: #f1c40f ;
+    border: 1px solid #f1c40f ;
+    color: #ffffff !important;
+    padding: 0 24px;
+    height: 36px;
+    font-size: 11.5px;
+    font-weight: 700;
+    margin: 0;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px rgba(26, 188, 156, 0.15);
+    width: max-content !important;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+.btn-amarillo-hub:hover {
+    background: #f1c40f ;
+    border-color: #f1c40f ;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(26, 188, 156, 0.25);
+}
+
 /* HUB 3: PUBLICAR (Rosado) */
 .focus-glow-rosado input:focus, 
 .focus-glow-rosado select:focus, 
@@ -642,15 +868,245 @@
     outline: none !important;
 }
 
-/* --- ESTILOS TEMÁTICOS PARA CABECERAS DE WORKSPACE --- */
-.workspace-bar-verde    { border-bottom: 2px solid #1abc9c !important; }
-.workspace-text-verde   { color: #1abc9c !important; }
+.btn-rosado-hub {
+    background: #e84393  ;
+    border: 1px solid #e84393  ;
+    color: #ffffff !important;
+    padding: 0 24px;
+    height: 36px;
+    font-size: 11.5px;
+    font-weight: 700;
+    margin: 0;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px rgba(26, 188, 156, 0.15);
+    width: max-content !important;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+.btn-rosado-hub:hover {
+    background: #e84393  ;
+    border-color: #e84393  ;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(26, 188, 156, 0.25);
+}
 
-.workspace-bar-amarillo { border-bottom: 2px solid #f1c40f !important; }
-.workspace-text-amarillo{ color: #f1c40f !important; }
+/* --- ESTILOS TEMÁTICOS PARA CABECERAS DE hub --- */
+.hub-bar-verde    { border-bottom: 2px solid #1abc9c !important; }
+.hub-text-verde   { color: #1abc9c !important; }
 
-.workspace-bar-rosado   { border-bottom: 2px solid #e84393 !important; }
-.workspace-text-rosado  { color: #e84393 !important; }
+.hub-bar-amarillo { border-bottom: 2px solid #f1c40f !important; }
+.hub-text-amarillo{ color: #f1c40f !important; }
+
+.hub-bar-rosado   { border-bottom: 2px solid #e84393 !important; }
+.hub-text-rosado  { color: #e84393 !important; }
 
 /* Utilidad para el contador general */
 .text-success-neon      { color: #2ecc71 !important; }
+
+/* ==========================================================================
+   9. CLASES UTILITARIAS Y WRAPPERS FINALES (v2.9)
+   ========================================================================== */
+.input-with-badge-wrapper { position: relative; display: flex; align-items: center; }
+.badge-unidad-dinamica { position: absolute; right: 10px; font-size: 10px; color: #1abc9c; font-weight: 700; text-transform: uppercase; }
+.text-center-wrapper { text-align: center; }
+.action-cell-flex { display: flex; align-items: center; gap: 12px; width: 100%; }
+.m-0 { margin: 0 !important; }
+.w-auto { width: auto !important; }
+.flex-center-38 { display: flex; align-items: center; justify-content: center; width: 100%; height: 38px; }
+
+/* Clases que no se reemplazaron en la revisión anterior */
+.address-input-wrapper { display: flex; gap: 8px; width: 100%; align-items: center; }
+.badge-alert-neon { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 12px; background: rgba(231, 76, 60, 0.06); border: 1px solid rgba(231, 76, 60, 0.15); color: #e74c3c; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.capacity-progress-wrapper { color: #ffffff; font-family: 'Rajdhani', sans-serif; font-size: 13.5px; font-weight: 700; margin-bottom: 5px; width: 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.capacity-progress-unit { font-size: 10px; color: #a0aec0; font-weight: 500; font-family: 'Inter', sans-serif; margin-left: 4px; }
+.capacity-progress-tokenized { font-size: 11px; color: #f1c40f; font-weight: 500; font-family: 'Inter', sans-serif; margin-left: auto; }
+.capacity-progress-burned { font-size: 10.5px; color: #7f8c8d; margin-top: 5px; display: flex; align-items: center; gap: 4px; }
+
+/* --- Utilidades finales para márgenes, alineaciones e iconos JS --- */
+.text-center { text-align: center !important; }
+.mt-25 { margin-top: 25px !important; }
+.leaflet-custom-pin-icon { 
+    font-size: 32px; 
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); 
+    line-height: 1; 
+}
+
+/* --- Clases Específicas para la Tarjeta de Tokenización --- */
+.empty-state-warning { 
+    background: #131722; border-radius: 8px; border: 1px dashed rgba(241, 196, 15, 0.15); 
+    padding: 40px; text-align: center; color: #7f8c8d; 
+}
+.token-numeric-value { 
+    color: #cbd5e0; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14px; 
+}
+.token-unit-small { 
+    font-family: 'Inter', sans-serif; font-size: 10px; color: #7f8c8d; 
+}
+.token-subtotal-value { 
+    color: #7f8c8d; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14.5px; transition: color 0.2s;
+}
+.total-box-success { 
+    text-align: right; background: rgba(46, 204, 113, 0.02); padding: 12px; 
+    border-radius: 10px; border: 1px solid rgba(46, 204, 113, 0.1); 
+}
+.total-box-label { 
+    font-size: 10px; color: #7f8c8d; text-transform: uppercase; display: block; 
+    letter-spacing: 0.5px; margin-bottom: 2px; 
+}
+.total-box-value { 
+    font-family: 'Rajdhani', sans-serif; font-weight: 800; font-size: 24px; color: #4a5568; transition: color 0.2s;
+}
+
+/* --- Utilidades de Alineación Adicionales --- */
+.text-right { text-align: right; }
+.pr-5 { padding-right: 5px; }
+.col-span-2 { grid-column: span 2; }
+.col-span-5 { grid-column: span 5; }
+.flex-align-gap-10 { display: flex; align-items: center; gap: 10px; }
+.flex-end-mt20 { display: flex; justify-content: flex-end; margin-top: 20px; }
+
+/* --- Utilidades para Tarjetas de Tarifas y Reservas (2_tokenizar) --- */
+.empty-italic-text { font-size: 12.5px; color: #4a5568; font-style: italic; margin: 0; }
+.flex-col-gap-10 { display: flex; flex-direction: column; gap: 10px; }
+
+/* Tarjeta 2: Tarifas */
+.rate-item-row { display: flex; justify-content: space-between; align-items: center; background: #131722; padding: 12px 18px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.01); }
+.flex-align-gap-12 { display: flex; align-items: center; gap: 12px; }
+.rate-item-title { font-size: 13px; color: #cbd5e0; font-weight: 600; }
+.rate-item-subtitle { font-size: 11px; color: #7f8c8d; }
+.form-inline-flex-10 { margin: 0; display: flex; align-items: center; gap: 10px; }
+.input-rate-update { width: 95px; height: 34px; background: #1c2230; border: 1px solid rgba(255,255,255,0.06); color: #f1c40f; font-weight: 700; border-radius: 6px; padding: 0 8px; margin-bottom: 0; text-align: center; font-family: 'Rajdhani', sans-serif; font-size: 14px; }
+.btn-rate-update { padding: 0 14px !important; height: 34px !important; display: inline-flex; align-items: center; background: rgba(241, 196, 15, 0.04) !important; border-color: rgba(241, 196, 15, 0.2) !important; color: #f1c40f !important; }
+.btn-rate-update:hover { background: rgba(241, 196, 15, 0.1) !important; border-color: rgba(241, 196, 15, 0.4) !important; }
+
+/* Tarjeta 3: Reservas (Celdas de tabla) */
+.td-date-dim { font-size: 11.5px; color: #a0aec0; }
+.td-creator-name { font-size: 13px; font-weight: 600; color: #ffffff; }
+.td-equipment { font-size: 13px; color: #cbd5e0; }
+.td-time-req { font-size: 12px; color: #ffffff; }
+.text-date-highlight { font-size: 10px; color: #3498db; font-weight: bold; }
+.td-amount-gold { font-family: 'Rajdhani', sans-serif; font-weight: 800; color: #f1c40f; font-size: 15px; }
+.action-cell-flex-6 { display: flex; gap: 6px; align-items: center; }
+
+/* Botones de acción mínimos en Tablas */
+.btn-min-approve { padding: 5px 10px !important; font-size: 10px !important; background: rgba(46,204,113,0.06) !important; border-color: rgba(46,204,113,0.3) !important; color: #2ecc71 !important; font-weight: 700 !important; }
+.btn-min-approve:hover { background: rgba(46,204,113,0.15) !important; color: #2ecc71 !important; }
+.btn-min-reschedule { padding: 5px 10px !important; font-size: 10px !important; background: rgba(243,156,18,0.06) !important; border-color: rgba(243,156,18,0.3) !important; color: #f39c12 !important; font-weight: 700 !important; }
+.btn-min-reschedule:hover { background: rgba(243,156,18,0.15) !important; color: #f39c12 !important; }
+.btn-min-reject { padding: 5px 10px !important; font-size: 10px !important; border-color: rgba(231,76,60,0.2) !important; color: #e74c3c !important; }
+.btn-min-reject:hover { background: rgba(231,76,60,0.1) !important; color: #e74c3c !important; }
+
+/* Textos de Estado de Reservas */
+.status-text-approved { font-size: 10px; font-weight: 800; color: #2ecc71; letter-spacing: 0.5px; }
+.status-text-waiting { font-size: 10px; font-weight: 700; color: #f39c12; letter-spacing: 0.5px; }
+.status-text-rejected { font-size: 10px; color: #7f8c8d; font-weight: 600; }
+
+/* --- Utilidades para Tarjeta 4 (ISA) e Historial (2_tokenizar) --- */
+.td-creator-email { font-size: 10.5px; color: #7f8c8d; margin-top: 2px; }
+.td-concept-desc { color: #cbd5e0; font-size: 12.5px; }
+.status-text-isa-pending { color: #f39c12; font-size: 11px; font-weight: 600; }
+.isa-progress-text { font-size: 11px; color: #cbd5e0; font-family: 'Rajdhani', sans-serif; font-weight: 700; margin-bottom: 4px; }
+.isa-progress-sub { font-family: 'Inter', sans-serif; font-size: 9.5px; color: #7f8c8d; font-weight: 500; }
+.isa-progress-bar-wrap { width: 140px; height: 4px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+
+/* Tarjeta 5: Transacciones */
+.btn-export-excel { 
+    background: rgba(46, 204, 113, 0.06) !important; border-color: rgba(46, 204, 113, 0.2) !important; 
+    color: #2ecc71 !important; font-weight: 700 !important; padding: 0 16px !important; 
+    height: 34px !important; border-radius: 6px !important; 
+}
+.btn-export-excel:hover { background: rgba(46, 204, 113, 0.15) !important; color: #2ecc71 !important; }
+
+.td-description-text { font-size: 13px; color: #ffffff; }
+.tx-badge { font-size: 8.5px; padding: 1px 5px; border-radius: 3px; font-weight: bold; margin-left: 6px; letter-spacing: 0.3px; color: white; }
+.tx-badge-mint { background: #3498db; }
+.tx-badge-escrow { background: #e84393; }
+.tx-badge-info { background: #7f8c8d; }
+
+.tx-amount-value { font-family: 'Rajdhani', sans-serif; font-weight: 800; font-size: 15px; }
+.text-danger-neon { color: #e74c3c !important; }
+.text-neutral-neon { color: #cbd5e0 !important; }
+
+/* --- Limpieza final de 2_tokenizar --- */
+.tooltip-icon-warning { color: #f1c40f !important; }
+.tooltip-card-warning { border-top-color: #f1c40f !important; }
+
+.text-neutral-muted { color: #cbd5e0 !important; }
+.text-muted-dark { color: #4a5568 !important; }
+.text-warning-neon { color: #f1c40f !important; }
+.text-white-pure { color: #ffffff !important; }
+.bg-warning-neon { background: #f1c40f !important; }
+
+.mt-5px { margin-top: 5px !important; }
+.mb-0 { margin-bottom: 0 !important; }
+
+.asset-name-truncate { 
+    color: #cbd5e0; font-weight: 500; white-space: nowrap; 
+    overflow: hidden; text-overflow: ellipsis; max-width: 140px; 
+    display: inline-block; vertical-align: middle; 
+}
+
+/* ==========================================================================
+   10. MODALES, MISIONES Y PUBLICAR (3_publicar)
+   ========================================================================== */
+/* --- Modales Base --- */
+.modal-overlay-blur { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 3000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-container-dark { background: #1c2230; width: 100%; max-width: 520px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 20px 50px rgba(0,0,0,0.6); overflow: hidden; padding: 24px; box-sizing: border-box; }
+.modal-header-glass { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 12px; }
+.modal-title-glass { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 17px; color: #ffffff; text-transform: uppercase; margin: 0; letter-spacing: 0.5px; }
+.modal-close-btn { background: transparent; border: none; color: #7f8c8d; font-size: 22px; cursor: pointer; line-height: 1; }
+.modal-info-box { background: #131722; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.01); }
+.modal-creator-name { font-size: 15px; margin-top: 4px; }
+.modal-rating-grid { margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1.2fr; gap: 15px; align-items: center; }
+.modal-rating-label { font-size: 11px; font-weight: 700; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0; }
+.modal-rating-select { width: 100%; font-weight: 700; background: #131722; border: 1px solid rgba(255,255,255,0.06); color: #f1c40f; height: 36px; border-radius: 6px; font-size: 13px; text-align: center; }
+.btn-modal-submit { width: 100%; height: 42px; font-size: 12px; font-weight: 700; border-radius: 6px; margin: 0; transition: all 0.2s; }
+
+/* --- Formulario Misiones --- */
+.flex-col-gap-15 { display: flex; flex-direction: column; gap: 15px; }
+.grid-mission-inputs { display: grid; grid-template-columns: 1.5fr 1fr; gap: 15px; }
+.grid-mission-config { display: grid; grid-template-columns: 0.8fr 0.8fr 1fr 1.4fr; gap: 15px; align-items: center; }
+.input-reward-gold { width: 100%; background: #131722; border: 1px solid rgba(255,255,255,0.06); color: #f1c40f; height: 38px; border-radius: 6px; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 15px; text-align: center; }
+.relative-flex-w100 { position: relative; display: flex; align-items: center; width: 100%; }
+.calendar-icon-overlay { position: absolute; left: 14px; color: #e84393; font-size: 13px; pointer-events: none; z-index: 5; }
+.input-date-premium { width: 100%; background: #131722; border: 1px solid rgba(255,255,255,0.08); color: #fff; height: 38px; border-radius: 6px; font-size: 12.5px; padding: 0 12px 0 38px; color-scheme: dark; font-family: 'Rajdhani', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.2s ease-in-out; }
+.input-date-premium:hover { border-color: rgba(232, 67, 147, 0.4); box-shadow: 0 0 10px rgba(232, 67, 147, 0.08); }
+
+/* --- Tabla Misiones --- */
+.tr-align-top { border-bottom: 1px solid rgba(255,255,255,0.02); vertical-align: top; }
+.miss-title-text { font-weight: 600; color: #ffffff; font-size: 13.5px; margin-bottom: 4px; }
+.miss-desc-text { font-size: 11.5px; color: #a0aec0; line-height: 1.4; max-width: 400px; }
+.miss-link-text { color: #3498db; font-size: 11px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; }
+.td-date-rajdhani { font-family: 'Rajdhani', sans-serif; font-weight: 700; color: #cbd5e0; font-size: 13px; }
+.spots-filled-text { font-size: 9.5px; color: #7f8c8d; text-transform: uppercase; font-weight: 600; }
+.flex-col-gap-8 { display: flex; flex-direction: column; gap: 8px; }
+.flex-col-gap-2 { display: flex; flex-direction: column; gap: 2px; }
+.applicant-row-card { background: #131722; padding: 8px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.01); }
+.applicant-name-text { color: #cbd5e0; font-size: 12.5px; font-weight: 600; }
+.badge-financiado { font-size: 9px; background: rgba(241, 196, 15, 0.08); color: #f1c40f; padding: 1px 4px; border-radius: 3px; font-weight: 700; width: fit-content; letter-spacing: 0.3px; }
+.btn-min-assign { padding: 5px 10px !important; font-size: 10px !important; background: rgba(52,152,219,0.05) !important; border-color: rgba(52,152,219,0.3) !important; color: #3498db !important; font-weight: 700 !important; }
+.btn-min-eval-gold { padding: 5px 12px !important; font-size: 10px !important; font-weight: 700 !important; background: rgba(255,255,255,0.02) !important; border-color: #f1c40f !important; color: #f1c40f !important; }
+.btn-min-eval-green { padding: 5px 12px !important; font-size: 10px !important; font-weight: 700 !important; background: rgba(255,255,255,0.02) !important; border-color: #2ecc71 !important; color: #2ecc71 !important; }
+
+/* --- Skills Tags --- */
+.skill-tags-wrapper { background: #131722; border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 12px; max-height: 130px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 6px; }
+.skill-tag-label { display: inline-flex; align-items: center; gap: 6px; background: #1c2230; padding: 4px 8px; border-radius: 4px; font-size: 11px; color: #cbd5e0; cursor: pointer; border: 1px solid rgba(255,255,255,0.02); transition: background 0.2s; }
+.skill-tag-label:hover { background: #232b38; }
+.skill-tag-sub { font-size: 8.5px; opacity: 0.5; font-weight: 700; }
+.h-90 { height: 90px !important; }
+.w-100 { width: 100% !important; }
+.mb-20 { margin-bottom: 20px !important; }
+.mb-22 { margin-bottom: 22px !important; }
+.pt-24 { padding-top: 24px !important; }
+
+/* --- Ajustes finales de 3_publicar --- */
+.h-75 { height: 75px !important; }
+.font-rajdhani-15 { font-family: 'Rajdhani', sans-serif !important; font-size: 15px !important; }
+.block-16 { display: block !important; font-size: 16px !important; }
+
+/* --- Estados Dinámicos inyectados por Javascript --- */
+.input-readonly-state { background: #1c2230 !important; color: #7f8c8d !important; }
+.input-active-state { background: #131722 !important; color: #fff !important; }
+.btn-modal-gold { background: #f1c40f !important; border-color: #f1c40f !important; color: #111111 !important; }
+.btn-modal-green { background: #2ecc71 !important; border-color: #2ecc71 !important; color: #ffffff !important; }

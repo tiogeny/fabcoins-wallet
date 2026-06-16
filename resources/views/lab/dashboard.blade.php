@@ -3,7 +3,7 @@
 @section('title', __('messages.lab_portal'))
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=2.7">
+    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=3.8">
 @endpush
 
 @section('content')
@@ -12,7 +12,7 @@
     <!-- HEADER INDUSTRIAL DE ALTA GAMA -->
     <header class="lab-header-v2">
        <button type="button" class="lab-profile-trigger" 
-        onclick="abrirWorkspaceHubPersistente('workspace-activar'); setTimeout(() => { document.getElementById('seccion-perfil-mapa').scrollIntoView({ behavior: 'smooth' }); }, 250);" 
+        onclick="abrirHubPersistente('hub-activar'); setTimeout(() => { document.getElementById('seccion-perfil-mapa').scrollIntoView({ behavior: 'smooth' }); }, 250);" 
         title="{{ __('messages.edit_profile') }}">
             <div class="lab-avatar-wrapper {{ ($isFrozen ?? false) ? 'status-frozen' : 'status-active' }}">
                 <img src="{{ $lab->avatar_url ?: 'https://ui-avatars.com/api/?name='.urlencode($lab->name).'&background=1abc9c&color=fff' }}" alt="{{ $lab->name }}">
@@ -27,7 +27,7 @@
         
         <div class="lab-controls-node">
             <div class="notif-wrapper" style="position: relative;">
-                <button type="button" class="notif-icon-btn" title="Notificaciones" onclick="const dd = this.nextElementSibling; dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex';">
+                <button type="button" class="notif-icon-btn" title="{{ __('messages.notifications') }}" onclick="const dd = this.nextElementSibling; dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex';">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -42,9 +42,13 @@
                         <div class="notif-item" style="text-align: center; color: #7f8c8d; border-left: none;">{{ __('messages.no_notifications') }}</div>
                     @else
                         @foreach($notificaciones as $n)
-                            <div class="notif-item {{ !$n->is_read ? 'unread' : '' }}">
+                            <div class="notif-item {{ !$n->is_read ? 'unread' : '' }} notif-item-azul" 
+                                 style="cursor: pointer; transition: background 0.2s;" 
+                                 onclick="enrutarNotificacionInteligenteLab('{{ strtolower($n->message) }}')"
+                                 onmouseover="this.style.background='rgba(52, 152, 219, 0.05)'" 
+                                 onmouseout="this.style.background='transparent'">
                                 {{ $n->message }}
-                                <div style="font-size: 10px; color: #7f8c8d; margin-top: 5px;">⏱️ {{ date('d M - H:i', strtotime($n->created_at)) }}</div>
+                                <div class="notif-timestamp">⏱️ {{ date('d M - H:i', strtotime($n->created_at)) }}</div>
                             </div>
                         @endforeach
                     @endif
@@ -61,7 +65,7 @@
     <!-- 🏠 VISTA 1: CENTRAL HUBS -->
     <div id="main-home-hub-view" class="home-hubs-wrapper">
         <div class="action-hubs-grid">
-            <div class="hub-card card-activar-neon" onclick="abrirWorkspaceHubPersistente('workspace-activar')">
+            <div class="hub-card card-activar-neon" onclick="abrirHubPersistente('hub-activar')">
                 <div>
                     <div class="hub-image-container"><img src="{{ asset('images/hubs/icon_activar.webp') }}" alt=""></div>
                     <h2>{{ __('messages.hub_activate_title') }}</h2>
@@ -91,7 +95,7 @@
                 </div>
             </div>
 
-            <div class="hub-card card-tokenizar-neon" onclick="abrirWorkspaceHubPersistente('workspace-tokenizar')">
+            <div class="hub-card card-tokenizar-neon" onclick="abrirHubPersistente('hub-tokenizar')">
                 <div>
                     <div class="hub-image-container"><img src="{{ asset('images/hubs/icon_tokenizar.webp') }}" alt=""></div>
                     <h2>{{ __('messages.hub_tokenise_title') }}</h2>
@@ -110,8 +114,16 @@
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#e74c3c" stroke-width="12" stroke-dasharray="{{ $perimetroBajas }} 214" stroke-dashoffset="-{{ $perimetroReserva + $perimetroOfertados }}"></circle>
                     </svg>
                 </div>
-                <div>
-                    <div class="main-hub-value text-success-neon">{{ number_format($totalMinted, 0, '.', ' ') }} FC</div>
+                <div style="display: flex; flex-direction: column; justify-content: space-between;">
+                    
+                    {{-- 🚀 NUEVO DISEÑO RATIO: MINTED / CONSUMED --}}
+                    <div style="display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-bottom: 15px;">
+                        <div class="main-hub-value text-success-neon" style="margin: 0;">{{ number_format($totalMinted, 0, '.', ' ') }} FC</div>
+                        <div style="font-size: 16px; color: #e67e22; font-weight: 700; font-family: 'Rajdhani', sans-serif;">
+                            / {{ number_format($totalHistoricoQuemado ?? 0, 0, '.', ' ') }} <span style="font-size: 10px; font-family: 'Inter', sans-serif; text-transform: uppercase; color: #bdc3c7;">{{ __('messages.badge_consumed') }}</span>
+                        </div>
+                    </div>
+
                     <div class="bullet-metrics-compact">
                         <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#3498db;"></span> <strong>{{ number_format($enReserva, 0, '.', ' ') }}</strong> {{ __('messages.lbl_reserve') }}</div>
                         <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#f1c40f;"></span> <strong>{{ number_format($ofertadosTotal, 0, '.', ' ') }}</strong> {{ __('messages.lbl_frozen') }}</div>
@@ -120,7 +132,7 @@
                 </div>
             </div>
 
-            <div class="hub-card card-publicar-neon" onclick="abrirWorkspaceHubPersistente('workspace-publicar')">
+            <div class="hub-card card-publicar-neon" onclick="abrirHubPersistente('hub-publicar')">
                 <div>
                     <div class="hub-image-container"><img src="{{ asset('images/hubs/icon_ofertar.webp') }}" alt=""></div>
                     <h2>{{ __('messages.hub_publish_title') }}</h2>
@@ -154,10 +166,10 @@
     <!-- 🖥️ VISTA 2: ESPACIOS DE TRABAJO INMERSIVOS -->
     
     <!-- ACTIVAR (ESMERALDA SOLIDO) -->
-    <div id="workspace-activar" class="workspace-section">
-        <div class="workspace-active-bar-v2 workspace-bar-verde">
-            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('workspace-activar')">← {{ __('messages.btn_back') }}</button>
-            <div class="workspace-title-node workspace-text-verde">
+    <div id="hub-activar" class="hub-section">
+        <div class="hub-active-bar-v2 hub-bar-verde">
+            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-activar')">← {{ __('messages.btn_back') }}</button>
+            <div class="hub-title-node hub-text-verde">
                 <img src="{{ asset('images/hubs/icon_activar.webp') }}" alt="">
                 {{ __('messages.hub_activate_title') }}
             </div>
@@ -165,10 +177,10 @@
         @include('lab.tabs.1_activar')
     </div>
 
-    <div id="workspace-tokenizar" class="workspace-section">
-        <div class="workspace-active-bar-v2 workspace-bar-amarillo">
-            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('workspace-tokenizar')">← {{ __('messages.btn_back') }}</button>
-            <div class="workspace-title-node workspace-text-amarillo">
+    <div id="hub-tokenizar" class="hub-section">
+        <div class="hub-active-bar-v2 hub-bar-amarillo">
+            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-tokenizar')">← {{ __('messages.btn_back') }}</button>
+            <div class="hub-title-node hub-text-amarillo">
                 <img src="{{ asset('images/hubs/icon_tokenizar.webp') }}" alt="">
                 {{ __('messages.hub_tokenise_title') }}
             </div>
@@ -176,10 +188,10 @@
         @include('lab.tabs.2_tokenizar')
     </div>
 
-    <div id="workspace-publicar" class="workspace-section">
-        <div class="workspace-active-bar-v2 workspace-bar-rosado">
-            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('workspace-publicar')">← {{ __('messages.btn_back') }}</button>
-            <div class="workspace-title-node workspace-text-rosado">
+    <div id="hub-publicar" class="hub-section">
+        <div class="hub-active-bar-v2 hub-bar-rosado">
+            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-publicar')">← {{ __('messages.btn_back') }}</button>
+            <div class="hub-title-node hub-text-rosado">
                 <img src="{{ asset('images/hubs/icon_ofertar.webp') }}" alt="">
                 {{ __('messages.hub_publish_title') }}
             </div>
@@ -196,10 +208,10 @@
     
     <script>
     // 🔥 SOLUCIÓN ARREGLO DE HILOS: Limpieza total de clases ocultas para evitar congelamiento
-    function abrirWorkspaceHubPersistente(workspaceId) {
-        sessionStorage.setItem('active_lab_workspace', workspaceId);
+    function abrirHubPersistente(hubId) {
+        sessionStorage.setItem('active_lab_hub', hubId);
         
-        document.querySelectorAll('.workspace-section').forEach(sec => {
+        document.querySelectorAll('.hub-section').forEach(sec => {
             sec.style.display = 'none';
             sec.classList.remove('active');
         });
@@ -207,17 +219,17 @@
         const homeHub = document.getElementById('main-home-hub-view');
         if (homeHub) homeHub.style.display = 'none';
         
-        const target = document.getElementById(workspaceId);
+        const target = document.getElementById(hubId);
         if (target) {
             target.style.display = 'block';
             setTimeout(() => target.classList.add('active'), 50);
         }
     }
 
-    function regresarAlHubCentralPersistente(workspaceId) {
-        sessionStorage.removeItem('active_lab_workspace');
+    function regresarAlHubCentralPersistente(hubId) {
+        sessionStorage.removeItem('active_lab_hub');
         
-        const target = document.getElementById(workspaceId);
+        const target = document.getElementById(hubId);
         if (target) {
             target.style.display = 'none';
             target.classList.remove('active');
@@ -244,9 +256,9 @@
             }
         }, true); // Usamos capture true para escuchar eventos dinámicos en caliente
         
-        const workspaceGuardado = sessionStorage.getItem('active_lab_workspace');
-        if (workspaceGuardado) {
-            abrirWorkspaceHubPersistente(workspaceGuardado);
+        const hubGuardado = sessionStorage.getItem('active_lab_hub');
+        if (hubGuardado) {
+            abrirHubPersistente(hubGuardado);
         }
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -278,7 +290,7 @@
             Swal.fire({ ...swalConfig, icon: alertas[msg].icon, title: alertas[msg].title, text: alertas[msg].text });
         }
         if (error) {
-            Swal.fire({ ...swalConfig, icon: 'error', title: '⚠️ Atención', text: error, timer: null });
+            Swal.fire({ ...swalConfig, icon: 'error', title: '⚠️ {{ __('messages.warning') }}', text: error, timer: null });
         }
     });
 
@@ -303,6 +315,25 @@
                 form.submit();
             }
         });
+    }
+
+    function enrutarNotificacionInteligenteLab(mensaje) {
+        // Si habla de reservas, maquinaria, financiamiento o créditos -> Hub Tokenizar
+        if (mensaje.includes('reserva') || mensaje.includes('crédito') || mensaje.includes('financiamiento') || mensaje.includes('máquina')) {
+            abrirHubPersistente('hub-tokenizar'); 
+        } 
+        // Si habla de misiones, trabajos, postulantes -> Hub Misiones
+        else if (mensaje.includes('misión') || mensaje.includes('postul')) {
+            abrirHubPersistente('hub-publicar'); 
+        } 
+        // Por defecto -> Hub Catálogo
+        else {
+            abrirHubPersistente('hub-activar'); 
+        }
+        
+        // Cierra el dropdown
+        const dropdown = document.querySelector('.notif-dropdown');
+        if(dropdown) dropdown.style.display = 'none';
     }
     </script>
 @endpush
