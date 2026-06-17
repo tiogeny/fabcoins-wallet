@@ -2,125 +2,68 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
 
 class PublicProfileController extends Controller
 {
-    /**
-     * Renderiza el portafolio unificado y bilingüe de cualquier miembro de la red
-     */
     public function show($slugOrId)
     {
-        // 1. Resolver la identidad del usuario por slug o ID
+        // Buscamos al usuario por su ID o por su SLUG
         $user = User::where('slug', $slugOrId)->orWhere('id', $slugOrId)->firstOrFail();
+        
+        // Obtenemos las habilidades (Solo si es Creador)
+        $misHabilidades = collect();
+        if ($user->role === 'creator') {
+            try {
+                $misHabilidades = DB::table('user_skills')
+                    ->join('skills_catalog', 'user_skills.skill_id', '=', 'skills_catalog.id')
+                    ->where('user_skills.user_id', $user->id)
+                    ->select('skills_catalog.*')
+                    ->get();
+            } catch (\Exception $e) {
+                // Evitamos error si la tabla no existe
+                $misHabilidades = collect();
+            }
+        }
 
-        $miRol = auth()->check() ? auth()->user()->role : 'guest';
-        $miId = auth()->check() ? auth()->id() : null;
+        // Obtenemos las reseñas e historial unificado
+        $historialUnificado = DB::table('reviews')
+            ->join('users', 'reviews.reviewer_id', '=', 'users.id')
+            ->leftJoin('missions', function($join) {
+                $join->on('reviews.context_id', '=', 'missions.id')->where('reviews.context_type', '=', 'mission');
+            })
+            ->leftJoin('orders', function($join) {
+                $join->on('reviews.context_id', '=', 'orders.id')->where('reviews.context_type', '=', 'market');
+            })
+            ->leftJoin('lab_assets', 'orders.asset_id', '=', 'lab_assets.id')
+            ->where('reviews.reviewee_id', $user->id)
+            ->select(
+                'reviews.*', 'users.name as reviewer_name', 'users.slug as reviewer_slug',
+                DB::raw("CASE WHEN reviews.context_type = 'mission' THEN missions.title ELSE lab_assets.custom_name END as context_title"),
+                DB::raw("CASE WHEN reviews.context_type = 'mission' THEN missions.reward_fc ELSE orders.total_fc END as context_fc")
+            )
+            ->orderBy('reviews.created_at', 'desc')
+            ->get();
 
-        // 2. LÓGICA DE RECLUTAMIENTO: Si el visitante es un Lab y ve a un Maker
-        $misMisionesAbiertas = [];
-        if ($miRol === 'lab' && $miId !== $user->id && $user->role === 'maker') {
+        // Si quien visita es un Lab, traemos sus misiones abiertas para poder invitarlo
+        $misMisionesAbiertas = collect();
+        if (auth()->check() && auth()->user()->role === 'lab' && $user->role === 'creator') {
             $misMisionesAbiertas = DB::table('missions')
-                ->where('lab_id', $miId)
+                ->where('lab_id', auth()->id())
                 ->where('status', 'open')
                 ->whereRaw('spots_total > spots_filled')
-                ->whereNull('target_maker_id')
-                ->select('id', 'title')
                 ->get();
         }
 
-        // 3. SÚPER CONSULTA UNIFICADA: Reseñas + Misiones + Mercado + Habilidades
-        $historialUnificado = DB::select("
-            SELECT 
-                r.id as review_id, r.rating, r.comment, r.created_at, r.context_type, 
-                u.name as reviewer_name, u.slug as reviewer_slug, u.id as reviewer_id,
-                CASE 
-                    WHEN r.context_type = 'mission' THEN m.title 
-                    WHEN r.context_type = 'market' THEN la.custom_name 
-                END as context_title,
-                CASE 
-                    WHEN r.context_type = 'mission' THEN m.description
-                    WHEN r.context_type = 'market' THEN NULL
-                END as context_desc,
-                CASE 
-                    WHEN r.context_type = 'mission' THEN m.reward_fc 
-                    WHEN r.context_type = 'market' THEN o.total_fc 
-                END as context_fc,
-                (
-                    SELECT GROUP_CONCAT(CONCAT(sc.name, ':', sc.type) SEPARATOR '|')
-                    FROM skill_endorsements se
-                    JOIN skills_catalog sc ON se.skill_id = sc.id
-                    WHERE se.review_id = r.id
-                ) as specific_skills
-            FROM reviews r 
-            JOIN users u ON r.reviewer_id = u.id 
-            LEFT JOIN missions m ON r.context_id = m.id AND r.context_type = 'mission'
-            LEFT JOIN orders o ON r.context_id = o.id AND r.context_type = 'market'
-            LEFT JOIN lab_assets la ON o.asset_id = la.id
-            WHERE r.reviewee_id = ? 
-            ORDER BY r.created_at DESC
-        ", [$user->id]);
-
-        // 4. Carga de Paneles Laterales según Rol
-        $misHabilidades = [];
-        $activosLab = [];
-
-        if ($user->role === 'maker') {
-            $misHabilidades = DB::select("
-                SELECT s.id, s.name, s.type, COUNT(e.id) as endorsements_count
-                FROM user_skills us
-                JOIN skills_catalog s ON us.skill_id = s.id
-                LEFT JOIN skill_endorsements e ON e.skill_id = s.id AND e.maker_id = us.user_id
-                WHERE us.user_id = ?
-                GROUP BY s.id, s.name, s.type
-                ORDER BY endorsements_count DESC
-            ", [$user->id]);
-        } else {
-            $activosLab = DB::table('lab_assets')
-                ->where('lab_id', $user->id)
-                ->where('status', 'active')
-                ->select('custom_name', 'asset_type', 'set_price_fc')
-                ->get();
-        }
-
-        return view('profile.show', compact(
-            'user', 'miRol', 'miId', 'misMisionesAbiertas', 
-            'historialUnificado', 'misHabilidades', 'activosLab'
-        ));
+        // Enviamos los datos a la vista
+        return view('public.profile', compact('user', 'misHabilidades', 'historialUnificado', 'misMisionesAbiertas'));
     }
 
-    /**
-     * Procesa y despacha la invitación formal de reclutamiento
-     */
-    public function invite(Request $request, $slugOrId)
+    public function invite(Request $request)
     {
-        $user = User::where('slug', $slugOrId)->orWhere('id', $slugOrId)->firstOrFail();
-        $request->validate(['mision_id' => 'required|integer']);
-        
-        $miId = auth()->id();
-        $misionId = $request->input('mision_id');
-
-        $mision = DB::table('missions')
-            ->where('id', $misionId)
-            ->where('lab_id', $miId)
-            ->where('status', 'open')
-            ->first();
-
-        if ($mision) {
-            // Registrar notificación en la campanita
-            DB::table('notifications')->insert([
-                'user_id' => $user->id,
-                'message' => "🎯 " . auth()->user()->name . " te ha invitado a la misión: " . $mision->title,
-                'type' => 'info',
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-
-            // En un paso posterior amarraremos la función 'notificar_invitacion_mision' para los correos
-        }
-
-        return redirect()->route('public.profile', $slugOrId)->with('msg', 'invite_ok');
+        // Lógica de invitación a misiones (lo haremos después si es necesario)
+        return redirect()->back();
     }
 }

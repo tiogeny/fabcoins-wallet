@@ -18,14 +18,12 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
-            ],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
+            
+            // Reglas para tus nuevos campos:
+            'fab_academy' => ['nullable', 'url', 'max:255'],
+            'instagram'   => ['nullable', 'string', 'max:255'],
+            'address'     => ['nullable', 'string', 'max:255'],
         ];
     }
 }

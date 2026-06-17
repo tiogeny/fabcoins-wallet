@@ -111,16 +111,21 @@ Route::middleware(['auth', 'locale'])->group(function () {
         // Módulo de Control de Red y Política Monetaria
         Route::post('/lab/invitar', [\App\Http\Controllers\SuperAdmin\SystemController::class, 'createLab'])->name('superadmin.lab.invite');
         Route::post('/politica/actualizar', [\App\Http\Controllers\SuperAdmin\SystemController::class, 'updatePolicy'])->name('superadmin.policy.update');
-    });
+    }); // <-- Cierra superadmin
 
-    // 🌐 EXPEDIENTES PÚBLICOS Y MOTOR DE RECLUTAMIENTO GLOBAL
-    Route::get('/profile/{slugOrId}', [\App\Http\Controllers\PublicProfileController::class, 'show'])->name('public.profile');
+    // 📨 Reclutamiento (dentro de auth, requiere login)
     Route::post('/profile/{slugOrId}/invite', [\App\Http\Controllers\PublicProfileController::class, 'invite'])->name('public.profile.invite');
 
-
-});
+}); // <-- Cierre del grupo principal de auth y locale
 
 // --- 🔐 RUTAS DE AUTENTICACIÓN PROTEGIDAS POR LOCALE ---
 Route::middleware(['locale'])->group(function () {
     require __DIR__.'/auth.php';
+});
+
+// =========================================================================
+// 🌐 EXPEDIENTES TOTALMENTE PÚBLICOS
+// =========================================================================
+Route::middleware(['locale'])->group(function () {
+    Route::get('/profile/{slugOrId}', [\App\Http\Controllers\PublicProfileController::class, 'show'])->name('public.profile');
 });

@@ -135,25 +135,57 @@
             </div>
 
             <div class="profile-panoramic-grid mt-20" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 25px;">
-                {{-- Columna Izquierda: Bio y Links --}}
-                <div class="flex-col-gap-15">
+                {{-- Columna Izquierda: Bio, Redes y Ubicación --}}
+                <div class="flex-col-gap-15" style="display: flex; flex-direction: column; gap: 15px;">
+                    {{-- Biografía Profesional --}}
                     <div>
                         <label class="premium-label">{{ __('messages.lbl_my_bio') }}</label>
-                        <textarea name="bio" rows="6" class="premium-textarea m-0" placeholder="{{ __('messages.ph_my_bio') }}" required>{{ $creator->bio }}</textarea>
+                        <textarea name="bio" rows="10" class="premium-textarea m-0" placeholder="{{ __('messages.ph_my_bio') }}" required>{{ $creator->bio }}</textarea>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <input type="url" name="social_linkedin" value="{{ $creator->social_linkedin }}" class="premium-input m-0" placeholder="🔗 URL LinkedIn">
-                        <input type="url" name="social_github" value="{{ $creator->social_github }}" class="premium-input m-0" placeholder="🐙 URL GitHub">
-                        <input type="url" name="social_portfolio" value="{{ $creator->social_portfolio }}" class="premium-input m-0" style="grid-column: span 2;" placeholder="🌐 URL Portafolio / Web">
+
+                    {{-- Redes Sociales y Plataformas --}}
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <label class="premium-label">LinkedIn</label>
+                            <input type="url" name="social_linkedin" value="{{ $creator->social_linkedin }}" class="premium-input m-0" placeholder="🔗 {{ __('messages.ph_linkedin') }}">
+                        </div>
+                        <div>
+                            <label class="premium-label">GitHub</label>
+                            <input type="url" name="social_github" value="{{ $creator->social_github }}" class="premium-input m-0" placeholder="🐙 {{ __('messages.ph_github') }}">
+                        </div>
+                        <div>
+                            <label class="premium-label">Instagram</label>
+                            <input type="url" name="instagram_url" value="{{ auth()->user()->instagram_url }}" class="premium-input m-0" placeholder="📸 {{ __('messages.ph_instagram') }}">
+                        </div>
+                        <div>
+                            <label class="premium-label">Fab Academy</label>
+                            <input type="url" name="fab_academy_url" value="{{ auth()->user()->fab_academy_url }}" class="premium-input m-0" placeholder="🎓 {{ __('messages.ph_fab_academy') }}">
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <label class="premium-label">{{ __('messages.lbl_portfolio') ?? 'Portafolio / Web' }}</label>
+                            <input type="url" name="social_portfolio" value="{{ $creator->social_portfolio }}" class="premium-input m-0" placeholder="🌐 {{ __('messages.ph_portfolio') }}">
+                        </div>
+                    </div>
+
+                    {{-- Ubicación / Dirección --}}
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: rgba(0,0,0,0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);">
+                        <div>
+                            <label class="premium-label">{{ __('messages.lbl_city') }}</label>
+                            <input type="text" name="city" value="{{ auth()->user()->city }}" class="premium-input m-0" placeholder="{{ __('messages.ph_city') }}">
+                        </div>
+                        <div>
+                            <label class="premium-label">{{ __('messages.lbl_country') }}</label>
+                            <input type="text" name="country" value="{{ auth()->user()->country }}" class="premium-input m-0" placeholder="{{ __('messages.ph_country') }}">
+                        </div>
                     </div>
                 </div>
 
                 {{-- Columna Derecha: Selector de Habilidades --}}
                 <div class="flex-col-gap-10">
                     <label class="premium-label">{{ __('messages.lbl_my_skills') }}</label>
-                    <div class="skill-tags-wrapper" style="max-height: 220px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);">
+                    <div class="skill-tags-wrapper" style="max-height: 340px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);">
                         @if($catalogoSkills->isEmpty())
-                            <span class="empty-italic-text">{{ __('messages.lbl_no_skills_registered') ?? 'No hay habilidades en el catálogo' }}</span>
+                            <span class="empty-italic-text">{{ __('messages.lbl_no_skills_registered') }}</span>
                         @else
                             @foreach($catalogoSkills as $skill)
                                 @php 
@@ -172,5 +204,4 @@
             </div>
         </form>
     </div>
-
 </div>

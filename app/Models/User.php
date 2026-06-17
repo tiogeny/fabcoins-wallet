@@ -22,6 +22,13 @@ class User extends Authenticatable
         'avatar_url',
         'bio',
         'address',
+        'social_linkedin',    // 👈 NUEVO Y CORRECTO
+        'social_github',      // 👈 NUEVO Y CORRECTO
+        'social_portfolio',   // 👈 NUEVO Y CORRECTO
+        'fab_academy_url',    // 👈 Nombre correcto
+        'instagram_url',      // 👈 Nombre correcto
+        'city',               // 👈 NUEVO
+        'country',            // 👈 NUEVO
         'force_password_change',
         'reputation_score',
         'deuda_inicial_fc',

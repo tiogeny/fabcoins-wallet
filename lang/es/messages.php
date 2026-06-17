@@ -129,7 +129,7 @@ return [
     'status_completed'         => 'Servicio Consumido',
 
     // =========================================================
-    // 6. PORTAL DEL LABORATORIO (DASHBOARD & WORKSPACES)
+    // 6. PORTAL DEL LABORATORIO (DASHBOARD & HUBS)
     // =========================================================
     'lab_portal'               => 'Panel de Control del Laboratorio',
     'edit_profile'             => 'Configuración del Perfil',
@@ -165,7 +165,7 @@ return [
     'lbl_total_burned_kpi'     => 'Capacidad Consumida (Histórica)',
     'lbl_status_consumed'      => 'Consumidos en producción',
 
-    // Workspace 1: Activar
+    // HUB 1: Activar
     'register_asset_title'     => 'Declarar Infraestructura y Capacidad',
     'register_asset_desc'      => 'Enlista las máquinas, servicios o espacios de tu laboratorio para incorporarlos al inventario.',
     'lbl_category'             => 'Categoría',
@@ -193,7 +193,7 @@ return [
     'ph_model_service'         => 'Ej: Fab Academy',
     'ph_model_lab'             => 'Ej: Estación CNC',
 
-    // Workspace 2: Tokenizar
+    // HUB 2: Tokenizar
     'tokenise_title'           => 'Consola de Transformación de Activos',
     'tokenise_desc'            => 'Selecciona la infraestructura base, define el porcentaje de capacidad anual y emite FabCoins.',
     'th_asset_name'            => 'Activo Registrado',
@@ -225,7 +225,7 @@ return [
     'msg_applied_ok'        => '¡Postulación enviada con éxito al Laboratorio!',
     'msg_credit_accepted'   => 'Crédito aprobado (los FabCoins se recuperarán mediante misiones). Ahora ve a la sección "Solicitudes de Alquiler" y aprueba la reserva.',
 
-    // Workspace 3: Publicar & Misiones
+    // HUB 3: Publicar & Misiones
     'miss_create_title'        => 'Crear Nueva Misión en la Red',
     'miss_create_desc'         => 'Publica una necesidad de tu laboratorio y ofrece FabCoins en custodia para que un Creador calificado la resuelva.',
     'ph_miss_title'            => 'Título de la Misión (Ej: Optimización de Perfiles)',
@@ -297,7 +297,7 @@ return [
     'lbl_my_skills'       => 'Tus Habilidades (Skills)',
 
     // =========================================================
-    // 7. PORTAL DEL CREADOR (DASHBOARD & WORKSPACES)
+    // 7. PORTAL DEL CREADOR (DASHBOARD & HUBS)
     // =========================================================
     'creator_portal'           => 'Panel del Creator',
     'kpi_active_apps'          => 'Postulaciones Activas',
@@ -503,4 +503,41 @@ return [
     'tx_refund_desc'               => 'Reembolso por reserva cancelada (Incompatibilidad): :asset',
     'notif_date_rejected'          => 'Reserva cancelada por el Creator debido a incompatibilidad de calendario.',
     'notif_new_rating'             => 'Has recibido una nueva calificación de :rating estrellas de un Creator.',
+
+    // =========================================================
+    // 11. PROFILE
+    // =========================================================
+    'badge_official_lab'      => 'LAB OFICIAL',
+    'badge_maker_spec'        => 'CREADOR ESPECIALISTA',
+    'lbl_member_since'        => 'Miembro desde',
+    'lbl_loc_undefined'       => 'Ubicación no definida',
+    'btn_invite_mission'      => 'Invitar a una Misión',
+    'title_prof_bio'          => 'Biografía Profesional',
+    'empty_bio'               => 'Este usuario aún no ha redactado su presentación profesional.',
+    'title_validated_skills'  => 'Habilidades y Especialidades',
+    'empty_skills'            => 'Sin habilidades registradas.',
+    'title_portfolio_reviews' => 'Portafolio y Reseñas',
+    'empty_reviews'           => 'Este usuario aún no tiene historial de trabajos o reseñas.',
+    'lbl_reviewed_by'         => 'Por:',
+    // Redes Sociales y Ubicación
+    'ph_linkedin'         => 'URL de LinkedIn',
+    'ph_github'           => 'URL de GitHub',
+    'ph_portfolio'        => 'URL de Portafolio / Sitio Web',
+    
+    // Ajustes de Seguridad
+    'title_settings'      => 'Ajustes de Perfil y Seguridad',
+    'desc_settings'       => 'Actualiza tus datos de acceso, cambia tu contraseña o gestiona tus redes adicionales.',
+    
+    // Campos del formulario Breeze (Para cuando quieras actualizarlos allí también)
+    'lbl_fab_academy'     => 'Link de Fab Academy',
+    'lbl_instagram'       => 'Instagram',
+    'lbl_city'            => 'Ciudad',
+    'lbl_country'         => 'País',
+    'ph_instagram'   => 'URL de Instagram',
+    'ph_fab_academy' => 'URL de Fab Academy',
+    'lbl_city'       => 'Ciudad',
+    'ph_city'        => 'Ej. Lima',
+    'lbl_country'    => 'País',
+    'ph_country'     => 'Ej. Perú',
+    'lbl_portfolio'  => 'Portafolio o Sitio Web',
 ];

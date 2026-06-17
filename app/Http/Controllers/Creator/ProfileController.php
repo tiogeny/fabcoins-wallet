@@ -13,18 +13,32 @@ class ProfileController extends Controller
     {
         $creator = auth()->user();
 
-        // 1. Persistencia de datos biográficos y profesionales
-        $creator->update([
-            'bio'               => strip_tags($request->input('bio'), '<b><strong><i><em><u><ul><li><ol><br><p>'),
-            'address'           => trim($request->input('address')),
-            'social_fabacademy' => trim($request->input('social_fabacademy')),
-            'social_linkedin'   => trim($request->input('social_linkedin')),
-            'social_github'     => trim($request->input('social_github')),
-            'social_portfolio'  => trim($request->input('social_portfolio')),
-            'social_instagram'  => trim($request->input('social_instagram')),
+        // 1. Añade los nuevos campos a la validación
+        $request->validate([
+            'bio'              => 'required|string|max:1000',
+            'social_linkedin'  => 'nullable|url|max:255',
+            'social_github'    => 'nullable|url|max:255',
+            'social_portfolio' => 'nullable|url|max:255',
+            'instagram_url'    => 'nullable|url|max:255',   // 👈 NUEVO
+            'fab_academy_url'  => 'nullable|url|max:255',   // 👈 NUEVO
+            'city'             => 'nullable|string|max:100', // 👈 NUEVO
+            'country'          => 'nullable|string|max:100', // 👈 NUEVO
+            'skills'           => 'nullable|array'
         ]);
 
-        // 2. Sincronización atómica de Especializaciones Técnicas
+        // 2. Añade los nuevos campos a la actualización del modelo
+        $creator->update([
+            'bio'              => $request->input('bio'),
+            'social_linkedin'  => $request->input('social_linkedin'),
+            'social_github'    => $request->input('social_github'),
+            'social_portfolio' => $request->input('social_portfolio'),
+            'instagram_url'    => $request->input('instagram_url'),     // 👈 NUEVO
+            'fab_academy_url'  => $request->input('fab_academy_url'),   // 👈 NUEVO
+            'city'             => $request->input('city'),              // 👈 NUEVO
+            'country'          => $request->input('country'),           // 👈 NUEVO
+        ]);
+
+        // 3. Sincronización atómica de Especializaciones Técnicas
         DB::table('user_skills')->where('user_id', $creator->id)->delete();
         $skillsElegidas = $request->input('skills', []);
 
