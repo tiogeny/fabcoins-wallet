@@ -60,7 +60,13 @@ class JobController extends Controller
         if ($contract) {
             DB::transaction(function() use ($creator, $contract) {
                 DB::table('financing_agreements')->where('id', $contract->id)->update(['status' => 'active']);
-                $creator->update(['deuda_fc' => $contract->amount_initial, 'deuda_inicial_fc' => $contract->amount_initial, 'deuda_lab_id' => $contract->lab_id]);
+                
+                // 🚀 CIRUGÍA: Actualización forzada a la base de datos (Ignora el $fillable)
+                DB::table('users')->where('id', $creator->id)->update([
+                    'deuda_fc' => $contract->amount_initial, 
+                    'deuda_inicial_fc' => $contract->amount_initial, 
+                    'deuda_lab_id' => $contract->lab_id
+                ]);
             });
             return redirect()->route('creator.dashboard')->with('msg', 'credit_accepted');
         }
@@ -138,5 +144,79 @@ class JobController extends Controller
             ->update(['status' => 'rejected', 'updated_at' => now()]);
 
         return redirect()->back()->with('error', 'Invitación rechazada.');
+    }
+
+    /**
+     * El Creador realiza un pago voluntario de su deuda
+     */
+    public function payDebt(Request $request)
+    {
+        $creator = auth()->user();
+        $contractId = $request->input('contract_id');
+        $amountToPay = floatval($request->input('amount_to_pay'));
+
+        $contract = DB::table('financing_agreements')->where('id', $contractId)->where('creator_id', $creator->id)->where('status', 'active')->first();
+        
+        if (!$contract) return redirect()->back()->with('error', 'Contrato no encontrado o inválido.');
+
+        // Verificamos saldo líquido en tiempo real
+        $querySaldo = DB::select("SELECT SUM(CASE WHEN type IN ('income', 'mint') THEN amount ELSE -amount END) as saldo FROM transactions WHERE user_id = ?", [$creator->id]);
+        $saldoActual = $querySaldo[0]->saldo ?? 0;
+
+        if ($amountToPay > $saldoActual || $amountToPay <= 0) {
+            return redirect()->back()->with('error', 'Saldo insuficiente para este abono.');
+        }
+
+        // Limitamos el pago al máximo de la deuda
+        if ($amountToPay > $contract->amount_remaining) {
+            $amountToPay = $contract->amount_remaining;
+        }
+
+        DB::transaction(function() use ($creator, $contract, $amountToPay) {
+            // 1. Descontamos de la billetera del creador
+            DB::table('transactions')->insert([
+                'user_id' => $creator->id,
+                'description' => 'Abono voluntario de Crédito al Laboratorio',
+                'amount' => $amountToPay,
+                'type' => 'expense',
+                'created_at' => now()
+            ]);
+
+            // 2. Ingresamos a la billetera del Lab
+            DB::table('transactions')->insert([
+                'user_id' => $contract->lab_id,
+                'description' => "Abono recibido de {$creator->name} por crédito",
+                'amount' => $amountToPay,
+                'type' => 'income',
+                'created_at' => now()
+            ]);
+
+            // 3. Calculamos la nueva deuda
+            $nuevaDeuda = $contract->amount_remaining - $amountToPay;
+            $estadoContrato = ($nuevaDeuda <= 0) ? 'completed' : 'active';
+            $labIdActual = ($nuevaDeuda <= 0) ? null : $contract->lab_id;
+
+            // 4. Actualizamos el contrato y al usuario
+            DB::table('financing_agreements')->where('id', $contract->id)->update([
+                'amount_remaining' => $nuevaDeuda,
+                'status' => $estadoContrato,
+                'updated_at' => now()
+            ]);
+
+            DB::table('users')->where('id', $creator->id)->update([
+                'deuda_fc' => $nuevaDeuda,
+                'deuda_lab_id' => $labIdActual
+            ]);
+
+            // 5. Notificamos al Lab
+            DB::table('notifications')->insert([
+                'user_id' => $contract->lab_id,
+                'message' => "💰 {$creator->name} te ha realizado un pago de {$amountToPay} FC por su financiamiento.",
+                'type' => 'success',
+                'created_at' => now()
+            ]);
+        });
+
+        return redirect()->back()->with('msg', 'debt_paid_ok');
     }
 }

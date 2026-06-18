@@ -76,22 +76,28 @@
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
                         @php 
                             $circunferencia = 213.6;
-                            $totalMisionesYPost = max(1, $misionesAbiertas->count() + $misPostulaciones->count());
-                            $pAbiertas = ($misionesAbiertas->count() / $totalMisionesYPost) * $circunferencia;
-                            $pPostuladas = ($misPostulaciones->where('status', 'pending')->count() / $totalMisionesYPost) * $circunferencia;
-                            $pAceptadas = ($misPostulaciones->where('status', 'accepted')->count() / $totalMisionesYPost) * $circunferencia;
+                            // Matemática de Misiones: Todo el pipeline del Creador
+                            $postPendientes = $misPostulaciones->whereIn('status', ['pending', 'invited'])->count();
+                            $postAceptadas  = $misPostulaciones->where('status', 'accepted')->where('mission_status', 'open')->count();
+                            $postCompletas  = $misPostulaciones->where('mission_status', 'completed')->count();
+                            
+                            $totalMisiones = max(1, $postPendientes + $postAceptadas + $postCompletas);
+                            
+                            $pPen = ($postPendientes / $totalMisiones) * $circunferencia;
+                            $pAce = ($postAceptadas / $totalMisiones) * $circunferencia;
+                            $pCom = ($postCompletas / $totalMisiones) * $circunferencia;
                         @endphp
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $pAbiertas }} 214"></circle>
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#e84393" stroke-width="12" stroke-dasharray="{{ $pPostuladas }} 214" stroke-dashoffset="-{{ $pAbiertas }}"></circle>
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2ecc71" stroke-width="12" stroke-dasharray="{{ $pAceptadas }} 214" stroke-dashoffset="-{{ $pAbiertas + $pPostuladas }}"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#f1c40f" stroke-width="12" stroke-dasharray="{{ $pPen }} 214"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $pAce }} 214" stroke-dashoffset="-{{ $pPen }}"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2ecc71" stroke-width="12" stroke-dasharray="{{ $pCom }} 214" stroke-dashoffset="-{{ $pPen + $pAce }}"></circle>
                     </svg>
                 </div>
                 <div>
-                    <div class="main-hub-value text-rosado-neon">{{ $misionesAbiertas->count() }} {{ __('messages.lbl_missions_unit') }}</div>
+                    <div class="main-hub-value text-rosado-neon">{{ $postPendientes + $postAceptadas + $postCompletas }} {{ __('messages.lbl_missions_unit') }}</div>
                     <div class="bullet-metrics-compact">
-                        <div class="metric-compact-row"><span class="color-dot-indicator dot-info"></span> <strong>{{ $misionesAbiertas->count() }}</strong> {{ __('messages.lbl_open_bullet') }}</div>
-                        <div class="metric-compact-row"><span class="color-dot-indicator dot-danger"></span> <strong>{{ $misPostulaciones->where('status', 'pending')->count() }}</strong> {{ __('messages.lbl_working_bullet') }}</div>
-                        <div class="metric-compact-row"><span class="color-dot-indicator dot-success"></span> <strong>{{ $misPostulaciones->where('status', 'accepted')->count() }}</strong> {{ __('messages.lbl_closed_bullet') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator dot-warning"></span> <strong>{{ $postPendientes }}</strong> {{ __('messages.status_waiting') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator dot-info"></span> <strong>{{ $postAceptadas }}</strong> {{ __('messages.lbl_working_bullet') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator dot-success"></span> <strong>{{ $postCompletas }}</strong> {{ __('messages.lbl_closed_bullet') }}</div>
                     </div>
                 </div>
             </div>
@@ -106,23 +112,28 @@
                     <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
                         @php 
+                            // Matemática de Reservas: Custodia, Confirmadas y Consumidas
+                            $resCustodia = $misReservas->where('status', 'pending')->count();
+                            $resConfirmadas = $misReservas->where('status', 'approved')->count();
+                            $resConsumidas = $misReservas->where('status', 'completed')->count();
                             
-                            $totalRes = max(1, $misReservas->count());
-                            $pPen = ($misReservas->where('status', 'pending')->count() / $totalRes) * $circunferencia;
-                            $pCom = ($misReservas->where('status', 'completed')->count() / $totalRes) * $circunferencia;
-                            $pOth = ($misReservas->whereNotIn('status', ['pending', 'completed'])->count() / $totalRes) * $circunferencia;
+                            $totalRes = max(1, $resCustodia + $resConfirmadas + $resConsumidas);
+                            
+                            $pCus = ($resCustodia / $totalRes) * $circunferencia;
+                            $pCon = ($resConfirmadas / $totalRes) * $circunferencia;
+                            $pUse = ($resConsumidas / $totalRes) * $circunferencia;
                         @endphp
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#f1c40f" stroke-width="12" stroke-dasharray="{{ $pPen }} 214"></circle>
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2ecc71" stroke-width="12" stroke-dasharray="{{ $pCom }} 214" stroke-dashoffset="-{{ $pPen }}"></circle>
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $pOth }} 214" stroke-dashoffset="-{{ $pPen + $pCom }}"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#f1c40f" stroke-width="12" stroke-dasharray="{{ $pCus }} 214"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $pCon }} 214" stroke-dashoffset="-{{ $pCus }}"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2ecc71" stroke-width="12" stroke-dasharray="{{ $pUse }} 214" stroke-dashoffset="-{{ $pCus + $pCon }}"></circle>
                     </svg>
                 </div>
                 <div>
-                    <div class="main-hub-value hub-text-azul">{{ $misReservas->count() }} {{ __('messages.lbl_assets_unit') }}</div>
+                    <div class="main-hub-value hub-text-azul">{{ $resCustodia + $resConfirmadas + $resConsumidas }} {{ __('Reservas') }}</div>
                     <div class="bullet-metrics-compact">
-                        <div class="metric-compact-row"><span class="color-dot-indicator dot-warning"></span> <strong>{{ $misReservas->where('status', 'pending')->count() }}</strong> {{ __('messages.status_enlisted') }}</div>
-                        <div class="metric-compact-row"><span class="color-dot-indicator dot-success"></span> <strong>{{ $misReservas->where('status', 'completed')->count() }}</strong> {{ __('messages.status_approved_consumed') }}</div>
-                        <div class="metric-compact-row"><span class="color-dot-indicator dot-info"></span> <strong>{{ $misReservas->whereNotIn('status', ['pending', 'completed'])->count() }}</strong> {{ __('messages.lbl_reserva_bullet') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator dot-warning"></span> <strong>{{ $resCustodia }}</strong> {{ __('messages.status_pending') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator dot-info"></span> <strong>{{ $resConfirmadas }}</strong> {{ __('Por Usar') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator dot-success"></span> <strong>{{ $resConsumidas }}</strong> {{ __('messages.status_completed') }}</div>
                     </div>
                 </div>
             </div>
@@ -137,21 +148,30 @@
                     <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
                         @php 
+                            // Matemática de Billetera: Distribución de la riqueza histórica
+                            $fcLíquidos  = max(0, $saldoTotal);
+                            $fcCustodia  = DB::table('transactions')->where('user_id', $creator->id)->where('type', 'escrow')->sum('amount');
+                            $fcGastados  = DB::table('transactions')->where('user_id', $creator->id)->where('type', 'expense')->sum('amount');
+                            
+                            $totalCapital = max(1, $fcLíquidos + $fcCustodia + $fcGastados);
+                            
+                            $pLiq = ($fcLíquidos / $totalCapital) * $circunferencia;
+                            $pEsc = ($fcCustodia / $totalCapital) * $circunferencia;
+                            $pGas = ($fcGastados / $totalCapital) * $circunferencia;
+                            
                             $deudaRestante = $creditoActual ? $creditoActual->amount_remaining : 0;
-                            $totalPatrimonio = max(1, $saldoTotal + $deudaRestante);
-                            $pLiquido = ($saldoTotal / $totalPatrimonio) * $circunferencia;
-                            $pDeuda = ($deudaRestante / $totalPatrimonio) * $circunferencia;
                         @endphp
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2ecc71" stroke-width="12" stroke-dasharray="{{ $pLiquido }} 214"></circle>
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#f1c40f" stroke-width="12" stroke-dasharray="{{ $pDeuda }} 214" stroke-dashoffset="-{{ $pLiquido }}"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2ecc71" stroke-width="12" stroke-dasharray="{{ $pLiq }} 214"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $pEsc }} 214" stroke-dashoffset="-{{ $pLiq }}"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#e84393" stroke-width="12" stroke-dasharray="{{ $pGas }} 214" stroke-dashoffset="-{{ $pLiq + $pEsc }}"></circle>
                     </svg>
                 </div>
                 <div>
-                    <div class="main-hub-value text-verde-neon">{{ number_format($saldoTotal, 0, '.', ' ') }} FC</div>
+                    <div class="main-hub-value text-verde-neon">{{ number_format($fcLíquidos + $fcCustodia + $fcGastados, 0, '.', ' ') }} FC</div>
                     <div class="bullet-metrics-compact">
-                        <div class="metric-compact-row"><span class="color-dot-indicator dot-success"></span> {{ __('messages.kpi_wallet') }}</div>
-                        <div class="metric-compact-row"><span class="color-dot-indicator dot-warning"></span> <strong>{{ number_format($deudaRestante, 0, '.', ' ') }}</strong> {{ __('messages.lbl_debt') }}</div>
-                        <div class="metric-compact-row"><span class="color-dot-indicator dot-info"></span> <strong>{{ count($misSkillsIds) }}</strong> {{ __('messages.lbl_assets_unit') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator dot-success"></span> <strong>{{ number_format($fcLíquidos, 0, '.', ' ') }}</strong> {{ __('messages.kpi_wallet') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator dot-info"></span> <strong>{{ number_format($fcCustodia, 0, '.', ' ') }}</strong> {{ __('messages.status_pending') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator dot-danger"></span> <strong>{{ number_format($fcGastados, 0, '.', ' ') }}</strong> {{ __('messages.lbl_consumed') }}</div>
                     </div>
                 </div>
             </div>

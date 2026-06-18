@@ -283,8 +283,10 @@
                                         <span class="tx-badge" style="background: rgba(230, 126, 34, 0.1); color: #e67e22; border: 1px solid #e67e22;">{{ __('messages.badge_consumed') }}</span>
                                     @endif
                                 </td>
-                                <td class="text-right tx-amount-value {{ in_array($tx->type, ['income', 'mint']) ? 'text-success-neon' : ($tx->type === 'consumed' ? 'text-warning-neon' : 'text-danger-neon') }}">
-                                    @if(in_array($tx->type, ['info', 'consumed']))
+                                <td class="text-right tx-amount-value {{ in_array($tx->type, ['income', 'mint']) ? 'text-success-neon' : ($tx->type === 'consumed' ? 'text-warning-neon' : ($tx->type === 'info' ? 'text-neutral-muted' : 'text-danger-neon')) }}">
+                                    @if($tx->type === 'info')
+                                        <span class="badge-ghost-info" style="font-size: 10px; font-family: 'Inter', sans-serif;">{{ __('messages.badge_info') }}</span>
+                                    @elseif($tx->type === 'consumed')
                                         {{ number_format($tx->amount, 0) }} FC
                                     @else
                                         {{ in_array($tx->type, ['income', 'mint']) ? '+' : '-' }}{{ number_format($tx->amount, 0) }} FC

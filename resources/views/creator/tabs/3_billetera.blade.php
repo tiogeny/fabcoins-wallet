@@ -74,6 +74,28 @@
                                     <div class="isa-progress-bar-wrap">
                                         <div class="asset-progress-fill bg-warning-neon" style="width: {{ $porcentaje }}%;"></div>
                                     </div>
+
+                                    {{-- 🚀 NUEVA CIRUGÍA: Módulo de Pago Voluntario --}}
+                                    @if($creditoActual->amount_remaining > 0 && $saldoTotal > 0)
+                                        <form action="{{ route('creator.pay_debt') }}" method="POST" style="display: flex; gap: 8px; align-items: center; margin-top: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; border: 1px dashed rgba(241, 196, 15, 0.3);">
+                                            @csrf
+                                            <input type="hidden" name="contract_id" value="{{ $creditoActual->id }}">
+                                            <input type="number" name="amount_to_pay" class="premium-input m-0 no-spin-arrows" 
+                                                   style="height: 30px; font-size: 11px; width: 80px; padding: 0 10px;" 
+                                                   placeholder="FC" min="1" max="{{ min($saldoTotal, $creditoActual->amount_remaining) }}" required>
+                                            <button type="button" class="btn-premium btn-amarillo-hub m-0" 
+                                                    style="height: 30px; font-size: 10px; padding: 0 12px; flex: 1;"
+                                                    onclick="if(!this.closest('form').checkValidity()) { this.closest('form').reportValidity(); return; } confirmarAccion(event, '{{ __('messages.swal_confirm_payment') }}', 'info', '#f1c40f')">
+                                                💰 {{ __('messages.btn_pay_debt') }}
+                                            </button>
+                                        </form>
+                                    @elseif($creditoActual->amount_remaining > 0 && $saldoTotal <= 0)
+                                        <div style="margin-top: 10px; font-size: 10px; color: #7f8c8d; font-style: italic;">
+                                            {{ __('messages.lbl_no_balance_to_pay') }}
+                                        </div>
+                                    @endif
+                                    {{-- FIN CIRUGÍA --}}
+
                                 @endif
                             </td>
                         </tr>

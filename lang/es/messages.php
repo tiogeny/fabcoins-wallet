@@ -125,8 +125,8 @@ return [
     'status_waiting_creator'   => 'Esperando al Creador',
     'status_rejected'          => 'Cancelado',
     'status_rescheduled'       => 'Reprogramación Ofertada',
-    'status_pending'           => 'En Custodia (Espera)',
-    'status_completed'         => 'Servicio Consumido',
+    'status_pending'           => 'Congelados',
+    'status_completed'         => 'Activo Consumido',
 
     // =========================================================
     // 6. PORTAL DEL LABORATORIO (DASHBOARD & HUBS)
@@ -259,7 +259,7 @@ return [
     'btn_approve_amortize'     => 'Confirmar y Reducir Deuda',
     'btn_pay_rate'             => 'Confirmar Liberación de Pago',
     'lbl_mission_completed_by' => 'Misión Completada Por:',
-    'lbl_rating_sent'          => 'Calificación asentada en el portafolio',
+    'lbl_rating_sent'          => 'Calificación enviada',
     'title_reservations'       => 'Solicitudes de Alquiler y Reservas de Maquinaria',
     'th_creator'               => 'Creador',
     'th_equipment'             => 'Equipo Solicitado',
@@ -267,6 +267,9 @@ return [
     'lbl_for_date'             => 'Para el:',
     'hist_empty'               => 'No hay solicitudes de reserva en tu bitácora contable.',
     'btn_assign_creator'     => 'Asignar Misión',
+    'lbl_assigned_creator'   => 'Creador Asignado',
+    'msg_mission_completed'  => 'Misión finalizada. La transferencia ha sido procesada con éxito.',
+    'badge_info'             => 'AUDITORÍA', // o 'REGISTRO'
     
     // Contratos ISA (Educativos)
     'title_isa_portfolio'      => 'Cartera de Financiamientos e ISA Activos',
@@ -302,7 +305,7 @@ return [
     'creator_portal'           => 'Panel del Creator',
     'kpi_active_apps'          => 'Postulaciones Activas',
     'kpi_finished_missions'    => 'Misiones Completadas',
-    'kpi_wallet'               => 'Balance Líquido Disponible',
+    'kpi_wallet'               => 'Saldo Disponible',
     'lbl_skills_bullet'        => 'Especialidades destacadas',
     
     // Hubs Creator
@@ -370,7 +373,11 @@ return [
     'badge_mint'             => 'EMISIÓN',
     'badge_escrow'           => 'CUSTODIA',
     'badge_consumed'         => 'CONSUMIDO',
-    'lbl_consumed' => 'Consumo Histórico',
+    'lbl_consumed' => 'Consumidos',
+    'btn_pay_debt'           => 'Abonar a mi Deuda',
+    'swal_confirm_payment'   => '¿Confirmas que deseas transferir estos FabCoins al Laboratorio para amortizar tu crédito?',
+    'lbl_no_balance_to_pay'  => 'No tienes saldo líquido disponible para amortizar esta deuda.',
+    'msg_debt_paid_ok'       => '¡Pago procesado exitosamente! Tu deuda ha sido reducida.',
     
     // Alertas del nuevo flujo de Crédito
     'swal_credit_title'      => 'Fondos Insuficientes',

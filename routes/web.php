@@ -96,6 +96,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
         Route::post('/mission/accept-invite', [\App\Http\Controllers\Creator\JobController::class, 'acceptInvite'])->name('creator.mission.accept_invite');
         Route::post('/mission/reject-invite', [\App\Http\Controllers\Creator\JobController::class, 'rejectInvite'])->name('creator.mission.reject_invite');
+
+        Route::post('/pay-debt', [\App\Http\Controllers\Creator\JobController::class, 'payDebt'])->name('creator.pay_debt');
     });
 
     // 🌐 CONSOLA MACROECONÓMICA DEL SUPERADMIN (Rol 'superadmin')

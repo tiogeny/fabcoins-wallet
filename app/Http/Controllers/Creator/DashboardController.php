@@ -75,6 +75,12 @@ class DashboardController extends Controller
             ->limit(50)
             ->get();
 
+        // 🚀 NUEVA CIRUGÍA: Ingresos Históricos Totales (Para el Círculo de la Billetera)
+        $totalFCGenerados = DB::table('transactions')
+            ->where('user_id', $creator->id)
+            ->whereIn('type', ['income', 'mint'])
+            ->sum('amount');
+
         // Estado del Contrato de Crédito ISA Pendiente/Activo
         $creditoActual = DB::table('financing_agreements as c')
             ->join('users as u', 'c.lab_id', '=', 'u.id')
@@ -121,7 +127,7 @@ class DashboardController extends Controller
         return view('creator.dashboard', compact(
             'creator', 'saldoTotal', 'misionesCompletadasKpi', 'misionesAbiertas', 'misPostulaciones',
             'misReservas', 'recursosMercado', 'misTransacciones', 'creditoActual', 'historialAbonos',
-            'labsMapaJson', 'notificaciones', 'unreadCount', 'catalogoSkills', 'misSkillsIds'
+            'labsMapaJson', 'notificaciones', 'unreadCount', 'catalogoSkills', 'misSkillsIds', 'totalFCGenerados'
         ));
     }
 
