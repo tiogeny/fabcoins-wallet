@@ -182,17 +182,26 @@ function toggleAuthPassword(iconElement) {
     }
 }
 
-// Escucha automática de hashes para redirección externa (Ej: enlaces del footer)
 document.addEventListener("DOMContentLoaded", function() {
-    // 🚀 INYECCIÓN QUIRÚRGICA: Si el servidor devuelve errores de registro, forzamos la pestaña correcta
-    @if($errors->has('name') || $errors->has('email') || old('name'))
-        // Cambia esto por el id de tu contenedor o la función que abras para cambiar de pestaña
-        // Ejemplo si usas una función: openTab(null, 'tab-register');
-        // O si simulas un clic en el botón de Crear Billetera:
-        const botonRegistro = document.querySelector('[onclick*="register"]');
-        if (botonRegistro) botonRegistro.click();
-    @endif
-});
+        // Buscamos las pestañas nativas del archivo (el segundo elemento suele ser Register)
+        const tabs = document.querySelectorAll('.auth-tab-btn');
+        
+        // 1. 🚀 CASO A: Si Laravel devuelve errores de registro o datos viejos (old)
+        // Forzamos que se mantenga abierta la pestaña de Registro para que el usuario vea qué falló.
+        @if($errors->has('name') || $errors->has('email') || old('name'))
+            if (tabs.length > 1) {
+                switchAuthTab('register', tabs[1]);
+            }
+        @else
+            // 2. 🌐 CASO B: Si no hay errores, leemos si la URL viene desde la Landing con ?tab=register
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+
+            if (tabParam === 'register' && tabs.length > 1) {
+                switchAuthTab('register', tabs[1]);
+            }
+        @endif
+    });
 </script>
 @endsection
 

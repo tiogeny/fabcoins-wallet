@@ -136,6 +136,13 @@
                                                                 <input type="hidden" name="creator_id" value="{{ $p->creator_id }}">
                                                                 <button type="submit" class="btn-back-minimal btn-min-assign">{{ __('messages.btn_assign_creator') }}</button>
                                                             </form>
+                                                        @elseif($p->status === 'invited')
+                                                            {{-- NUEVO: Mensaje para el Lab indicando que ya invitó --}}
+                                                            <div class="mt-5">
+                                                                <span class="badge-ghost-warning" style="font-size: 10px; opacity: 0.8;">
+                                                                    ⏳ Esperando respuesta del Creador
+                                                                </span>
+                                                            </div>
                                                         @elseif($p->status === 'accepted' && !$p->is_reviewed)
                                                             @php 
                                                                 $llaveBotonEval = $esDeudorDirecto ? 'messages.btn_eval_amortize' : 'messages.btn_eval_pay';

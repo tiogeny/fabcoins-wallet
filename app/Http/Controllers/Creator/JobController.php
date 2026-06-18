@@ -99,4 +99,44 @@ class JobController extends Controller
         $name = DB::table('users')->where('email', trim($request->query('email')))->where('role', 'creator')->value('name');
         return response()->json(['name' => $name ?: 'NOT_FOUND']);
     }
+
+    /**
+     * El Creador ACEPTA una invitación directa
+     */
+    public function acceptInvite(Request $request)
+    {
+        $creator = auth()->user();
+        $missionId = $request->input('mission_id');
+
+        DB::transaction(function() use ($creator, $missionId) {
+            // 1. Cambiamos el estado a 'accepted'
+            DB::table('mission_applications')
+                ->where('mission_id', $missionId)
+                ->where('creator_id', $creator->id)
+                ->update(['status' => 'accepted', 'updated_at' => now()]);
+
+            // 2. Incrementamos la cuenta de vacantes ocupadas en la misión
+            DB::table('missions')
+                ->where('id', $missionId)
+                ->increment('spots_filled');
+        });
+
+        return redirect()->back()->with('msg', 'invite_accepted_ok');
+    }
+
+    /**
+     * El Creador RECHAZA una invitación directa
+     */
+    public function rejectInvite(Request $request)
+    {
+        $creator = auth()->user();
+        $missionId = $request->input('mission_id');
+
+        DB::table('mission_applications')
+            ->where('mission_id', $missionId)
+            ->where('creator_id', $creator->id)
+            ->update(['status' => 'rejected', 'updated_at' => now()]);
+
+        return redirect()->back()->with('error', 'Invitación rechazada.');
+    }
 }

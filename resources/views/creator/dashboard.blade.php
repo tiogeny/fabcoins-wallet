@@ -64,37 +64,6 @@
 
     <div id="main-home-hub-view" class="home-hubs-wrapper">
         <div class="action-hubs-grid">
-            
-            <div class="hub-card card-mercado-neon" onclick="abrirHubPersistente('hub-mercado')">
-                <div>
-                    <div class="hub-image-container"><img src="{{ asset('images/hubs/icon_activar.webp') }}" style="filter: hue-rotate(180deg);" alt=""></div>
-                    <h2>{{ __('messages.hub_market_btn') }}</h2>
-                    <div class="hub-subtitle">{{ __('messages.map_explorer_desc') }}</div>
-                </div>
-                <div class="donut-chart-box">
-                    <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
-                        @php 
-                            $circunferencia = 213.6;
-                            $totalRes = max(1, $misReservas->count());
-                            $pPen = ($misReservas->where('status', 'pending')->count() / $totalRes) * $circunferencia;
-                            $pCom = ($misReservas->where('status', 'completed')->count() / $totalRes) * $circunferencia;
-                            $pOth = ($misReservas->whereNotIn('status', ['pending', 'completed'])->count() / $totalRes) * $circunferencia;
-                        @endphp
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#f1c40f" stroke-width="12" stroke-dasharray="{{ $pPen }} 214"></circle>
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2ecc71" stroke-width="12" stroke-dasharray="{{ $pCom }} 214" stroke-dashoffset="-{{ $pPen }}"></circle>
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $pOth }} 214" stroke-dashoffset="-{{ $pPen + $pCom }}"></circle>
-                    </svg>
-                </div>
-                <div>
-                    <div class="main-hub-value hub-text-azul">{{ $misReservas->count() }} {{ __('messages.lbl_assets_unit') }}</div>
-                    <div class="bullet-metrics-compact">
-                        <div class="metric-compact-row"><span class="color-dot-indicator dot-warning"></span> <strong>{{ $misReservas->where('status', 'pending')->count() }}</strong> {{ __('messages.status_enlisted') }}</div>
-                        <div class="metric-compact-row"><span class="color-dot-indicator dot-success"></span> <strong>{{ $misReservas->where('status', 'completed')->count() }}</strong> {{ __('messages.status_approved_consumed') }}</div>
-                        <div class="metric-compact-row"><span class="color-dot-indicator dot-info"></span> <strong>{{ $misReservas->whereNotIn('status', ['pending', 'completed'])->count() }}</strong> {{ __('messages.lbl_reserva_bullet') }}</div>
-                    </div>
-                </div>
-            </div>
 
             <div class="hub-card card-misiones-neon" onclick="abrirHubPersistente('hub-misiones')">
                 <div>
@@ -106,6 +75,7 @@
                     <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
                         @php 
+                            $circunferencia = 213.6;
                             $totalMisionesYPost = max(1, $misionesAbiertas->count() + $misPostulaciones->count());
                             $pAbiertas = ($misionesAbiertas->count() / $totalMisionesYPost) * $circunferencia;
                             $pPostuladas = ($misPostulaciones->where('status', 'pending')->count() / $totalMisionesYPost) * $circunferencia;
@@ -122,6 +92,37 @@
                         <div class="metric-compact-row"><span class="color-dot-indicator dot-info"></span> <strong>{{ $misionesAbiertas->count() }}</strong> {{ __('messages.lbl_open_bullet') }}</div>
                         <div class="metric-compact-row"><span class="color-dot-indicator dot-danger"></span> <strong>{{ $misPostulaciones->where('status', 'pending')->count() }}</strong> {{ __('messages.lbl_working_bullet') }}</div>
                         <div class="metric-compact-row"><span class="color-dot-indicator dot-success"></span> <strong>{{ $misPostulaciones->where('status', 'accepted')->count() }}</strong> {{ __('messages.lbl_closed_bullet') }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hub-card card-mercado-neon" onclick="abrirHubPersistente('hub-mercado')">
+                <div>
+                    <div class="hub-image-container"><img src="{{ asset('images/hubs/icon_activar.webp') }}" style="filter: hue-rotate(180deg);" alt=""></div>
+                    <h2>{{ __('messages.hub_market_btn') }}</h2>
+                    <div class="hub-subtitle">{{ __('messages.map_explorer_desc') }}</div>
+                </div>
+                <div class="donut-chart-box">
+                    <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
+                        @php 
+                            
+                            $totalRes = max(1, $misReservas->count());
+                            $pPen = ($misReservas->where('status', 'pending')->count() / $totalRes) * $circunferencia;
+                            $pCom = ($misReservas->where('status', 'completed')->count() / $totalRes) * $circunferencia;
+                            $pOth = ($misReservas->whereNotIn('status', ['pending', 'completed'])->count() / $totalRes) * $circunferencia;
+                        @endphp
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#f1c40f" stroke-width="12" stroke-dasharray="{{ $pPen }} 214"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2ecc71" stroke-width="12" stroke-dasharray="{{ $pCom }} 214" stroke-dashoffset="-{{ $pPen }}"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $pOth }} 214" stroke-dashoffset="-{{ $pPen + $pCom }}"></circle>
+                    </svg>
+                </div>
+                <div>
+                    <div class="main-hub-value hub-text-azul">{{ $misReservas->count() }} {{ __('messages.lbl_assets_unit') }}</div>
+                    <div class="bullet-metrics-compact">
+                        <div class="metric-compact-row"><span class="color-dot-indicator dot-warning"></span> <strong>{{ $misReservas->where('status', 'pending')->count() }}</strong> {{ __('messages.status_enlisted') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator dot-success"></span> <strong>{{ $misReservas->where('status', 'completed')->count() }}</strong> {{ __('messages.status_approved_consumed') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator dot-info"></span> <strong>{{ $misReservas->whereNotIn('status', ['pending', 'completed'])->count() }}</strong> {{ __('messages.lbl_reserva_bullet') }}</div>
                     </div>
                 </div>
             </div>
@@ -158,17 +159,6 @@
         </div>
     </div>
 
-    <div id="hub-mercado" class="hub-section">
-        <div class="hub-active-bar-v2 hub-bar-azul">
-            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-mercado')">← {{ __('messages.btn_back') }}</button>
-            <div class="hub-title-node hub-text-azul">
-                <img src="{{ asset('images/hubs/icon_activar.webp') }}" style="filter: hue-rotate(180deg);" alt="">
-                {{ __('messages.hub_market_btn') }}
-            </div>
-        </div>
-        @include('creator.tabs.1_mercado')
-    </div>
-
     <div id="hub-misiones" class="hub-section">
         <div class="hub-active-bar-v2 hub-bar-rosado">
             <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-misiones')">← {{ __('messages.btn_back') }}</button>
@@ -177,7 +167,18 @@
                 {{ __('messages.hub_missions_btn') }}
             </div>
         </div>
-        @include('creator.tabs.2_misiones')
+        @include('creator.tabs.1_misiones')
+    </div>
+
+    <div id="hub-mercado" class="hub-section">
+        <div class="hub-active-bar-v2 hub-bar-azul">
+            <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-mercado')">← {{ __('messages.btn_back') }}</button>
+            <div class="hub-title-node hub-text-azul">
+                <img src="{{ asset('images/hubs/icon_activar.webp') }}" style="filter: hue-rotate(180deg);" alt="">
+                {{ __('messages.hub_market_btn') }}
+            </div>
+        </div>
+        @include('creator.tabs.2_mercado')
     </div>
 
     <div id="hub-billetera" class="hub-section">

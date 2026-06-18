@@ -216,3 +216,79 @@
     height: 36px !important; padding: 0 10px !important; font-size: 12px !important; width: 100%; margin: 0 !important;
     display: flex; align-items: center; justify-content: center; box-sizing: border-box;
 }
+
+/* =========================================================
+    1. CABECERA PÚBLICA PROFILE (NAVBAR)
+    ========================================================= */
+.public-navbar {
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 15px 0; margin-bottom: 35px; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.public-logo-wrapper { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.public-logo-wrapper img { height: 32px; width: auto; filter: drop-shadow(0 0 8px rgba(52, 152, 219, 0.4)); }
+.public-logo-text { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; color: #fff; letter-spacing: 0.5px; margin: 0; }
+.public-logo-text span { color: #3498db; }
+.public-nav-actions { display: flex; align-items: center; gap: 15px; }
+.lang-pill { display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+.lang-pill a { text-decoration: none; font-size: 16px; transition: opacity 0.2s; }
+.lang-pill a:hover { opacity: 1 !important; }
+
+/* =========================================================
+    2. ARQUITECTURA DE GRILLAS SIMÉTRICAS
+    ========================================================= */
+.profile-container-v2 { max-width: 1100px; margin: 0 auto; padding-bottom: 50px; }
+.grid-top-identity { display: grid; grid-template-columns: 320px 1fr; gap: 25px; align-items: stretch; margin-bottom: 25px; }
+.grid-bottom-data { display: grid; grid-template-columns: 1fr 1.5fr; gap: 25px; align-items: start; }
+
+@media (max-width: 900px) {
+    .grid-top-identity, .grid-bottom-data { grid-template-columns: 1fr; }
+}
+
+/* =========================================================
+    3. TARJETA DE IDENTIDAD (IZQUIERDA)
+    ========================================================= */
+.avatar-showcase {
+    width: 140px; height: 140px; border-radius: 50%; border: 4px solid #3498db; 
+    margin: 0 auto 18px auto; overflow: hidden; position: relative; 
+    box-shadow: 0 0 25px rgba(52, 152, 219, 0.2); background: #131722;
+}
+.avatar-showcase img { width: 100%; height: 100%; object-fit: cover; }
+
+.stats-row {
+    display: flex; justify-content: center; gap: 35px; margin-top: 20px; 
+    padding-top: 18px; border-top: 1px dashed rgba(255,255,255,0.08);
+}
+.stat-box { text-align: center; }
+.stat-value { font-family: 'Rajdhani', sans-serif; font-size: 26px; font-weight: 800; color: #f1c40f; line-height: 1; }
+.stat-label { font-size: 10px; color: #7f8c8d; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-top: 5px; }
+
+/* =========================================================
+    4. REDES SOCIALES PREMIUM (VITRINA MODERNA)
+    ========================================================= */
+.social-grid-wrapper { 
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; padding-top: 25px;
+}
+.social-tag-link {
+    display: inline-flex; align-items: center; gap: 8px; 
+    background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.06); 
+    padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; 
+    color: #cbd5e0; text-decoration: none; transition: all 0.2s ease-in-out;
+}
+.social-tag-link:hover {
+    background: rgba(52, 152, 219, 0.08); border-color: rgba(52, 152, 219, 0.4);
+    color: #fff; transform: translateY(-1px);
+}
+.social-tag-fab {
+    background: rgba(241, 196, 15, 0.05); border-color: rgba(241, 196, 15, 0.2); color: #f1c40f;
+}
+.social-tag-fab:hover {
+    background: rgba(241, 196, 15, 0.12); border-color: rgba(241, 196, 15, 0.5); color: #f1c40f;
+}
+
+/* =========================================================
+    5. COMPONENTES HISTORIAL
+    ========================================================= */
+.review-item-card { background: #131722; padding: 18px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02); border-left-width: 3px; }
+.review-mission { border-left-color: #2ecc71; }
+.review-market { border-left-color: #3498db; }
+.review-comment-box { font-size: 13px; font-style: italic; color: #bdc3c7; background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 4px; margin-top: 10px; }

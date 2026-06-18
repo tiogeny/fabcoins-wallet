@@ -81,10 +81,16 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <div class="text-white-pure font-bold">{{ $p->title }}</div>
-                                    @if($p->target_creator_id == auth()->id())
-                                        <span class="badge-ghost-warning mt-5 display-inline-block">🎯 {{ __('messages.badge_directed_mission') }}</span>
-                                    @endif
+                                    <div class="text-white-pure font-bold">
+                                        {{ $p->title }}
+                                        
+                                        {{-- Indicador de Invitación Directa / Misión Dirigida --}}
+                                        @if(isset($p->target_creator_id) && $p->target_creator_id == auth()->id())
+                                            <span class="badge-ghost-warning mt-5 display-inline-block">
+                                                🎯 {{ __('messages.badge_directed_mission') ?? 'Invitación Directa' }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="td-amount-gold">{{ number_format($p->reward_fc, 0) }} FC</td>
                                 <td class="td-date-dim">
@@ -97,6 +103,24 @@
                                 <td>
                                     @if($p->status === 'pending')
                                         <span class="badge-ghost-warning">⏳ {{ __('messages.status_waiting') }}</span>
+                                    @elseif($p->status === 'invited')
+                                        {{-- NUEVO: Botones para que el Creador acepte o rechace la invitación --}}
+                                        <div style="display: flex; gap: 8px;">
+                                            <form action="{{ route('creator.mission.accept_invite') }}" method="POST">
+                                                @csrf
+                                                <input type="hidden" name="mission_id" value="{{ $p->mission_id ?? $p->id }}">
+                                                <button type="submit" class="badge-ghost-success" style="border: none; cursor: pointer;">
+                                                    ✅ Aceptar
+                                                </button>
+                                            </form>
+                                            <form action="{{ route('creator.mission.reject_invite') }}" method="POST">
+                                                @csrf
+                                                <input type="hidden" name="mission_id" value="{{ $p->mission_id ?? $p->id }}">
+                                                <button type="submit" class="badge-ghost-danger" style="border: none; cursor: pointer;">
+                                                    ❌ Rechazar
+                                                </button>
+                                            </form>
+                                        </div>
                                     @elseif($p->status === 'accepted')
                                         @if($p->mission_status === 'completed')
                                             <span class="badge-ghost-success">🎉 {{ __('messages.status_approved_consumed') }}</span>

@@ -61,9 +61,38 @@ class PublicProfileController extends Controller
         return view('public.profile', compact('user', 'misHabilidades', 'historialUnificado', 'misMisionesAbiertas'));
     }
 
-    public function invite(Request $request)
+    public function invite(Request $request, $slugOrId)
     {
-        // Lógica de invitación a misiones (lo haremos después si es necesario)
-        return redirect()->back();
+        // 1. Validamos los datos ocultos del formulario
+        $request->validate([
+            'creator_id' => 'required|exists:users,id',
+            'mission_id' => 'required|exists:missions,id',
+        ]);
+
+        // 2. Verificamos que la misión realmente pertenezca a este Lab
+        $mission = DB::table('missions')
+            ->where('id', $request->mission_id)
+            ->where('lab_id', auth()->id())
+            ->first();
+
+        if (!$mission) {
+            return back()->with('error', 'Error de permisos de misión.');
+        }
+
+        // 3. Insertamos la invitación como una "postulación" en estado pendiente
+        DB::table('mission_applications')->updateOrInsert(
+            [
+                'mission_id' => $mission->id,
+                'creator_id' => $request->creator_id,
+            ],
+            [
+                'status'     => 'invited',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+
+        // 4. Retornamos con el mensaje de éxito que leerá SweetAlert
+        return back()->with('msg', 'invite_sent_success');
     }
 }

@@ -511,6 +511,10 @@ return [
     'badge_maker_spec'        => 'CREADOR ESPECIALISTA',
     'lbl_member_since'        => 'Miembro desde',
     'lbl_loc_undefined'       => 'Ubicación no definida',
+    'btn_dashboard'           => 'Ir a mi Panel',
+    'btn_join_network'        => 'Únete a FabCoins',
+    'lbl_reviews_count'       => 'Reseñas',
+    'lbl_missions_count'      => 'Misiones',
     'btn_invite_mission'      => 'Invitar a una Misión',
     'title_prof_bio'          => 'Biografía Profesional',
     'empty_bio'               => 'Este usuario aún no ha redactado su presentación profesional.',
@@ -519,6 +523,7 @@ return [
     'title_portfolio_reviews' => 'Portafolio y Reseñas',
     'empty_reviews'           => 'Este usuario aún no tiene historial de trabajos o reseñas.',
     'lbl_reviewed_by'         => 'Por:',
+
     // Redes Sociales y Ubicación
     'ph_linkedin'         => 'URL de LinkedIn',
     'ph_github'           => 'URL de GitHub',
@@ -540,4 +545,20 @@ return [
     'lbl_country'    => 'País',
     'ph_country'     => 'Ej. Perú',
     'lbl_portfolio'  => 'Portafolio o Sitio Web',
+
+    // Alertas de la Vitrina Pública
+    'msg_invite_sent'                 => '¡Invitación enviada con éxito al Maker!',
+    'msg_invite_accepted_ok' => '¡Invitación aceptada! La misión es tuya.',
+    'err_already_invited_or_applied'  => 'Este Creador ya tiene una invitación o postulación activa en esa misión.',
+
+    'role_lab' => 'Laboratorio',
+    'role_creator' => 'Creador',
+    'reputation_score' => 'Reputación de Red',
+    'reputation_desc' => 'Puntuación algorítmica de cumplimiento y seriedad comercial.',
+    'err_no_open_missions' => 'No tienes misiones abiertas con cupos disponibles.',
+    'btn_create_mission' => 'Ir a crear una misión',
+    'desc_select_mission_invite' => 'Selecciona a qué misión deseas invitar a',
+    'opt_select_mission' => 'Selecciona una misión',
+    'btn_send_invitation' => 'Enviar Invitación Directa',
+    'msg_invite_sent_success' => '¡Invitación enviada con éxito al Creador!',
 ];

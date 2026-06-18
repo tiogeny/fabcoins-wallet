@@ -93,6 +93,9 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::post('/reserva/aceptar-fecha', [\App\Http\Controllers\Creator\ReservationController::class, 'acceptDate'])->name('creator.accept_date');
         Route::post('/reserva/cancelar-fecha', [\App\Http\Controllers\Creator\ReservationController::class, 'rejectDate'])->name('creator.reject_date');
         Route::post('/reserva/calificar', [\App\Http\Controllers\Creator\ReservationController::class, 'rateLab'])->name('creator.rate_lab');
+
+        Route::post('/mission/accept-invite', [\App\Http\Controllers\Creator\JobController::class, 'acceptInvite'])->name('creator.mission.accept_invite');
+        Route::post('/mission/reject-invite', [\App\Http\Controllers\Creator\JobController::class, 'rejectInvite'])->name('creator.mission.reject_invite');
     });
 
     // 🌐 CONSOLA MACROECONÓMICA DEL SUPERADMIN (Rol 'superadmin')
