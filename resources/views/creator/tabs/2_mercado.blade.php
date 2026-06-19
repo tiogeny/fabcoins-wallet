@@ -1,11 +1,11 @@
-<div class="focus-glow-blue">
+<div class="focus-glow-amarillo">
     <div class="premium-glass-card">
         <h2 class="premium-glass-card-title">🗺️ {{ __('messages.map_explorer_title') }}</h2>
         <p class="premium-glass-card-subtitle">{{ __('messages.map_explorer_desc') }}</p>
         
         <div class="market-search-bar">
             <input type="text" id="creator-search-input" placeholder="{{ __('messages.ph_search_district') }}" class="premium-input m-0">
-            <button type="button" id="btn-creator-search" class="btn-premium btn-blue-hub m-0 w-auto">🔍 {{ __('messages.btn_search') }}</button>
+            <button type="button" id="btn-creator-search" class="btn-premium btn-amarillo-hub m-0 w-auto">🔍 {{ __('messages.btn_search') }}</button>
         </div>
         
         <div id="creator-map" class="map-container-380"></div>
@@ -74,7 +74,7 @@
                                 <input type="date" name="reservation_date" required min="{{ date('Y-m-d') }}" class="input-date-sm">
                             </div>
                             <input type="number" name="hours" step="0.5" min="0.5" max="{{ $disp }}" placeholder="Hrs" required class="input-hours-sm">
-                            <button type="submit" class="btn-premium btn-blue-hub btn-reserve-sm" onclick="interceptarCalculoReserva(event, this)">{{ __('messages.btn_reserve') }}</button>
+                            <button type="submit" class="btn-premium btn-amarillo-hub btn-reserve-sm" onclick="interceptarCalculoReserva(event, this)">{{ __('messages.btn_reserve') }}</button>
                         </div>
                     </form>
                 </div>
@@ -142,9 +142,12 @@
                                             </form>
                                         </div>
                                     @elseif($res->status === 'completed' && empty($res->is_reviewed))
-                                        <button type="button" class="btn-back-minimal btn-min-eval-gold" style="width: auto;" onclick="abrirModalReputacion({{ $res->id }}, {{ $res->lab_owner_id }}, '{{ $res->lab_name }}', '{{ $res->custom_name }}')">⭐ {{ __('messages.btn_rate_service') }}</button>
+                                        <button type="button" class="btn-back-minimal btn-min-eval-gold" onclick="abrirModalReputacion({{ $res->id }}, {{ $res->lab_owner_id }}, '{{ $res->lab_name }}', '{{ $res->custom_name }}', '{{ $res->asset_type ?? 'machine' }}')">⭐ {{ __('messages.btn_rate_service') }}</button>
+                                    @elseif($res->status === 'completed' && !empty($res->is_reviewed))
+                                        {{-- 🚀 REPARADO: Muestra una confirmación limpia y alineada al estándar del Lab --}}
+                                        <span class="status-text-approved">✓ {{ __('messages.lbl_rating_sent') ?? 'Calificado' }}</span>
                                     @else
-                                        <span style="font-size: 12px; color: #4a5568;">-</span>
+                                        <span class="status-text-rejected">-</span>
                                     @endif
                                 </td>
                             </tr>
@@ -155,48 +158,43 @@
         </div>
     </div>
 
-    <div id="modal-evaluar-reputacion" class="modal-overlay-blur">
-        <div class="modal-container-dark">
-            <div class="modal-header-glass">
-                <h3 class="modal-title-glass">⭐ {{ __('messages.modal_rate_title') }}</h3>
-                <button type="button" onclick="document.getElementById('modal-evaluar-reputacion').style.display='none'" class="modal-close-btn">&times;</button>
+    {{-- 📦 PLANTILLA MAESTRA DE EVALUACIÓN RECTIFICADA (Categoría con color) --}}
+    <template id="review-modal-template">
+        <form id="form-evaluar-laboratorio" action="{{ route('creator.rate_lab') }}" method="POST">
+            @csrf
+            <input type="hidden" name="order_id" id="swal-order-id">
+            <input type="hidden" name="lab_id" id="swal-lab-id">
+
+            <div class="modal-info-box grid-mission-inputs">
+                <div>
+                    <div class="modal-rating-label">{{ __('messages.th_lab') }}</div>
+                    <div id="swal-pizarra-nombre-lab" class="modal-creator-name text-white-pure"></div>
+                </div>
+                <div>
+                    {{-- 🟢 REPARADO: La categoría (Máquina/Servicio/Lab) ahora es la dueña del Badge de Color --}}
+                    <div class="modal-rating-label-container">
+                        <span id="swal-pizarra-tipo-recurso" class="badge-semantic"></span>
+                    </div>
+                    <div id="swal-pizarra-nombre-activo" class="modal-creator-name text-white-pure"></div>
+                </div>
             </div>
 
-            <form action="{{ route('creator.rate_lab') }}" method="POST">
-                @csrf
-                <input type="hidden" name="order_id" id="modal-rating-order-id">
-                <input type="hidden" name="lab_id" id="modal-rating-lab-id">
-
-                <div class="modal-info-box grid-mission-inputs" style="gap: 12px;">
-                    <div>
-                        <div class="modal-rating-label">{{ __('messages.th_lab') }}</div>
-                        <div id="modal-pizarra-nombre-lab" class="modal-creator-name text-white-pure">-</div>
-                    </div>
-                    <div>
-                        <div class="modal-rating-label">{{ __('messages.th_equipment') }}</div>
-                        <div id="modal-pizarra-nombre-activo" class="modal-creator-name hub-text-azul">-</div>
-                    </div>
+            <div class="rating-stars-row">
+                <label class="modal-rating-label">{{ __('messages.lbl_general_rating') }}</label>
+                <div class="star-rating-cyber">
+                    <input type="radio" id="lab-star5" name="rating" value="5" checked><label for="lab-star5">★</label>
+                    <input type="radio" id="lab-star4" name="rating" value="4"><label for="lab-star4">★</label>
+                    <input type="radio" id="lab-star3" name="rating" value="3"><label for="lab-star3">★</label>
+                    <input type="radio" id="lab-star2" name="rating" value="2"><label for="lab-star2">★</label>
+                    <input type="radio" id="lab-star1" name="rating" value="1"><label for="lab-star1">★</label>
                 </div>
+            </div>
 
-                <div class="flex-align-gap-10 mb-20">
-                    <label class="modal-rating-label m-0">{{ __('messages.lbl_stars') }}</label>
-                    <select name="rating" class="modal-rating-select" required>
-                        <option value="5" selected>⭐ ⭐ ⭐ ⭐ ⭐ (5/5)</option>
-                        <option value="4">⭐ ⭐ ⭐ ⭐ (4/5)</option>
-                        <option value="3">⭐ ⭐ ⭐ (3/5)</option>
-                        <option value="2">⭐ ⭐ (2/5)</option>
-                        <option value="1">⭐ (1/5)</option>
-                    </select>
-                </div>
-
-                <div class="mb-22">
-                    <textarea name="comment" placeholder="{{ __('messages.ph_review_comment') }}" class="premium-textarea m-0 h-90" required></textarea>
-                </div>
-
-                <button type="submit" class="btn-logout-v2 btn-modal-submit btn-modal-gold" onclick="confirmarAccion(event, '{{ __('messages.swal_confirm_rating') }}', 'info', '#f1c40f')">💾 {{ __('messages.btn_submit_review') }}</button>
-            </form>
-        </div>
-    </div>
+            <div class="mb-22">
+                <textarea name="comment" placeholder="{{ __('messages.ph_review_comment') }}" class="premium-textarea m-0 h-90" required></textarea>
+            </div>
+        </form>
+    </template>
 </div>
 <script>
 const nodesMapaGlobal = {!! $labsMapaJson !!};
@@ -232,12 +230,60 @@ function restablecerFiltroTotalMercado() {
     filtrarCatalogoMercadoVivo();
 }
 
-function abrirModalReputacion(orderId, labId, labName, assetName) {
-    document.getElementById('modal-rating-order-id').value = orderId;
-    document.getElementById('modal-rating-lab-id').value = labId;
-    document.getElementById('modal-pizarra-nombre-lab').textContent = labName;
-    document.getElementById('modal-pizarra-nombre-activo').textContent = assetName;
-    document.getElementById('modal-evaluar-reputacion').style.display = 'flex';
+function abrirModalReputacion(orderId, labId, labName, assetName, assetType = 'machine') {
+    // 1. Identificación del idioma de la categoría
+    let etiquetaRecurso = "";
+    if (assetType === 'machine') {
+        etiquetaRecurso = "{{ __('messages.opt_machine') }}";
+    } else if (assetType === 'service') {
+        etiquetaRecurso = "{{ __('messages.opt_service') }}";
+    } else {
+        etiquetaRecurso = "{{ __('messages.opt_lab') }}";
+    }
+
+    // 2. Lanzamiento del motor SweetAlert2
+    Swal.fire({
+        title: '⭐ {{ __('messages.modal_rate_title') }}',
+        // Levantamos el HTML puro directamente desde el template de Blade
+        html: document.getElementById('review-modal-template').innerHTML,
+        background: '#1c2230',
+        color: '#fff',
+        showCancelButton: true,
+        confirmButtonColor: '#f1c40f',
+        cancelButtonColor: '#7f8c8d',
+        confirmButtonText: '💾 {{ __('messages.btn_submit_review') }}',
+        cancelButtonText: '{{ __('messages.swal_cancel') }}',
+        customClass: { popup: 'premium-popup' },
+        
+        // 🚀 CIRCUITO BLINDADO: Escribimos directo en el DOM activo del modal
+        didOpen: () => {
+            const modalVivo = Swal.getHtmlContainer();
+            
+            modalVivo.querySelector('#swal-order-id').value = orderId;
+            modalVivo.querySelector('#swal-lab-id').value = labId;
+            modalVivo.querySelector('#swal-pizarra-nombre-lab').textContent = labName;
+            modalVivo.querySelector('#swal-pizarra-nombre-activo').textContent = assetName;
+            
+            const badgeCategoria = modalVivo.querySelector('#swal-pizarra-tipo-recurso');
+            badgeCategoria.textContent = etiquetaRecurso;
+            badgeCategoria.className = 'badge-semantic badge-' + assetType;
+            
+            modalVivo.querySelector('#lab-star5').checked = true;
+        },
+        
+        preConfirm: () => {
+            const form = Swal.getPopup().querySelector('#form-evaluar-laboratorio');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return false;
+            }
+            return true;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.getPopup().querySelector('#form-evaluar-laboratorio').submit();
+        }
+    });
 }
 
 function interceptarCalculoReserva(event, boton) {

@@ -40,13 +40,24 @@ class DashboardController extends Controller
             ->orderBy('m.created_at', 'desc')
             ->get();
 
-        // Estado de Postulaciones Laborales del Creator
+        // Estado de Postulaciones Laborales del Creator (Detecta reseñas dinámicamente)
         $misPostulaciones = DB::table('mission_applications as ma')
             ->join('missions as m', 'ma.mission_id', '=', 'm.id')
             ->join('users as u', 'm.lab_id', '=', 'u.id')
             ->where('ma.creator_id', $creator->id)
-            ->select('ma.*', 'm.title', 'm.reward_fc', 'm.status as mission_status', 'm.deadline', 'm.lab_id', 'm.target_creator_id', 'u.name as lab_name', 'u.slug as lab_slug')
-            // 🚀 CORRECCIÓN QUIRÚRGICA: Cambiado de ma.applied_at a ma.created_at
+            ->select(
+                'ma.*', 
+                'm.title', 
+                'm.reward_fc', 
+                'm.status as mission_status', 
+                'm.deadline', 
+                'm.lab_id', 
+                'm.target_creator_id', 
+                'u.name as lab_name', 
+                'u.slug as lab_slug',
+                // 🎯 SUBCONSULTA CONTABLE: Cuenta si ya existe una review de esta misión hecha por el creador
+                DB::raw("(SELECT COUNT(*) FROM reviews WHERE reviewer_id = ma.creator_id AND context_type = 'mission' AND context_id = ma.mission_id) as ya_calificado")
+            )
             ->orderBy('ma.created_at', 'desc')
             ->get();
 

@@ -182,12 +182,12 @@ class JobController extends Controller
                 'created_at' => now()
             ]);
 
-            // 2. Ingresamos a la billetera del Lab
+            // 2. Ingresamos a la billetera del Lab como VALOR QUEMADO (Consumed)
             DB::table('transactions')->insert([
                 'user_id' => $contract->lab_id,
-                'description' => "Abono recibido de {$creator->name} por crédito",
+                'description' => "Amortización de crédito recibida de {$creator->name}",
                 'amount' => $amountToPay,
-                'type' => 'income',
+                'type' => 'consumed', // 🚀 ANTES DECÍA 'income'. AHORA SE QUEMA DE INMEDIATO.
                 'created_at' => now()
             ]);
 

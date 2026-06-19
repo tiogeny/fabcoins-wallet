@@ -173,32 +173,56 @@ class ReservationController extends Controller
     }
 
     /**
-     * Emite una reseña hacia un laboratorio
+     * Emite una reseña hacia un laboratorio (Soporta Mercado y Misiones de forma polimórfica)
      */
     public function rateLab(Request $request)
     {
         $creatorId = auth()->id();
-        $orderId = $request->input('order_id');
-        $labId = $request->input('lab_id');
-        $rating = intval($request->input('rating'));
+        $labId     = $request->input('lab_id');
+        $rating    = intval($request->input('rating'));
+        $comment   = trim($request->input('comment'));
 
-        DB::transaction(function() use ($creatorId, $labId, $orderId, $rating, $request) {
+        // Interceptamos los dos posibles detonantes de contexto
+        $missionId = $request->input('mission_id');
+        $orderId   = $request->input('order_id');
+
+        DB::transaction(function() use ($creatorId, $labId, $rating, $comment, $missionId, $orderId) {
+            
+            // 🎯 MOTOR DE DETECCIÓN DINÁMICA DE CONTEXTO
+            if (!empty($missionId)) {
+                // 🔵 CONTEXTO: VIENE DEL HUB DE MISIONES COMPLETADAS
+                $contextType = 'mission';
+                $contextId   = $missionId;
+            } else {
+                // 🟡 CONTEXTO: VIENE DEL MONITOR DEL MERCADO (ALQUILERES)
+                $contextType = 'market';
+                $contextId   = $orderId;
+            }
+
+            // 1. Inserción blindada en la tabla única de reviews de la red
             DB::table('reviews')->insert([
                 'reviewer_id'  => $creatorId, 
                 'reviewee_id'  => $labId, 
-                'context_type' => 'market', 
-                'context_id'   => $orderId, 
+                'context_type' => $contextType, 
+                'context_id'   => $contextId, 
                 'rating'       => $rating, 
-                'comment'      => trim($request->input('comment')), 
+                'comment'      => $comment, 
                 'created_at'   => now(), 
                 'updated_at'   => now()
             ]);
             
-            DB::table('orders')->where('id', $orderId)->update(['is_reviewed' => true]);
+            // 2. Marcado de bandera correspondiente para cerrar el ciclo de vida del botón
+            if ($contextType === 'market') {
+                DB::table('orders')
+                    ->where('id', $orderId)
+                    ->update(['is_reviewed' => true]);
+            }
             
+            // 3. Recalcular y actualizar la reputación promedio en tiempo real del laboratorio
             $avg = DB::table('reviews')->where('reviewee_id', $labId)->avg('rating');
             DB::table('users')->where('id', $labId)->update(['reputation_score' => round($avg, 1)]);
             
+            // 4. Despachar notificación de éxito al Laboratorio calificado
             DB::table('notifications')->insert([
                 'user_id'    => $labId, 
                 'message'    => __('messages.notif_new_rating', ['rating' => $rating]), 

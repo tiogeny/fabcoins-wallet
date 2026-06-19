@@ -192,7 +192,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * 📊 EXPORTAR ESTADO DE CUENTA A CSV COMERCIAL (CONVERTIDO DE TU MOTOR ANTIGUO)
+     * 📊 EXPORTAR ESTADO DE CUENTA A CSV COMERCIAL (CON NÚMEROS NATURALEZAS PARA EXCEL)
      */
     public function exportCSV()
     {
@@ -210,17 +210,17 @@ class DashboardController extends Controller
         $callback = function() use ($lab) {
             $file = fopen('php://output', 'w');
             
-            // Inyectar el BOM UTF-8 exacto de tu código viejo para soporte de eñes y tildes en Excel
+            // Inyectar el BOM UTF-8 exacto para soporte de eñes y tildes en Excel
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // Encabezados multiidioma dinámicos
+            // Encabezados con doble columna financiera
             if (app()->getLocale() === 'en') {
-                fputcsv($file, ['Date and Time', 'Concept / Description', 'Operation Type', 'Amount (FC)']);
+                fputcsv($file, ['Date and Time', 'Concept / Description', 'Operation Type', 'Liquid Cash (FC)', 'Consumed (FC)']);
             } else {
-                fputcsv($file, ['Fecha y Hora', 'Concepto / Descripción', 'Tipo de Operación', 'Monto (FC)']);
+                fputcsv($file, ['Fecha y Hora', 'Concepto / Descripción', 'Tipo de Operación', 'Caja (FC)', 'Consumido (FC)']);
             }
 
-            // Consulta al libro contable de Laravel
+            // Consulta al libro contable ordenado por fecha descendente
             $transactions = DB::table('transactions')
                 ->where('user_id', $lab->id)
                 ->orderBy('created_at', 'desc')
@@ -229,26 +229,48 @@ class DashboardController extends Controller
             foreach ($transactions as $row) {
                 $tipo_texto = $row->type;
                 
+                // Homogenización de nombres de operación
                 if (app()->getLocale() === 'es') {
-                    if ($row->type === 'income') $tipo_texto = 'Ingreso (Recibido)';
+                    if ($row->type === 'income') $tipo_texto = 'Circulación [INCOME]';
                     elseif ($row->type === 'expense') $tipo_texto = 'Egreso (Gasto)';
-                    elseif ($row->type === 'mint') $tipo_texto = 'Emisión [MINT]';
-                    elseif ($row->type === 'escrow') $tipo_texto = 'Reserva [ESCROW]';
+                    elseif ($row->type === 'mint') $tipo_texto = 'Emisión Base [MINT]';
+                    elseif ($row->type === 'escrow') $tipo_texto = 'En Custodia [ESCROW]';
+                    elseif ($row->type === 'consumed') $tipo_texto = 'Consumido [CONSUMED]';
+                    elseif ($row->type === 'info') $tipo_texto = 'Bitácora [INFO]';
                 } else {
-                    if ($row->type === 'income') $tipo_texto = 'Income';
+                    if ($row->type === 'income') $tipo_texto = 'Circulating [INCOME]';
                     elseif ($row->type === 'expense') $tipo_texto = 'Expense';
-                    elseif ($row->type === 'mint') $tipo_texto = 'Tokenization [MINT]';
+                    elseif ($row->type === 'mint') $tipo_texto = 'Base Emit [MINT]';
                     elseif ($row->type === 'escrow') $tipo_texto = 'Guarantee [ESCROW]';
+                    elseif ($row->type === 'consumed') $tipo_texto = 'Consumed [CONSUMED]';
+                    elseif ($row->type === 'info') $tipo_texto = 'Log [INFO]';
                 }
 
-                $signo = in_array($row->type, ['income', 'mint']) ? '+' : '-';
-                $monto_contable = $signo . number_format($row->amount, 2, '.', '');
+                $monto_caja = '';
+                $monto_consumido = '';
+
+                if ($row->type === 'info') {
+                    $monto_caja = 'REGISTRO';
+                } elseif ($row->type === 'consumed') {
+                    // 🚀 CORRECCIÓN: Quitamos el '+' para que Excel lo detecte como Float/Número Puro
+                    $monto_consumido = number_format($row->amount, 2, '.', '');
+                } else {
+                    // Entradas y salidas estándar de liquidez
+                    if (in_array($row->type, ['income', 'mint'])) {
+                        // 🚀 CORRECCIÓN: Los ingresos van sin el signo '+' al inicio
+                        $monto_caja = number_format($row->amount, 2, '.', '');
+                    } else {
+                        // Los egresos mantienen el '-' porque Excel sí entiende números negativos nativos
+                        $monto_caja = '-' . number_format($row->amount, 2, '.', '');
+                    }
+                }
 
                 fputcsv($file, [
                     date('d/m/Y H:i:s', strtotime($row->created_at)),
                     $row->description,
                     $tipo_texto,
-                    $monto_contable
+                    $monto_caja,
+                    $monto_consumido
                 ]);
             }
             fclose($file);

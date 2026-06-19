@@ -3,7 +3,7 @@
 @section('title', __('messages.lab_portal'))
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=3.8">
+    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=4.0">
 @endpush
 
 @section('content')
@@ -105,29 +105,54 @@
                     <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
                         @php 
-                            $perimetroReserva = ($enReserva / max(1, $totalMinted)) * $circunferencia;
-                            $perimetroOfertados = ($ofertadosTotal / max(1, $totalMinted)) * $circunferencia;
-                            $perimetroBajas = ($dadosDeBajaValor / max(1, $totalMinted)) * $circunferencia;
+                            $labId = auth()->id();
+                            $circunferencia = 213.6;
+
+                            // 1. Emisión Base (Masa Monetaria Inalterable)
+                            $totalMinted = DB::table('transactions')->where('user_id', $labId)->where('type', 'mint')->sum('amount');
+                            $totalMinted = max(5000, $totalMinted); // Salvaguarda base
+
+                            // 2. Fondos en Custodia (Misiones Abiertas o En Ejecución actualmente)
+                            $congeladosReales = DB::table('missions')
+                                ->where('lab_id', $labId)
+                                ->whereIn('status', ['open', 'assigned'])
+                                ->sum(DB::raw('reward_fc * spots_total'));
+
+                            // 3. En Circulación (Inyectado a la comunidad por misiones terminadas)
+                            $enCirculacion = DB::table('missions')
+                                ->where('lab_id', $labId)
+                                ->where('status', 'completed')
+                                ->sum(DB::raw('reward_fc * spots_filled'));
+
+                            // 4. Tesorería Disponible (Lo que estrictamente le queda al Lab en caja)
+                            $realLiquid = max(0, $totalMinted - $congeladosReales - $enCirculacion);
+
+                            // 5. Contador Independiente: Servicios Liquidados / Deudas Quemadas
+                            $realConsumed = DB::table('transactions')->where('user_id', $labId)->where('type', 'consumed')->sum('amount');
+
+                            // Perímetros del gráfico circular perfectos sobre base 5000
+                            $pLiq = ($realLiquid / $totalMinted) * $circunferencia;
+                            $pFrz = ($congeladosReales / $totalMinted) * $circunferencia;
+                            $pCir = ($enCirculacion / $totalMinted) * $circunferencia;
                         @endphp
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $perimetroReserva }} 214"></circle>
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#f1c40f" stroke-width="12" stroke-dasharray="{{ $perimetroOfertados }} 214" stroke-dashoffset="-{{ $perimetroReserva }}"></circle>
-                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#e74c3c" stroke-width="12" stroke-dasharray="{{ $perimetroBajas }} 214" stroke-dashoffset="-{{ $perimetroReserva + $perimetroOfertados }}"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $pLiq }} 214"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#f1c40f" stroke-width="12" stroke-dasharray="{{ $pFrz }} 214" stroke-dashoffset="-{{ $pLiq }}"></circle>
+                        <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2ecc71" stroke-width="12" stroke-dasharray="{{ $pCir }} 214" stroke-dashoffset="-{{ $pLiq + $pFrz }}"></circle>
                     </svg>
                 </div>
                 <div style="display: flex; flex-direction: column; justify-content: space-between;">
                     
-                    {{-- 🚀 NUEVO DISEÑO RATIO: MINTED / CONSUMED --}}
                     <div style="display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-bottom: 15px;">
-                        <div class="main-hub-value text-success-neon" style="margin: 0;">{{ number_format($totalMinted, 0, '.', ' ') }} FC</div>
-                        <div style="font-size: 16px; color: #e67e22; font-weight: 700; font-family: 'Rajdhani', sans-serif;">
-                            / {{ number_format($totalHistoricoQuemado ?? 0, 0, '.', ' ') }} <span style="font-size: 10px; font-family: 'Inter', sans-serif; text-transform: uppercase; color: #bdc3c7;">{{ __('messages.badge_consumed') }}</span>
+                        <div class="main-hub-value text-success-neon" style="margin: 0;" title="Emisión Histórica Respaldada">{{ number_format($totalMinted, 0, '.', ' ') }} FC</div>
+                        <div style="font-size: 14px; color: #e67e22; font-weight: 700; font-family: 'Rajdhani', sans-serif;">
+                            / {{ number_format($realConsumed, 0, '.', ' ') }} <span style="font-size: 9px; font-family: 'Inter', sans-serif; text-transform: uppercase; color: #bdc3c7;">{{ __('messages.badge_consumed') }}</span>
                         </div>
                     </div>
 
                     <div class="bullet-metrics-compact">
-                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#3498db;"></span> <strong>{{ number_format($enReserva, 0, '.', ' ') }}</strong> {{ __('messages.lbl_reserve') }}</div>
-                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#f1c40f;"></span> <strong>{{ number_format($ofertadosTotal, 0, '.', ' ') }}</strong> {{ __('messages.lbl_frozen') }}</div>
-                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#e74c3c;"></span> <strong>{{ number_format($dadosDeBajaValor, 0, '.', ' ') }}</strong> {{ __('messages.status_retired') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#3498db;"></span> <strong>{{ number_format($realLiquid, 0, '.', ' ') }}</strong> {{ __('messages.lbl_reserve') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#f1c40f;"></span> <strong>{{ number_format($congeladosReales, 0, '.', ' ') }}</strong> {{ __('messages.lbl_frozen') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#2ecc71;"></span> <strong>{{ number_format($enCirculacion, 0, '.', ' ') }}</strong> {{ __('messages.lbl_circulating') }}</div>
                     </div>
                 </div>
             </div>

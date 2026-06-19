@@ -3,8 +3,8 @@
 @section('title', __('messages.creator_portal') . ' | FabCoins')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=1.1">
-    <link rel="stylesheet" href="{{ asset('css/creator.css') }}?v=1.2">
+    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=2.1">
+    <link rel="stylesheet" href="{{ asset('css/creator.css') }}?v=2.1">
 @endpush
 
 @section('content')
@@ -191,9 +191,9 @@
     </div>
 
     <div id="hub-mercado" class="hub-section">
-        <div class="hub-active-bar-v2 hub-bar-azul">
+        <div class="hub-active-bar-v2 hub-bar-amarillo">
             <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-mercado')">← {{ __('messages.btn_back') }}</button>
-            <div class="hub-title-node hub-text-azul">
+            <div class="hub-title-node hub-text-amarillo">
                 <img src="{{ asset('images/hubs/icon_activar.webp') }}" style="filter: hue-rotate(180deg);" alt="">
                 {{ __('messages.hub_market_btn') }}
             </div>
@@ -202,9 +202,9 @@
     </div>
 
     <div id="hub-billetera" class="hub-section">
-        <div class="hub-active-bar-v2 hub-bar-amarillo">
+        <div class="hub-active-bar-v2 hub-bar-azul">
             <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-billetera')">← {{ __('messages.btn_back') }}</button>
-            <div class="hub-title-node hub-text-amarillo">
+            <div class="hub-title-node hub-text-azul">
                 <img src="{{ asset('images/hubs/icon_tokenizar.webp') }}" style="filter: hue-rotate(280deg);" alt="">
                 {{ __('messages.hub_wallet_btn') }}
             </div>

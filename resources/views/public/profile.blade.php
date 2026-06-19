@@ -59,8 +59,14 @@
             
             <h1 style="font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 26px; color: #fff; margin: 0 0 6px 0; line-height: 1.2;">{{ $user->name }}</h1>
             
-            <div style="margin-bottom: 10px;">
+            <div style="margin-bottom: 6px;">
                 <span class="badge-role badge-creator" style="text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;">⚙️ {{ $user->role }}</span>
+            </div>
+
+            {{-- ⭐ NUEVO: Fila de reputación promedio dinámica para el Perfil Público --}}
+            <div style="color: #f1c40f; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 12px; letter-spacing: 1px;">
+                {!! str_repeat('★', floor($user->reputation_score ?? 5)) !!}{!! str_repeat('☆', 5 - floor($user->reputation_score ?? 5)) !!}
+                <span style="color: #cbd5e0; font-size: 11px; font-family: 'Inter', sans-serif; font-weight: 500; margin-left: 2px;">({{ number_format($user->reputation_score ?? 5.0, 1) }})</span>
             </div>
 
             @if(!empty($user->city) || !empty($user->country))
@@ -107,7 +113,8 @@
             <div>
                 <label class="premium-label" style="font-size: 11px; margin-bottom: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px;">{{ __('messages.title_prof_bio') }}</label>
                 <p class="text-neutral-muted m-0" style="font-size: 14px; line-height: 1.6; color: #cbd5e0;">
-                    {{ $user->bio ?: __('messages.empty_bio') }}
+                    {{-- 🚀 Usamos {!! !!} para interpretar las negritas y listas visuales --}}
+                    {!! $user->bio ?: __('messages.empty_bio') !!}
                 </p>
             </div>
 
@@ -172,7 +179,8 @@
                         <div style="background: {{ $bg }}; border: 1px solid {{ $border }}; padding: 6px 12px; border-radius: 6px; display: flex; align-items: center; gap: 8px;">
                             <span style="font-size: 12px; font-weight: 600; color: #fff;">{{ $sk->name }}</span>
                             <span style="background: {{ $color }}; color: #000; font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 4px;">
-                                {{ $sk->endorsements_count }}
+                                {{-- 🚀 Fusible de seguridad anticaídas --}}
+                                {{ $sk->endorsements_count ?? 0 }}
                             </span>
                         </div>
                     @endforeach

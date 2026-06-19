@@ -261,35 +261,56 @@
                     <tr>
                         <th>{{ __('messages.th_date') }}</th>
                         <th>{{ __('messages.th_description') }}</th>
-                        <th class="text-right" style="width: 140px;">{{ __('messages.th_amount') }}</th>
+                        <th style="text-align: right; width: 140px;">{{ __('messages.th_amount') }}</th>
+                        <th style="text-align: right; width: 130px;">{{ __('messages.lbl_consumidos_bullet') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if($misTransacciones->isEmpty())
-                        <tr><td colspan="3" class="empty-state">{{ __('messages.empty_transactions') }}</td></tr>
+                        <tr><td colspan="4" class="empty-state">{{ __('messages.empty_transactions') }}</td></tr>
                     @else
                         @foreach($misTransacciones as $tx)
                             <tr>
                                 <td class="td-date-dim">{{ date('d M Y - H:i', strtotime($tx->created_at)) }}</td>
-                                <td class="td-description-text">
+                                <td class="td-description-text" style="color: #fff; font-weight: 500;">
                                     {{ $tx->description }}
+                                    
                                     @if($tx->type === 'mint')
-                                        <span class="tx-badge tx-badge-mint">{{ __('messages.badge_mint') }}</span>
+                                        <span class="tx-badge" style="background: rgba(255, 255, 255, 0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);">{{ __('messages.badge_mint') }}</span>
                                     @elseif($tx->type === 'escrow')
-                                        <span class="tx-badge tx-badge-escrow">{{ __('messages.badge_escrow') }}</span>
-                                    @elseif($tx->type === 'info')
-                                        <span class="tx-badge tx-badge-info">{{ __('messages.badge_info') }}</span>
+                                        <span class="tx-badge" style="background: rgba(241, 196, 15, 0.1); color: #f1c40f; border: 1px solid #f1c40f;">{{ __('messages.lbl_frozen') }}</span>
                                     @elseif($tx->type === 'consumed')
                                         <span class="tx-badge" style="background: rgba(230, 126, 34, 0.1); color: #e67e22; border: 1px solid #e67e22;">{{ __('messages.badge_consumed') }}</span>
+                                    @elseif($tx->type === 'info')
+                                        <span class="tx-badge" style="background: rgba(149, 165, 166, 0.1); color: #95a5a6; border: 1px solid #95a5a6;">{{ __('messages.badge_info') }}</span>
+                                    @elseif($tx->type === 'income')
+                                        <span class="tx-badge" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid #2ecc71;">{{ __('messages.lbl_circulating') }}</span>
                                     @endif
                                 </td>
-                                <td class="text-right tx-amount-value {{ in_array($tx->type, ['income', 'mint']) ? 'text-success-neon' : ($tx->type === 'consumed' ? 'text-warning-neon' : ($tx->type === 'info' ? 'text-neutral-muted' : 'text-danger-neon')) }}">
+                                
+                                {{-- 🪙 COLUMNA 1: FLUJO LÍQUIDO --}}
+                                <td class="text-right font-bold" style="font-family: 'Rajdhani', sans-serif; font-size: 16px;">
                                     @if($tx->type === 'info')
-                                        <span class="badge-ghost-info" style="font-size: 10px; font-family: 'Inter', sans-serif;">{{ __('messages.badge_info') }}</span>
-                                    @elseif($tx->type === 'consumed')
-                                        {{ number_format($tx->amount, 0) }} FC
+                                        <span style="color: #95a5a6; font-size: 11px; font-family: 'Inter', sans-serif; font-weight: 600; text-transform: uppercase;">{{ __('messages.badge_info') }}</span>
+                                    @elseif($tx->type === 'mint')
+                                        <span style="color: #fff;">+{{ number_format($tx->amount, 0) }} FC</span>
+                                    @elseif($tx->type === 'escrow')
+                                        <span style="color: #f1c40f;">-{{ number_format($tx->amount, 0) }} FC</span>
+                                    @elseif($tx->type === 'income')
+                                        <span style="color: #2ecc71;">+{{ number_format($tx->amount, 0) }} FC</span>
+                                    @elseif($tx->type !== 'consumed')
+                                        <span style="color: #3498db;">-{{ number_format($tx->amount, 0) }} FC</span>
                                     @else
-                                        {{ in_array($tx->type, ['income', 'mint']) ? '+' : '-' }}{{ number_format($tx->amount, 0) }} FC
+                                        <span style="color: rgba(255,255,255,0.1); font-weight: 300;">—</span>
+                                    @endif
+                                </td>
+
+                                {{-- 🎯 COLUMNA 2: VALOR QUEMADO (CONSUMIDO) --}}
+                                <td class="text-right font-bold" style="font-family: 'Rajdhani', sans-serif; font-size: 16px;">
+                                    @if($tx->type === 'consumed')
+                                        <span style="color: #e67e22;">+{{ number_format($tx->amount, 0) }} FC</span>
+                                    @else
+                                        <span style="color: rgba(255,255,255,0.1); font-weight: 300;">—</span>
                                     @endif
                                 </td>
                             </tr>

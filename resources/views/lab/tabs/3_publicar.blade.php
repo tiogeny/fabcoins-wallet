@@ -170,21 +170,16 @@
         </div>
     </div>
 
-    <div id="modal-auditoria-talentos" class="modal-overlay-blur">
-    <div class="modal-container-dark">
-        <div class="modal-header-glass">
-            <h3 id="modal-titulo-auditoria" class="modal-title-glass">{{ __('messages.lbl_evaluate_creator') }}</h3>
-            <button type="button" onclick="document.getElementById('modal-auditoria-talentos').style.display='none'" class="modal-close-btn">&times;</button>
-        </div>
-
-        <form action="{{ route('lab.mission.complete') }}" method="POST" id="form-envio-auditoria">
+    {{-- 📦 PLANTILLA MAESTRA DE AUDITORÍA DE TALENTOS (Organizada y protegida en Blade) --}}
+    <template id="audit-modal-template">
+        <form id="form-envio-auditoria" action="{{ route('lab.mission.complete') }}" method="POST">
             @csrf
-            <input type="hidden" name="mission_id" id="modal-field-mission-id">
-            <input type="hidden" name="creator_id" id="modal-field-creator-id">
+            <input type="hidden" name="mission_id" id="swal-field-mission-id">
+            <input type="hidden" name="creator_id" id="swal-field-creator-id">
 
             <div class="modal-info-box">
                 <div class="premium-label m-0">{{ __('messages.lbl_assigned_creator') }}</div>
-                <div id="modal-pizarra-nombre-creator" class="modal-creator-name">-</div>
+                <div id="swal-pizarra-nombre-creator" class="modal-creator-name text-white-pure">-</div>
             </div>
 
             <div class="mb-20">
@@ -196,36 +191,31 @@
                         @foreach($catalogoHabilidades as $skill)
                             @php $esHard = ($skill->type === 'hard'); @endphp
                             <label class="skill-tag-label">
-                               <input type="checkbox" name="endorsed_skills[]" value="{{ $skill->id }}" class="m-0" style="accent-color: {{ $esHard ? '#3498db' : '#f39c12' }};">
+                               <input type="checkbox" name="endorsed_skills[]" value="{{ $skill->id }}" class="m-0">
                                 {{ $skill->name }} 
-                                <small class="skill-tag-sub" style="color: {{ $esHard ? '#3498db' : '#f39c12' }};">({{ $skill->type }})</small>
+                                <small class="skill-tag-sub">({{ $skill->type }})</small>
                             </label>
                         @endforeach
                     @endif
                 </div>
             </div>
 
-                <div class="modal-rating-grid">
-                    <label class="modal-rating-label">{{ __('messages.lbl_general_rating') }}</label>
-                    <div>
-                        <select name="rating" class="modal-rating-select" required>
-                            <option value="5" selected>⭐ ⭐ ⭐ ⭐ ⭐ (5/5)</option>
-                            <option value="4">⭐ ⭐ ⭐ ⭐ (4/5)</option>
-                            <option value="3">⭐ ⭐ ⭐ (3/5)</option>
-                            <option value="2">⭐ ⭐ (2/5)</option>
-                            <option value="1">⭐ (1/5)</option>
-                        </select>
-                    </div>
+            <div class="rating-stars-row">
+                <label class="modal-rating-label">{{ __('messages.lbl_general_rating') }}</label>
+                <div class="star-rating-cyber">
+                    <input type="radio" id="creator-star5" name="rating" value="5" checked><label for="creator-star5">★</label>
+                    <input type="radio" id="creator-star4" name="rating" value="4"><label for="creator-star4">★</label>
+                    <input type="radio" id="creator-star3" name="rating" value="3"><label for="creator-star3">★</label>
+                    <input type="radio" id="creator-star2" name="rating" value="2"><label for="creator-star2">★</label>
+                    <input type="radio" id="creator-star1" name="rating" value="1"><label for="creator-star1">★</label>
                 </div>
+            </div>
 
-                <div class="mb-22">
-                    <textarea name="comment" placeholder="{{ __('messages.ph_comment_work') }}" class="premium-textarea m-0 h-75" required></textarea>
-                </div>
-
-                <button type="submit" onclick="dispararConfirmacionAuditoriaEfectiva(event)" id="modal-btn-execute-payout" class="btn-logout-v2 btn-modal-submit"></button>
-            </form>
-        </div>
-    </div>
+            <div class="mb-22">
+                <textarea name="comment" placeholder="{{ __('messages.ph_comment_work') }}" class="premium-textarea m-0 h-75" required></textarea>
+            </div>
+        </form>
+    </template>
 </div>
 
 <script>
@@ -248,26 +238,57 @@ function evaluarRulesCuposMision(selectNode) {
 }
 
 function ejecutarAperturaModalAuditoria(missionId, creatorId, creatorName, esDeudor, rewardFc) {
-    document.getElementById('modal-field-mission-id').value = missionId;
-    document.getElementById('modal-field-creator-id').value = creatorId;
-    document.getElementById('modal-pizarra-nombre-creator').textContent = creatorName;
+    // 1. Clonamos el esqueleto HTML puro de nuestra plantilla template
+    const template = document.getElementById('audit-modal-template');
+    const clonDOM = template.content.cloneNode(true);
 
-    const btnSubmit = document.getElementById('modal-btn-execute-payout');
-    
-    // Purgamos las clases de color antes de inyectar la nueva
-    btnSubmit.classList.remove('btn-modal-gold', 'btn-modal-green');
-    
+    // 2. Inyectamos los valores relacionales de la fila seleccionada
+    clonDOM.querySelector('#swal-field-mission-id').value = missionId;
+    clonDOM.querySelector('#swal-field-creator-id').value = creatorId;
+    clonDOM.querySelector('#swal-pizarra-nombre-creator').textContent = creatorName;
+
+    // 🧮 MOTOR ADAPTATIVO: Configura la naturaleza contable del botón SweetAlert
+    let textoConfirmacionBoton = "";
+    let colorConfirmacionBoton = "";
+
     if (esDeudor) {
-        btnSubmit.textContent = "{{ __('messages.btn_approve_amortize') }}";
-        btnSubmit.classList.add('btn-modal-gold');
-        mensajeConfirmacionModalDinamico = "{{ __('messages.btn_approve_amortize') }}"; 
+        textoConfirmacionBoton = "{{ __('messages.btn_approve_amortize') }}";
+        colorConfirmacionBoton = '#f1c40f'; // Oro Corporativo (Amortización de Deuda)
     } else {
-        btnSubmit.textContent = "{{ __('messages.btn_pay_rate') }}";
-        btnSubmit.classList.add('btn-modal-green');
-        mensajeConfirmacionModalDinamico = "{{ __('messages.btn_pay_rate') }}";
+        textoConfirmacionBoton = "{{ __('messages.btn_pay_rate') }}";
+        colorConfirmacionBoton = '#2ecc71'; // Verde Esmeralda (Pago Líquido)
     }
 
-    document.getElementById('modal-auditoria-talentos').style.display = 'flex';
+    // Encapsulado preventivo para transferir la estructura procesada a Swal
+    const wrapperTemporal = document.createElement('div');
+    wrapperTemporal.appendChild(clonDOM);
+
+    // 3. Lanzamiento del Tablero mediante SweetAlert en la raíz del DOM
+    Swal.fire({
+        title: '⭐ {{ __('messages.lbl_evaluate_creator') }}',
+        html: wrapperTemporal.innerHTML,
+        background: '#1c2230',
+        color: '#fff',
+        showCancelButton: true,
+        confirmButtonColor: colorConfirmacionBoton,
+        cancelButtonColor: '#7f8c8d',
+        confirmButtonText: '💾 ' + textoConfirmacionBoton,
+        cancelButtonText: '{{ __('messages.swal_cancel') }}',
+        customClass: { popup: 'premium-popup' },
+        preConfirm: () => {
+            // Validación HTML5 integrada antes del despacho
+            const form = document.getElementById('form-envio-auditoria');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return false;
+            }
+            return true;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('form-envio-auditoria').submit();
+        }
+    });
 }
 
 function dispararConfirmacionAuditoriaEfectiva(event) {

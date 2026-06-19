@@ -1,4 +1,4 @@
-<div class="focus-glow-amarillo">
+<div class="focus-glow-blue">
 
     {{-- 1. MOTOR DE TRANSFERENCIAS P2P --}}
     <div class="premium-glass-card">
@@ -30,7 +30,7 @@
                 </div>
                 <div>
                     {{-- Validación Nativa Inyectada: Si el form está incompleto, lanza advertencia de HTML, si no, abre SweetAlert --}}
-                    <button type="button" class="btn-premium btn-amarillo-hub m-0 w-100" onclick="if(!this.closest('form').checkValidity()) { this.closest('form').reportValidity(); return; } confirmarAccion(event, '{{ __('messages.swal_confirm_p2p') }}', 'warning', '#f1c40f')">
+                    <button type="button" class="btn-premium btn-blue-hub m-0 w-100" onclick="if(!this.closest('form').checkValidity()) { this.closest('form').reportValidity(); return; } confirmarAccion(event, '{{ __('messages.swal_confirm_p2p') }}', 'warning', '#f1c40f')">
                         🚀 {{ __('messages.btn_transfer') }}
                     </button>
                 </div>
@@ -83,7 +83,7 @@
                                             <input type="number" name="amount_to_pay" class="premium-input m-0 no-spin-arrows" 
                                                    style="height: 30px; font-size: 11px; width: 80px; padding: 0 10px;" 
                                                    placeholder="FC" min="1" max="{{ min($saldoTotal, $creditoActual->amount_remaining) }}" required>
-                                            <button type="button" class="btn-premium btn-amarillo-hub m-0" 
+                                            <button type="button" class="btn-premium btn-blue-hub m-0" 
                                                     style="height: 30px; font-size: 10px; padding: 0 12px; flex: 1;"
                                                     onclick="if(!this.closest('form').checkValidity()) { this.closest('form').reportValidity(); return; } confirmarAccion(event, '{{ __('messages.swal_confirm_payment') }}', 'info', '#f1c40f')">
                                                 💰 {{ __('messages.btn_pay_debt') }}
@@ -116,7 +116,7 @@
                     <tr>
                         <th>{{ __('messages.th_date') }}</th>
                         <th>{{ __('messages.th_description') }}</th>
-                        <th class="text-right" style="width: 120px;">{{ __('messages.th_amount') }}</th>
+                        <th style="text-align: right; width: 120px;">{{ __('messages.th_amount') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -125,19 +125,20 @@
                     @else
                         @foreach($misTransacciones as $tx)
                             <tr>
-                                <td class="td-date-dim">{{ date('d M Y - H:i', strtotime($tx->created_at ?? $tx['created_at'])) }}</td>
+                                <td class="td-date-dim">{{ date('d M Y - H:i', strtotime($tx->created_at)) }}</td>
                                 <td class="td-description-text">
-                                    {{ $tx->description ?? $tx['description'] }}
-                                    @if(($tx->type ?? $tx['type']) === 'mint')
+                                    {{ $tx->description }}
+                                    
+                                    @if($tx->type === 'mint')
                                         <span class="tx-badge tx-badge-mint">{{ __('messages.badge_mint') }}</span>
-                                    @elseif(($tx->type ?? $tx['type']) === 'escrow')
+                                    @elseif($tx->type === 'escrow')
                                         <span class="tx-badge tx-badge-escrow">{{ __('messages.badge_escrow') }}</span>
-                                    @elseif(($tx->type ?? $tx['type']) === 'info')
+                                    @elseif($tx->type === 'info')
                                         <span class="tx-badge tx-badge-info">{{ __('messages.badge_info') }}</span>
                                     @endif
                                 </td>
-                                <td class="text-right tx-amount-value {{ ($tx->type ?? $tx['type']) == 'income' ? 'text-success-neon' : 'text-danger-neon' }}">
-                                    {{ ($tx->type ?? $tx['type']) == 'income' ? '+' : '-' }}{{ number_format($tx->amount ?? $tx['amount'], 2) }} FC
+                                <td class="text-right tx-amount-value {{ $tx->type == 'income' ? 'text-success-neon' : 'text-danger-neon' }}">
+                                    {{ $tx->type == 'income' ? '+' : '-' }}{{ number_format($tx->amount, 0) }} FC
                                 </td>
                             </tr>
                         @endforeach
@@ -153,7 +154,7 @@
             @csrf
             <div class="premium-glass-card-header">
                 <h2 class="premium-glass-card-title m-0">👤 {{ __('messages.title_my_profile') }}</h2>
-                <button type="submit" class="btn-premium btn-amarillo-hub m-0">💾 {{ __('messages.btn_save_profile') }}</button>
+                <button type="submit" class="btn-premium btn-blue-hub m-0">💾 {{ __('messages.btn_save_profile') }}</button>
             </div>
 
             <div class="profile-panoramic-grid mt-20" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 25px;">
@@ -161,8 +162,26 @@
                 <div class="flex-col-gap-15" style="display: flex; flex-direction: column; gap: 15px;">
                     {{-- Biografía Profesional --}}
                     <div>
-                        <label class="premium-label">{{ __('messages.lbl_my_bio') }}</label>
-                        <textarea name="bio" rows="10" class="premium-textarea m-0" placeholder="{{ __('messages.ph_my_bio') }}" required>{{ $creator->bio }}</textarea>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label class="premium-label" style="margin: 0;">{{ __('messages.lbl_my_bio') }}</label>
+                            {{-- BOTONES DE ESTILO TIPO WORD --}}
+                            <div style="display: flex; gap: 4px; background: rgba(0,0,0,0.5); padding: 4px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                                <button type="button" class="btn-back-minimal m-0" style="padding: 2px 10px; font-size: 12px; font-weight: bold; color: #3498db;" onclick="ejecutarComandoEditor('creator-editor', 'bold')" title="Negrita">B</button>
+                                <button type="button" class="btn-back-minimal m-0" style="padding: 2px 10px; font-size: 12px; font-style: italic; color: #3498db;" onclick="ejecutarComandoEditor('creator-editor', 'italic')" title="Cursiva">I</button>
+                                <button type="button" class="btn-back-minimal m-0" style="padding: 2px 10px; font-size: 12px; text-decoration: underline; color: #3498db;" onclick="ejecutarComandoEditor('creator-editor', 'underline')" title="Subrayado">U</button>
+                                <button type="button" class="btn-back-minimal m-0" style="padding: 2px 8px; font-size: 12px; color: #3498db;" onclick="ejecutarComandoEditor('creator-editor', 'insertUnorderedList')" title="Viñetas">• </button>
+                            </div>
+                        </div>
+                        
+                        {{-- 📝 ÁREA INTERACTIVA VISUAL --}}
+                        <div id="creator-editor" 
+                             contenteditable="true" 
+                             class="premium-textarea m-0" 
+                             style="min-height: 200px; height: auto; overflow-y: auto; color: #fff; background: rgba(0,0,0,0.2); padding: 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; outline: none;"
+                             oninput="sincronizarEditorOculto('creator-editor', 'creator-bio-hidden')">{!! $creator->bio !!}</div>
+                        
+                        {{-- Input invisible para el controlador --}}
+                        <input type="hidden" name="bio" id="creator-bio-hidden" value="{{ $creator->bio }}">
                     </div>
 
                     {{-- Redes Sociales y Plataformas --}}
@@ -227,3 +246,37 @@
         </form>
     </div>
 </div>
+
+<script>
+
+// Hace que los cambios visuales ocurran de forma nativa en el texto seleccionado
+function ejecutarComandoEditor(editorId, comando) {
+    document.getElementById(editorId).focus();
+    document.execCommand(comando, false, null);
+    
+    // Forzamos la actualización inmediata del input oculto tras formatear
+    const inputId = editorId === 'lab-editor' ? 'lab-bio-hidden' : 'creator-bio-hidden';
+    sincronizarEditorOculto(editorId, inputId);
+}
+
+// Sincroniza el HTML visual de la pantalla con el input de texto que viaja a Laravel
+function sincronizarEditorOculto(editorId, inputId) {
+    const htmlContenido = document.getElementById(editorId).innerHTML;
+    document.getElementById(inputId).value = htmlContenido;
+}
+
+// Respaldo de seguridad: Sincroniza justo antes de enviar cualquier formulario
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+            if (document.getElementById('lab-editor')) {
+                sincronizarEditorOculto('lab-editor', 'lab-bio-hidden');
+            }
+            if (document.getElementById('creator-editor')) {
+                sincronizarEditorOculto('creator-editor', 'creator-bio-hidden');
+            }
+        });
+    });
+});
+
+</script>

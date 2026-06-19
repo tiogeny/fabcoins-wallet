@@ -166,8 +166,26 @@
 
             <div class="profile-panoramic-grid">
                 <div>
-                    <label class="premium-label">{{ __('messages.lbl_tell_creators') }}</label>
-                    <textarea name="bio" rows="8" class="premium-textarea">{{ $lab->bio }}</textarea>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label class="premium-label" style="margin: 0;">{{ __('messages.lbl_tell_creators') }}</label>
+                        {{-- BOTONES DE ESTILO TIPO WORD --}}
+                        <div style="display: flex; gap: 4px; background: rgba(0,0,0,0.5); padding: 4px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                            <button type="button" class="btn-back-minimal m-0" style="padding: 2px 10px; font-size: 12px; font-weight: bold; color: #1abc9c;" onclick="ejecutarComandoEditor('lab-editor', 'bold')" title="Negrita">B</button>
+                            <button type="button" class="btn-back-minimal m-0" style="padding: 2px 10px; font-size: 12px; font-style: italic; color: #1abc9c;" onclick="ejecutarComandoEditor('lab-editor', 'italic')" title="Cursiva">I</button>
+                            <button type="button" class="btn-back-minimal m-0" style="padding: 2px 10px; font-size: 12px; text-decoration: underline; color: #1abc9c;" onclick="ejecutarComandoEditor('lab-editor', 'underline')" title="Subrayado">U</button>
+                            <button type="button" class="btn-back-minimal m-0" style="padding: 2px 8px; font-size: 12px; color: #1abc9c;" onclick="ejecutarComandoEditor('lab-editor', 'insertUnorderedList')" title="Viñetas">•</button>
+                        </div>
+                    </div>
+                    
+                    {{-- 📝 ÁREA INTERACTIVA VISUAL (Sustituye al textarea) --}}
+                    <div id="lab-editor" 
+                         contenteditable="true" 
+                         class="premium-textarea" 
+                         style="min-height: 160px; height: auto; overflow-y: auto; color: #fff; background: rgba(0,0,0,0.2); padding: 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; outline: none;"
+                         oninput="sincronizarEditorOculto('lab-editor', 'lab-bio-hidden')">{!! $lab->bio !!}</div>
+                    
+                    {{-- Input invisible que Laravel procesará de forma nativa --}}
+                    <input type="hidden" name="bio" id="lab-bio-hidden" value="{{ $lab->bio }}">
                 </div>
                 <div class="social-links-grid-activar">
                     <input type="url" name="social_fabacademy" value="{{ $lab->social_fabacademy }}" placeholder="🎓 URL Fab Academy">
@@ -390,5 +408,35 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
         });
     }
+});
+
+// Hace que los cambios visuales ocurran de forma nativa en el texto seleccionado
+function ejecutarComandoEditor(editorId, comando) {
+    document.getElementById(editorId).focus();
+    document.execCommand(comando, false, null);
+    
+    // Forzamos la actualización inmediata del input oculto tras formatear
+    const inputId = editorId === 'lab-editor' ? 'lab-bio-hidden' : 'creator-bio-hidden';
+    sincronizarEditorOculto(editorId, inputId);
+}
+
+// Sincroniza el HTML visual de la pantalla con el input de texto que viaja a Laravel
+function sincronizarEditorOculto(editorId, inputId) {
+    const htmlContenido = document.getElementById(editorId).innerHTML;
+    document.getElementById(inputId).value = htmlContenido;
+}
+
+// Respaldo de seguridad: Sincroniza justo antes de enviar cualquier formulario
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+            if (document.getElementById('lab-editor')) {
+                sincronizarEditorOculto('lab-editor', 'lab-bio-hidden');
+            }
+            if (document.getElementById('creator-editor')) {
+                sincronizarEditorOculto('creator-editor', 'creator-bio-hidden');
+            }
+        });
+    });
 });
 </script>

@@ -160,8 +160,9 @@ return [
     'lbl_open_bullet'          => 'Abiertas',
     'lbl_working_bullet'       => 'En Ejecución',
     'lbl_closed_bullet'        => 'Completadas',
-    'lbl_reserve'              => 'En Reserva',
-    'lbl_frozen'               => 'Acuñados',
+    'lbl_reserve'              => 'Disponibles',
+    'lbl_frozen'               => 'En custodia',
+    'lbl_circulating'          => 'En circulación',
     'lbl_total_burned_kpi'     => 'Capacidad Consumida (Histórica)',
     'lbl_status_consumed'      => 'Consumidos en producción',
 
@@ -254,7 +255,7 @@ return [
     'lbl_hard_skills'          => 'Habilidades Técnicas (Hard)',
     'lbl_soft_skills'          => 'Habilidades Blandas (Soft)',
     'lbl_no_skills_registered' => 'Este Creador no ha indexado habilidades en su perfil público.',
-    'lbl_general_rating'       => 'Calificación General de Entrega:',
+    'lbl_general_rating'       => 'Calificación General:',
     'ph_comment_work'          => 'Escribe una reseña honesta sobre la calidad del entregable...',
     'btn_approve_amortize'     => 'Confirmar y Reducir Deuda',
     'btn_pay_rate'             => 'Confirmar Liberación de Pago',
@@ -269,7 +270,8 @@ return [
     'btn_assign_creator'     => 'Asignar Misión',
     'lbl_assigned_creator'   => 'Creador Asignado',
     'msg_mission_completed'  => 'Misión finalizada. La transferencia ha sido procesada con éxito.',
-    'badge_info'             => 'AUDITORÍA', // o 'REGISTRO'
+    'badge_info'             => 'Registro',
+    'lbl_reward_per_creator' => 'Recompensa por Creador',
     
     // Contratos ISA (Educativos)
     'title_isa_portfolio'      => 'Cartera de Financiamientos e ISA Activos',
@@ -340,14 +342,14 @@ return [
     'btn_clear_filter'         => 'Mostrar todos los Labs',
     'monitor_title'            => 'Monitor de Custodia y Órdenes de Alquiler',
     'monitor_desc'             => 'Audita tus depósitos en fondos de garantía, responde a solicitudes de reprogramación y califica los servicios completados.',
-    'th_lab'                   => 'Laboratorio Dueño',
+    'th_lab'                   => 'Lab',
     'btn_accept_date'          => 'Aceptar Fecha',
     'btn_reject_date'          => 'Rechazar Términos',
     'btn_rate_service'         => 'Evaluar Servicio',
-    'modal_rate_title'         => 'Evaluación de Reputación Industrial',
+    'modal_rate_title'         => 'Evaluación',
     'lbl_stars'                => 'Puntuación General:',
     'ph_review_comment'        => 'Redacta una reseña honesta sobre el estado del hardware, la precisión del maquinado o la puntualidad del servicio...',
-    'btn_submit_review'        => 'Emitir Calificación en el Ledger',
+    'btn_submit_review'        => 'Calificar',
     'ph_search_asset'          => 'Buscar máquina, tecnología o ubicación...',
     'monitor_empty'            => 'No se registran activos operativos en circulación en tu historial en este momento.',
     'th_total_cost'            => 'Costo de Reserva',
@@ -373,7 +375,6 @@ return [
     'badge_mint'             => 'EMISIÓN',
     'badge_escrow'           => 'CUSTODIA',
     'badge_consumed'         => 'CONSUMIDO',
-    'lbl_consumed' => 'Consumidos',
     'btn_pay_debt'           => 'Abonar a mi Deuda',
     'swal_confirm_payment'   => '¿Confirmas que deseas transferir estos FabCoins al Laboratorio para amortizar tu crédito?',
     'lbl_no_balance_to_pay'  => 'No tienes saldo líquido disponible para amortizar esta deuda.',
@@ -417,7 +418,7 @@ return [
     'desc_explore_missions'  => 'Aplica a retos de co-creación y obtén FabCoins como recompensa.',
     
     // Tabla y Tarjetas
-    'th_mission'             => 'Misión / Reto',
+    'th_mission'             => 'Misión',
     'th_deadline'            => 'Límite de Entrega',
     'th_app_status'          => 'Estado',
     'badge_directed_mission' => 'Misión Dirigida (Abono de Crédito)',
@@ -425,7 +426,7 @@ return [
     'ph_why_ideal_creator'   => '¿Por qué eres el co-creador ideal para resolver este reto?',
     'btn_send_application'   => 'Enviar Postulación',
     'empty_my_apps'          => 'Aún no te has postulado a ninguna misión.',
-    'empty_open_missions'    => 'No hay retos abiertos en este momento. ¡Vuelve pronto!',
+    'empty_open_missions'    => 'No hay misiones abiertos en este momento. ¡Vuelve pronto!',
 
     // Estados
     'status_accepted_working'=> 'Aceptado (Trabajando)',
