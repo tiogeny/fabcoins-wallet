@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Lab;
 
 use App\Http\Controllers\Controller;
+use App\Services\MailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -64,6 +65,10 @@ class MissionController extends Controller
                     ]);
                 }
             });
+
+            // 🚀 TRIGGER: Alerta de inicio de labores con Escrow asegurado
+            $cUser = DB::table('users')->where('id', $creatorId)->first();
+            if ($cUser) { MailService::misionAsignadaAlCreator($cUser->email, $cUser->name, $lab->name ?? 'Lab', $mission->title, $mission->reward_fc); }
 
             return redirect()->route('lab.dashboard')->with('msg', 'mission_published_ok');
         } catch (\Exception $e) {
@@ -203,6 +208,10 @@ class MissionController extends Controller
                 DB::table('mission_applications')->where('mission_id', $missionId)->where('creator_id', $creatorId)->update(['is_reviewed' => true]);
                 $nuevoPromedio = DB::table('reviews')->where('reviewee_id', $creatorId)->avg('rating');
                 DB::table('users')->where('id', $creatorId)->update(['reputation_score' => round($nuevoPromedio, 1)]);
+
+                // 🚀 TRIGGER: Envío de comprobante de pago bilingüe con las estrellas ganadas
+                $cUser = DB::table('users')->where('id', $creatorId)->first();
+                if ($cUser) { MailService::liquidacionMisionAlCreator($cUser->email, $cUser->name, $mission->title, $mission->reward_fc, $rating, ($retornoEjecutado > 0)); }
 
                 $pendientesDeEvaluacion = DB::table('mission_applications')->where('mission_id', $missionId)->where('status', 'accepted')->where('is_reviewed', false)->count();
                 if ($pendientesDeEvaluacion == 0 && $mission->spots_filled >= $mission->spots_total) {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Lab;
 
 use App\Http\Controllers\Controller;
+use App\Services\MailService;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,10 +41,14 @@ class DashboardController extends Controller
         $totalMinted = $misActivos->sum('generated_fc') ?? 0;
         $dadosDeBajaValor = $misActivos->where('status', 'retired')->sum('generated_fc') ?? 0;
 
-        // Cálculo de Billetera Líquida: Ingresos y Emisiones (+) menos Egresos (-)
+        // Cálculo de Billetera Líquida: Los ingresos y emisiones suman, los gastos restan, los consumos son registros históricos neutrales
         $saldoTotal = DB::table('transactions')
             ->where('user_id', $lab->id)
-            ->selectRaw("SUM(CASE WHEN type IN ('income', 'mint') THEN amount ELSE -amount END) as saldo")
+            ->selectRaw("SUM(CASE 
+                WHEN type IN ('income', 'mint') THEN amount 
+                WHEN type = 'consumed' THEN 0 
+                ELSE -amount 
+            END) as saldo")
             ->value('saldo') ?? 0;
 
         $enReserva = $saldoTotal; 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Services\MailService;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,44 +17,47 @@ class DashboardController extends Controller
     {
         $superadmin = auth()->user();
 
-        // 1. MACROECONOMÍA Y VARIABLES MONETARIAS REALES
+        // 1. MACROECONOMÍA Y VARIABLES MONETARIAS REALES CON RECONCILIACIÓN PURA
         $total_fc = floatval(DB::table('transactions')->where('type', 'mint')->sum('amount'));
+        $total_quemado = floatval(DB::table('transactions')->where('type', 'consumed')->sum('amount'));
         
-        $total_bovedas = floatval(DB::table('transactions as t')
-            ->join('users as u', 't.user_id', '=', 'u.id')
-            ->where('u.role', 'lab')
-            ->sum(DB::raw("CASE WHEN t.type IN ('income', 'mint') THEN t.amount ELSE -t.amount END")));
-
-        $total_circulando = floatval(DB::table('transactions as t')
-            ->join('users as u', 't.user_id', '=', 'u.id')
-            ->where('u.role', 'maker')
-            ->sum(DB::raw("CASE WHEN t.type IN ('income', 'mint') THEN t.amount ELSE -t.amount END")));
-
-        $escrow_c = floatval(DB::table('orders')->whereIn('status', ['pending', 'rescheduled'])->sum('total_fc'));
-        $escrow_m = floatval(DB::table('missions')
+        // Custodia Activa: Fondos bloqueados en misiones abiertas o en ejecución
+        $total_escrow = floatval(DB::table('missions')
             ->whereIn('status', ['open', 'assigned'])
-            ->sum(DB::raw("reward_fc * (spots_total - (SELECT COUNT(*) FROM mission_applications WHERE mission_id = missions.id AND is_reviewed = 1))")));
-        $total_escrow = $escrow_m + $escrow_c;
+            ->sum(DB::raw("reward_fc * (spots_total - spots_filled)")));
 
-        $total_quemado = floatval(DB::table('transactions')->where('type', 'burn')->sum('amount'));
+        // En Bóvedas (Labs): Balance real emitido restándole las misiones liquidadas y las bloqueadas en Escrow
+        $total_bovedas = $total_fc - $total_escrow - floatval(DB::table('mission_applications')
+            ->where('is_reviewed', 1)
+            ->join('missions', 'mission_applications.mission_id', '=', 'missions.id')
+            ->sum('missions.reward_fc'));
 
+        // Circulante (Creadores): Saldo neto real de las billeteras
+        $total_circulando = floatval(DB::table('users')
+            ->where('role', 'creator')
+            ->get()
+            ->sum(function($u) {
+                return DB::table('transactions')->where('user_id', $u->id)->selectRaw("SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END) as total")->value('total') ?? 0;
+            }));
+
+        // 📊 MÉTRICAS DE RENDIMIENTO ISLADAS (FUERA DE LA ECUACIÓN DE DISPONIBILIDAD)
+        $total_quemado = floatval(DB::table('transactions')->where('type', 'consumed')->sum('amount'));
+
+        // PIB de la Red (Velocidad de transacciones comerciales de los últimos 30 días)
         $pib_maquinas = floatval(DB::table('orders')->where('status', 'completed')->where('created_at', '>=', now()->subDays(30))->sum('total_fc'));
         $pib_misiones = floatval(DB::table('mission_applications as ma')
             ->join('missions as m', 'ma.mission_id', '=', 'm.id')
             ->where('ma.is_reviewed', 1)
-            ->where('ma.applied_at', '>=', now()->subDays(30))
+            ->where('ma.created_at', '>=', now()->subDays(30))
             ->sum('m.reward_fc'));
-            
         $volumen_30d = $pib_maquinas + $pib_misiones;
 
-        $total_deuda_global = floatval(DB::table('financing_agreements')->where('status', 'active')->sum('amount_remaining'));
         $tasa_absorcion = ($total_fc > 0) ? ($total_quemado / $total_fc) * 100 : 0;
-
-        $respaldo_vivo = floatval(DB::table('lab_assets')->where('expires_at', '>', now())->whereRaw('useful_life_hours > consumed_hours')->where('status', 'active')->sum('generated_fc'));
-        $dados_de_baja = max(0, $total_fc - $respaldo_vivo);
+        $total_deuda_global = floatval(DB::table('financing_agreements')->where('status', 'active')->sum('amount_remaining'));
+        $dados_de_baja = 0; 
 
         // 2. MONITOREO DE CAPACIDAD PRODUCTIVA DEMOGRÁFICA (DPI)
-        $total_makers_count = User::where('role', 'maker')->count();
+        $total_creators_count = User::where('role', 'creator')->count();
         $total_labs_count = User::where('role', 'lab')->count();
         
         $mix = [
@@ -69,7 +73,7 @@ class DashboardController extends Controller
         $global_pct = DB::table('global_settings')->where('setting_key', 'tokenization_pct')->value('setting_value');
         $catalogo = DB::table('global_catalog')->orderBy('asset_type')->orderBy('generic_name')->get();
         $top_labs = User::where('role', 'lab')->orderBy('reputation_score', 'desc')->limit(5)->get();
-        $top_makers = User::where('role', 'maker')->orderBy('reputation_score', 'desc')->limit(5)->get();
+        $top_creators = User::where('role', 'creator')->orderBy('reputation_score', 'desc')->limit(5)->get();
         
         $ultimas_tx = DB::table('transactions as t')
             ->join('users as u', 't.user_id', '=', 'u.id')
@@ -84,19 +88,22 @@ class DashboardController extends Controller
             ->orderBy('m.created_at', 'desc')
             ->get();
 
-        $makers_financiados = DB::table('financing_agreements as c')
-            ->join('users as f', 'c.maker_id', '=', 'f.id')
+        $creators_financiados = DB::table('financing_agreements as c')
+            ->join('users as f', 'c.creator_id', '=', 'f.id')
             ->join('users as l', 'c.lab_id', '=', 'l.id')
             ->where('c.status', 'active')
-            ->select('c.*', 'f.name as maker_name', 'l.name as lab_name')
+            ->select('c.*', 'f.name as creator_name', 'l.name as lab_name')
             ->orderBy('c.amount_remaining', 'desc')
             ->get();
 
+        // 🔍 Buscador universal de usuarios para la consola de auditoría
+        $todos_los_usuarios = User::whereIn('role', ['lab', 'creator'])->orderBy('role')->orderBy('name')->get(['id', 'name', 'email', 'role']);
+
         return view('superadmin.dashboard', compact(
             'superadmin', 'total_fc', 'total_bovedas', 'total_circulando', 'total_escrow', 'total_quemado',
-            'volumen_30d', 'total_deuda_global', 'tasa_absorcion', 'dados_de_baja', 'total_makers_count',
+            'volumen_30d', 'total_deuda_global', 'tasa_absorcion', 'dados_de_baja', 'total_creators_count',
             'total_labs_count', 'mix', 'capacidad_horas', 'val_equipos', 'val_talento', 'global_pct',
-            'catalogo', 'top_labs', 'top_makers', 'ultimas_tx', 'radar_misiones', 'makers_financiados'
+            'catalogo', 'top_labs', 'top_creators', 'ultimas_tx', 'radar_misiones', 'creators_financiados', 'todos_los_usuarios'
         ));
     }
 
@@ -107,9 +114,9 @@ class DashboardController extends Controller
     {
         $tipo = $request->query('ajax_desglose');
         $html = '<style>
-            .swal-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; margin-top:10px; }
-            .swal-table th { border-bottom: 2px solid #34495e; padding: 8px; color: #bdc3c7; position: sticky; top: 0; background: #1a252f; }
-            .swal-table td { border-bottom: 1px solid #2c3e50; padding: 8px; color: #fff; }
+            .swal-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; margin-top:10px; font-family:"Inter", sans-serif; }
+            .swal-table th { border-bottom: 2px solid rgba(255,255,255,0.08); padding: 10px 8px; color: #a0aec0; position: sticky; top: 0; background: #1c2230; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+            .swal-table td { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 10px 8px; color: #cbd5e0; }
         </style>';
         $html .= '<div style="max-height: 350px; overflow-y: auto;"><table class="swal-table">';
 
@@ -119,46 +126,216 @@ class DashboardController extends Controller
             foreach($rows as $r) { $html .= '<tr><td>'.date('d/m/y', strtotime($r->created_at)).'</td><td>'.htmlspecialchars($r->name).'</td><td>'.htmlspecialchars($r->description).'</td><td style="color:#3498db; font-weight:bold;">'.number_format($r->amount,2).'</td></tr>'; }
         } elseif ($tipo === 'bovedas') {
             $html .= '<tr><th>Laboratorio</th><th>Balance Líquido (FC)</th></tr>';
-            $rows = DB::table('users as u')->join('transactions as t', 'u.id', '=', 't.user_id')->where('u.role', 'lab')->groupBy('u.id', 'u.name')->select('u.name', DB::raw("SUM(CASE WHEN t.type IN ('income', 'mint') THEN t.amount ELSE -t.amount END) as balance"))->get();
-            foreach($rows as $r) { if($r->balance > 0) $html .= '<tr><td>'.htmlspecialchars($r->name).'</td><td style="color:#2ecc71; font-weight:bold;">'.number_format($r->balance,2).'</td></tr>'; }
+            // 🚀 MÁGICA: El saldo de cada Lab es su emisión original menos las misiones liquidadas a la comunidad
+            $rows = DB::table('users as u')
+                ->where('u.role', 'lab')
+                ->select('u.name', DB::raw("
+                    (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = u.id AND type = 'mint') 
+                    - 
+                    (SELECT COALESCE(SUM(m.reward_fc), 0) 
+                     FROM mission_applications ma 
+                     JOIN missions m ON ma.mission_id = m.id 
+                     WHERE m.lab_id = u.id AND ma.is_reviewed = 1) 
+                    as balance
+                "))->get();
+            foreach($rows as $r) { $html .= '<tr><td>'.htmlspecialchars($r->name).'</td><td style="color:#3498db; font-weight:bold;">'.number_format($r->balance,2).'</td></tr>'; }
+
         } elseif ($tipo === 'circulante') {
-            $html .= '<tr><th>Maker</th><th>Balance Líquido (FC)</th></tr>';
-            $rows = DB::table('users as u')->join('transactions as t', 'u.id', '=', 't.user_id')->where('u.role', 'maker')->groupBy('u.id', 'u.name')->select('u.name', DB::raw("SUM(CASE WHEN t.type IN ('income', 'mint') THEN t.amount ELSE -t.amount END) as balance"))->get();
-            foreach($rows as $r) { if($r->balance > 0) $html .= '<tr><td>'.htmlspecialchars($r->name).'</td><td style="color:#2ecc71; font-weight:bold;">'.number_format($r->balance,2).'</td></tr>'; }
+            $html .= '<tr><th>🚀 Creador</th><th>Balance Líquido Neto (FC)</th></tr>';
+            // 🧠 CALIBRACIÓN EN VIVO: Extrae el saldo neto real ejecutando la balanza del ledger de transacciones
+            $rows = DB::table('users')
+                ->where('role', 'creator')
+                ->get()
+                ->map(function($u) {
+                    $u->balance = DB::table('transactions')->where('user_id', $u->id)->selectRaw("SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END) as total")->value('total') ?? 0;
+                    return $u;
+                });
+            foreach($rows as $r) { if($r->balance > 0) $html .= '<tr><td>👤 '.htmlspecialchars($r->name).'</td><td style="color:#2ecc71; font-weight:bold;">'.number_format($r->balance,2).' FC</td></tr>'; }
         } elseif ($tipo === 'escrow') {
             $html .= '<tr><th colspan="3" style="background:#2c3e50;">🔒 EN MISIONES (LABS)</th></tr>';
             $stmt_m = DB::select("SELECT u.name, m.id, (m.reward_fc * (m.spots_total - (SELECT COUNT(*) FROM mission_applications WHERE mission_id = m.id AND is_reviewed = 1))) as retenido FROM missions m JOIN users u ON m.lab_id = u.id WHERE m.status IN ('open', 'assigned')");
             foreach($stmt_m as $r) { if($r->retenido > 0) $html .= '<tr><td>'.htmlspecialchars($r->name).'</td><td>Misión #'.$r->id.'</td><td style="color:#f39c12; font-weight:bold;">'.number_format($r->retenido,2).'</td></tr>'; }
-            $html .= '<tr><th colspan="3" style="background:#2c3e50; margin-top:10px;">🔒 EN RESERVAS (MAKERS)</th></tr>';
-            $stmt_o = DB::table('orders as o')->join('users as u', 'o.maker_id', '=', 'u.id')->whereIn('o.status', ['pending', 'rescheduled'])->select('u.name', 'o.id', 'o.total_fc')->get();
-            foreach($stmt_o as $r) { $html .= '<tr><td>'.htmlspecialchars($r->name).'</td><td>Reserva #'.$r->id.'</td><td style="color:#f39c12; font-weight:bold;">'.number_format($r->total_fc,2).'</td></tr>'; }
         } elseif ($tipo === 'burn') {
-            $html .= '<tr><th>Fecha</th><th>Maker</th><th>Detalle de Quema</th><th>Quemado</th></tr>';
-            $rows = DB::table('transactions as t')->join('users as u', 't.user_id', '=', 'u.id')->where('t.type', 'burn')->orderBy('t.created_at', 'desc')->limit(100)->select('u.name', 't.description', 't.amount', 't.created_at')->get();
-            foreach($rows as $r) { $html .= '<tr><td>'.date('d/m/y', strtotime($r->created_at)).'</td><td>'.htmlspecialchars($r->name).'</td><td>'.htmlspecialchars($r->description).'</td><td style="color:#e74c3c; font-weight:bold;">'.number_format($r->amount,2).'</td></tr>'; }
-        } elseif ($tipo === 'pib') { // 🔥 RESTAURADO CASO PIB COMPLETO
+            // 🚀 CORRECCIÓN: Apunta de forma nativa a la tabla de consumos reales 'consumed'
+            $html .= '<tr><th>Fecha</th><th>Usuario</th><th>Detalle de Consumo</th><th>Monto</th></tr>';
+            $rows = DB::table('transactions as t')->join('users as u', 't.user_id', '=', 'u.id')->where('t.type', 'consumed')->orderBy('t.created_at', 'desc')->limit(100)->select('u.name', 't.description', 't.amount', 't.created_at')->get();
+            foreach($rows as $r) { $html .= '<tr><td>'.date('d/m/y', strtotime($r->created_at)).'</td><td>'.htmlspecialchars($r->name).'</td><td>'.htmlspecialchars($r->description).'</td><td style="color:#e67e22; font-weight:bold;">'.number_format($r->amount,2).'</td></tr>'; }
+        } elseif ($tipo === 'pib') {
             $html .= '<tr><th colspan="3" style="background:#2c3e50;">⚡ MÁQUINAS ALQUILADAS (30 DÍAS)</th></tr>';
-            $orders = DB::table('orders as o')->join('users as u', 'o.maker_id', '=', 'u.id')->where('o.status', 'completed')->where('o.created_at', '>=', now()->subDays(30))->select('u.name', 'o.id', 'o.total_fc')->get();
+            $orders = DB::table('orders as o')->join('users as u', 'o.creator_id', '=', 'u.id')->where('o.status', 'completed')->where('o.created_at', '>=', now()->subDays(30))->select('u.name', 'o.id', 'o.total_fc')->get();
             foreach($orders as $r) { $html .= '<tr><td>'.htmlspecialchars($r->name).'</td><td>Orden #'.$r->id.'</td><td style="color:#3498db; font-weight:bold;">'.number_format($r->total_fc,2).'</td></tr>'; }
             $html .= '<tr><th colspan="3" style="background:#2c3e50; margin-top:10px;">⚡ TRABAJOS COMPLETADOS (30 DÍAS)</th></tr>';
-            $missions = DB::table('mission_applications as ma')->join('missions as m', 'ma.mission_id', '=', 'm.id')->join('users as u', 'ma.maker_id', '=', 'u.id')->where('ma.is_reviewed', 1)->where('ma.applied_at', '>=', now()->subDays(30))->select('u.name', 'm.id', 'm.reward_fc')->get();
+            $missions = DB::table('mission_applications as ma')->join('missions as m', 'ma.mission_id', '=', 'm.id')->join('users as u', 'ma.creator_id', '=', 'u.id')->where('ma.is_reviewed', 1)->where('ma.created_at', '>=', now()->subDays(30))->select('u.name', 'm.id', 'm.reward_fc')->get();
             foreach($missions as $r) { $html .= '<tr><td>'.htmlspecialchars($r->name).'</td><td>Misión #'.$r->id.'</td><td style="color:#3498db; font-weight:bold;">'.number_format($r->reward_fc,2).'</td></tr>'; }
         } elseif ($tipo === 'creditos') {
-            $html .= '<tr><th>Laboratorio</th><th>Maker (Deudor)</th><th>Deuda Restante</th></tr>';
-            $rows = DB::table('financing_agreements as f')->join('users as ul', 'f.lab_id', '=', 'ul.id')->join('users as um', 'f.maker_id', '=', 'um.id')->where('f.status', 'active')->where('f.amount_remaining', '>', 0)->orderBy('f.amount_remaining', 'desc')->select('ul.name as lab', 'um.name as maker', 'f.amount_remaining')->get();
-            foreach($rows as $r) { $html .= '<tr><td>'.htmlspecialchars($r->lab).'</td><td>'.htmlspecialchars($r->maker).'</td><td style="color:#f1c40f; font-weight:bold;">'.number_format($r->amount_remaining,2).'</td></tr>'; }
-        } elseif ($tipo === 'velocidad') { // 🔥 RESTAURADO METRICA VELOCIDAD
+            $html .= '<tr><th>Laboratorio</th><th>Creador (Deudor)</th><th>Deuda Restante</th></tr>';
+            $rows = DB::table('financing_agreements as f')->join('users as ul', 'f.lab_id', '=', 'ul.id')->join('users as um', 'f.creator_id', '=', 'um.id')->where('f.status', 'active')->where('f.amount_remaining', '>', 0)->orderBy('f.amount_remaining', 'desc')->select('ul.name as lab', 'um.name as creator', 'f.amount_remaining')->get();
+            foreach($rows as $r) { $html .= '<tr><td>'.$r->lab.'</td><td>'.$r->creator.'</td><td style="color:#f1c40f; font-weight:bold;">'.number_format($r->amount_remaining,2).'</td></tr>'; }
+        } elseif ($tipo === 'velocidad') {
+            // 🚀 CORRECCIÓN: Sincronizado para usar el pool de consumos reales 'consumed'
             $t_mint = floatval(DB::table('transactions')->where('type', 'mint')->sum('amount'));
-            $t_burn = floatval(DB::table('transactions')->where('type', 'burn')->sum('amount'));
+            $t_burn = floatval(DB::table('transactions')->where('type', 'consumed')->sum('amount'));
             $t_abs = ($t_mint > 0) ? ($t_burn / $t_mint) * 100 : 0;
             $html .= '<tr><th>Métrica</th><th>Valor Actual</th></tr>';
             $html .= '<tr><td>Masa Monetaria Emitida</td><td style="color:#f1c40f; font-weight:bold;">'.number_format($t_mint, 2).' FC</td></tr>';
-            $html .= '<tr><td>Total Consumido (Quemado)</td><td style="color:#e74c3c; font-weight:bold;">'.number_format($t_burn, 2).' FC</td></tr>';
+            $html .= '<tr><td>Total Consumido (Deflación)</td><td style="color:#e67e22; font-weight:bold;">'.number_format($t_burn, 2).' FC</td></tr>';
             $html .= '<tr><td>Tasa de Absorción Global</td><td style="color:#3498db; font-weight:bold;">'.number_format($t_abs, 2).'%</td></tr>';
-        } elseif ($tipo === 'baja') { // 🔥 RESTAURADO METRICA BAJA
-            $html .= '<tr><th>Laboratorio</th><th>Máquina / Activo</th><th>Total Emitido FC</th></tr>';
-            $rows = DB::table('lab_assets as a')->join('users as u', 'a.lab_id', '=', 'u.id')->where('a.expires_at', '<=', now())->orWhereRaw('a.useful_life_hours <= a.consumed_hours')->orWhere('a.status', '!=', 'active')->select('u.name', 'a.custom_name', 'a.generated_fc')->get();
-            foreach($rows as $r) { $html .= '<tr><td>'.htmlspecialchars($r->name).'</td><td>'.htmlspecialchars($r->custom_name).'</td><td style="color:#7f8c8d; font-weight:bold;">'.number_format($r->generated_fc,2).'</td></tr>'; }
+        } elseif ($tipo === 'audit_user') {
+            $userId = $request->query('user_id');
+            $userTarget = DB::table('users')->where('id', $userId)->first();
+            
+            if ($userTarget) {
+                $html = '<div style="text-align:left; font-family:\'Inter\',sans-serif; color:#fff; padding:5px;">';
+                $icon = $userTarget->role === 'lab' ? '🏭' : '👤';
+                $html .= '<h3 style="margin:0; color:#f1c40f; font-family:\'Rajdhani\'; font-size:22px; font-weight:700;">'.$icon.' '.htmlspecialchars($userTarget->name).'</h3>';
+                $html .= '<p style="margin:2px 0 20px 0; color:#a0aec0; font-size:12px;">📧 '.htmlspecialchars($userTarget->email).' | Rol: <strong style="text-transform:uppercase; color:#3498db;">'.$userTarget->role.'</strong></p>';
+                
+                if ($userTarget->role === 'lab') {
+                    // =========================================================
+                    // 🏭 SECCIÓN A: COMPILACIÓN MACROECONÓMICA DEL FAB LAB
+                    // =========================================================
+                    $minted = floatval(DB::table('transactions')->where('user_id', $userTarget->id)->where('type', 'mint')->sum('amount'));
+                    $escrow = floatval(DB::table('missions')->where('lab_id', $userTarget->id)->whereIn('status', ['open', 'assigned'])->sum(DB::raw("reward_fc * (spots_total - spots_filled)")));
+                    $pagadoCreadores = floatval(DB::table('mission_applications')->where('is_reviewed', 1)->join('missions', 'mission_applications.mission_id', '=', 'missions.id')->where('missions.lab_id', $userTarget->id)->sum('missions.reward_fc'));
+                    
+                    $saldo = DB::table('transactions')->where('user_id', $userTarget->id)->selectRaw("SUM(CASE WHEN type = 'mint' THEN amount WHEN type IN ('expense', 'escrow') THEN -amount ELSE 0 END) as total")->value('total') ?? 0;
+                    $consumed = floatval(DB::table('transactions')->where('user_id', $userTarget->id)->where('type', 'consumed')->sum('amount'));
+
+                    $cntActivos = DB::table('lab_assets')->where('lab_id', $userTarget->id)->count();
+                    $cntMisiones = DB::table('missions')->where('lab_id', $userTarget->id)->count();
+                    $cntReservasRecibidas = DB::table('orders')->join('lab_assets', 'orders.asset_id', '=', 'lab_assets.id')->where('lab_assets.lab_id', $userTarget->id)->count();
+
+                    // Cápsula de Actividad (Lab)
+                    $html .= '<div style="margin:-12px 0 18px 0; font-size:11px; background:rgba(255,255,255,0.02); padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.04); display:flex; gap:14px; color:#cbd5e0; font-weight:500;">';
+                    $html .= '<span style="color:#7f8c8d; text-transform:uppercase; font-size:9.5px; font-weight:700; display:flex; align-items:center;">📊 Actividad:</span>';
+                    $html .= '<span>🏭 '.$cntActivos.' Activos</span><span>🎯 '.$cntMisiones.' Misiones</span><span>📅 '.$cntReservasRecibidas.' Reservas</span></div>';
+
+                    // Corona Superior (Lab)
+                    $html .= '<div style="width: 100%; text-align: center; margin-bottom: 15px;">';
+                    $html .= '<div style="border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.01);">';
+                    $html .= '<span style="font-size:10px; color:#7f8c8d; text-transform:uppercase; letter-spacing:0.5px;">Masa Total Emitida (Colateral Base)</span>';
+                    $html .= '<div style="color:#ffffff; font-size:24px; font-weight:800; font-family:\'Rajdhani\'; margin-top:2px;">🪙 '.number_format($minted,0).' FC</div></div></div>';
+
+                    // Caja de Desglose de Masa (Lab)
+                    $html .= '<div style="background: #131722; border: 1px dashed rgba(255, 255, 255, 0.06); padding: 15px; border-radius: 10px; margin-bottom: 15px;">';
+                    $html .= '<div style="font-size: 9px; font-weight: 700; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">⚖️ DISTRIBUCIÓN DE MASA EN RED</div>';
+                    $html .= '<div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">';
+                    $html .= '<div style="background:#1c2230; padding:10px; border-radius:6px; border-bottom:2px solid #3498db;"><span style="font-size:9px; color:#a0aec0;">Bóveda Líquida</span><br><span style="color:#3498db; font-weight:bold; font-family:\'Rajdhani\';">'.number_format($saldo,0).' FC</span></div>';
+                    $html .= '<div style="background:#1c2230; padding:10px; border-radius:6px; border-bottom:2px solid #f1c40f;"><span style="font-size:9px; color:#a0aec0;">En Escrow</span><br><span style="color:#f1c40f; font-weight:bold; font-family:\'Rajdhani\';">'.number_format($escrow,0).' FC</span></div>';
+                    $html .= '<div style="background:#1c2230; padding:10px; border-radius:6px; border-bottom:2px solid #2ecc71;"><span style="font-size:9px; color:#a0aec0;">Masa en Creadores</span><br><span style="color:#2ecc71; font-weight:bold; font-family:\'Rajdhani\';">'.number_format($pagadoCreadores,0).' FC</span></div>';
+                    $html .= '</div></div>';
+
+                    // Bloque de Capacidad Física Consumida (Lab)
+                    $html .= '<div style="background:#131722; padding:12px; border-radius:8px; border-left:4px solid #e67e22; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">';
+                    $html .= '<span>🔥 <strong>Capacidad Realizada / Consumida:</strong><br><small style="color:#7f8c8d; font-size:10px;">Masa deflatada por uso físico o amortizaciones</small></span>';
+                    $html .= '<span style="color:#e67e22; font-size:20px; font-weight:800; font-family:\'Rajdhani\';">'.number_format($consumed,0).' FC</span></div>';
+
+                    // 📜 LEDGER AVANZADO EN 4 COLUMNAS EXCLUSIVO PARA LABS
+                    $html .= '<strong style="font-size:11px; color:#7f8c8d; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:8px; border-top:1px solid rgba(255,255,255,0.04); padding-top:15px;">📜 Historial Contable del Ledger (Últimos Movimientos):</strong>';
+                    $html .= '<table class="swal-table" style="margin-top:0; width:100%;">';
+                    $html .= '<thead><tr>';
+                    $html .= '<th style="width:90px; padding:6px 0; text-align:left;">Fecha</th>';
+                    $html .= '<th style="padding:6px 4px; text-align:left;">Concepto / Descripción</th>';
+                    $html .= '<th style="width:120px; padding:6px 0; text-align:right;">Flujo Bóveda</th>';
+                    $html .= '<th style="width:140px; padding:6px 0; text-align:right;">Capacidad Consumida</th>';
+                    $html .= '</tr></thead>';
+
+                    $txs = DB::table('transactions')->where('user_id', $userTarget->id)->latest()->limit(10)->get();
+                    if($txs->isEmpty()) {
+                        $html .= '<tr><td colspan="4" style="text-align:center; color:#7f8c8d; font-style:italic; padding:20px;">No se registran transacciones asentadas en este nodo.</td></tr>';
+                    } else {
+                        foreach($txs as $t) {
+                            $colFlujo = '<span style="color:#4a5568;">-</span>';
+                            $colConsumido = '<span style="color:#4a5568;">-</span>';
+                            
+                            if ($t->type === 'mint') {
+                                $colFlujo = '<span style="color:#3498db; font-weight:bold; font-family:\'Rajdhani\'; font-size:14.5px;">'.number_format($t->amount,0).' FC</span>';
+                            } elseif ($t->type === 'consumed' || \Illuminate\Support\Str::contains(strtolower($t->description), 'consumido')) {
+                                $colConsumido = '<span style="color:#e67e22; font-weight:bold; font-family:\'Rajdhani\'; font-size:14.5px;">🔥 '.number_format($t->amount,0).' FC</span>';
+                            } elseif ($t->type === 'escrow') {
+                                $colFlujo = '<span style="color:#f1c40f; font-weight:bold; font-family:\'Rajdhani\'; font-size:14.5px;">'.number_format($t->amount,0).' FC</span>';
+                            } elseif ($t->type === 'expense') {
+                                $colFlujo = '<span style="color:#e74c3c; font-weight:bold; font-family:\'Rajdhani\'; font-size:14.5px;">'.number_format($t->amount,0).' FC</span>';
+                            } else {
+                                $colFlujo = '<span style="color:#2ecc71; font-weight:bold; font-family:\'Rajdhani\'; font-size:14.5px;">'.number_format($t->amount,0).' FC</span>';
+                            }
+                            
+                            $html .= '<tr>';
+                            $html .= '<td style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.03); color:#a0aec0; font-size:12px;">'.date('d/m H:i', strtotime($t->created_at)).'</td>';
+                            $html .= '<td style="padding:10px 4px; border-bottom:1px solid rgba(255,255,255,0.03); color:#cbd5e0; font-size:12.5px;">'.htmlspecialchars($t->description).'</td>';
+                            $html .= '<td style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.03); text-align:right;">'.$colFlujo.'</td>';
+                            $html .= '<td style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.03); text-align:right;">'.$colConsumido.'</td>';
+                            $html .= '</tr>';
+                        }
+                    }
+                    $html .= '</table></div>';
+
+                } else {
+                    // =========================================================
+                    // 👤 SECCIÓN B: COMPILACIÓN MACROECONÓMICA DEL CREATOR
+                    // =========================================================
+                    $saldo = DB::table('transactions')->where('user_id', $userTarget->id)->selectRaw("SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END) as total")->value('total') ?? 0;
+                    $ingresos = floatval(DB::table('transactions')->where('user_id', $userTarget->id)->where('type', 'income')->sum('amount'));
+                    $egresos = floatval(DB::table('transactions')->where('user_id', $userTarget->id)->where('type', 'expense')->sum('amount'));
+
+                    $cntMisionesHechas = DB::table('mission_applications')->where('creator_id', $userTarget->id)->where('is_reviewed', 1)->count();
+                    $cntReservasHechas = DB::table('orders')->where('creator_id', $userTarget->id)->count();
+
+                    // Cápsula de Actividad (Creator)
+                    $html .= '<div style="margin:-12px 0 18px 0; font-size:11px; background:rgba(255,255,255,0.02); padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.04); display:flex; gap:14px; color:#cbd5e0; font-weight:500;">';
+                    $html .= '<span style="color:#7f8c8d; text-transform:uppercase; font-size:9.5px; font-weight:700; display:flex; align-items:center;">📊 Actividad:</span>';
+                    $html .= '<span>🎯 '.$cntMisionesHechas.' Misiones Concluidas</span><span>📅 '.$cntReservasHechas.' Reservas de Capacidad</span></div>';
+
+                    // Corona Superior (Creator)
+                    $html .= '<div style="width: 100%; text-align: center; margin-bottom: 15px;">';
+                    $html .= '<div style="border: 1px solid #2ecc71; padding: 12px; border-radius: 8px; background: rgba(46,204,113,0.02);">';
+                    $html .= '<span style="font-size:10px; color:#7f8c8d; text-transform:uppercase; letter-spacing:0.5px;">Saldo Líquido Disponible (Billetera)</span>';
+                    $html .= '<div style="color:#2ecc71; font-size:26px; font-weight:800; font-family:\'Rajdhani\'; margin-top:2px;">🥮 '.number_format($saldo,0).' FC</div></div></div>';
+
+                    // Caja de Flujos Contables (Creator)
+                    $html .= '<div style="background: #131722; border: 1px dashed rgba(255, 255, 255, 0.06); padding: 15px; border-radius: 10px; margin-bottom: 20px;">';
+                    $html .= '<div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">';
+                    $html .= '<div style="background:#1c2230; padding:10px; border-radius:6px; border-bottom:2px solid #3498db;"><span style="font-size:9px; color:#a0aec0;">Total Ganado</span><br><span style="color:#3498db; font-weight:bold; font-family:\'Rajdhani\';">'.number_format($ingresos,0).' FC</span></div>';
+                    $html .= '<div style="background:#1c2230; padding:10px; border-radius:6px; border-bottom:2px solid #e74c3c;"><span style="font-size:9px; color:#a0aec0;">Total Gastado</span><br><span style="color:#e74c3c; font-weight:bold; font-family:\'Rajdhani\';">'.number_format($egresos,0).' FC</span></div>';
+                    $html .= '<div style="background:#1c2230; padding:10px; border-radius:6px; border-bottom:2px solid #f1c40f;"><span style="font-size:9px; color:#a0aec0;">Deuda ISA Viva</span><br><span style="color:#f1c40f; font-weight:bold; font-family:\'Rajdhani\';">'.number_format($userTarget->deuda_fc,0).' FC</span></div>';
+                    $html .= '</div></div>';
+
+                    // 📜 LEDGER TRADICIONAL DE 3 COLUMNAS SIN ALTERACIONES PARA CREADORES
+                    $html .= '<strong style="font-size:11px; color:#7f8c8d; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:5px;">📜 Historial Contable del Ledger (Últimos Movimientos):</strong>';
+                    $html .= '<table class="swal-table" style="margin-top:0; width:100%;">';
+                    $html .= '<thead><tr>';
+                    $html .= '<th style="width:90px; padding:6px 0; text-align:left;">Fecha</th>';
+                    $html .= '<th style="padding:6px 4px; text-align:left;">Concepto / Descripción</th>';
+                    $html .= '<th style="width:140px; padding:6px 0; text-align:right;">Flujo Billetera</th>';
+                    $html .= '</tr></thead>';
+
+                    $txs = DB::table('transactions')->where('user_id', $userTarget->id)->latest()->limit(10)->get();
+                    if($txs->isEmpty()) {
+                        $html .= '<tr><td colspan="3" style="text-align:center; color:#7f8c8d; font-style:italic; padding:20px;">No se registran transacciones asentadas en este nodo.</td></tr>';
+                    } else {
+                        foreach($txs as $t) {
+                            if ($t->type === 'consumed' || \Illuminate\Support\Str::contains(strtolower($t->description), 'consumido')) {
+                                $color = '#e67e22'; // Naranja Capacidad Realizada / Quemada
+                            } elseif ($t->type === 'expense') {
+                                $color = '#e74c3c'; // Rojo Gasto / Egreso
+                            } else {
+                                $color = '#2ecc71'; // Verde Ingreso / Remesas Ordinarias
+                            }
+                            
+                            $html .= '<tr>';
+                            $html .= '<td style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.03); color:#a0aec0; font-size:12px;">'.date('d/m H:i', strtotime($t->created_at)).'</td>';
+                            $html .= '<td style="padding:10px 4px; border-bottom:1px solid rgba(255,255,255,0.03); color:#cbd5e0; font-size:12.5px;">'.htmlspecialchars($t->description).'</td>';
+                            $html .= '<td style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.03); text-align:right; font-weight:bold; color:'.$color.'; font-family:\'Rajdhani\'; font-size:14.5px;">'.number_format($t->amount,0).' FC</td>';
+                            $html .= '</tr>';
+                        }
+                    }
+                    $html .= '</table></div>';
+                }
+                
+                $html .= '</div>';
+                return response($html);
+            }
+            return response('<p class="text-center">Nodo no hallado en la red.</p>');
         }
 
         $html .= '</table></div>';

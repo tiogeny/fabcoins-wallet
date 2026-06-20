@@ -102,9 +102,9 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
     // 🌐 CONSOLA MACROECONÓMICA DEL SUPERADMIN (Rol 'superadmin')
     Route::middleware(['role:superadmin'])->prefix('superadmin')->group(function () {
-        // Dashboard Central (Soporta ambos nombres para evitar conflictos con el Auth del Framework)
+        // Ambas rutas apuntan al controlador principal pero con URIs únicas para no pisarse las firmas
         Route::get('/dashboard', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('superadmin.dashboard');
-        Route::get('/admin-dashboard', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('admin.dashboard'); // 👈 ¡FUSIBLE DE SEGURIDAD AGREGADO!
+        Route::get('/console', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('admin.dashboard'); // 👈 Cambiado a /console
 
         Route::get('/desglose', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'getAjaxDesglose'])->name('superadmin.ajax_desglose');
 

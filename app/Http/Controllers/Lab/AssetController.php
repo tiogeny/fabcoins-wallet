@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Lab;
 
 use App\Http\Controllers\Controller;
+use App\Services\MailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -89,44 +90,50 @@ class AssetController extends Controller
     }
 
     /**
-     * 🪙 TRANSFORMACIÓN CONTABLE DE ACTIVOS EN FABCOINS (MINT GENERAL VINCULANTE)
+     * 🪙 TRANSFORMACIÓN CONTABLE DE ACTIVOS EN FABCOINS (MINT GENERAL VINCULANTE - BLINDADO)
      */
     public function tokenise(Request $request)
     {
+        // 1. Validar la estructura base de los arreglos entrantes
+        $request->validate([
+            'transformar_activo'   => 'required|array',
+            'set_price_fc'         => 'required|array',
+        ]);
+
         $lab = auth()->user();
-        $activosSeleccionados = $request->input('transformar_activo'); // Captura solo los marcados con Checkbox
-        $porcentajes = $request->input('percentage_committed');
+        $activosSeleccionados = $request->input('transformar_activo');
         $preciosAjustados = $request->input('set_price_fc');
 
-        if (!$activosSeleccionados || count($activosSeleccionados) === 0) {
-            return redirect()->back()->with('error', 'Debes seleccionar al menos un activo mediante su casilla de verificación.');
-        }
+        // 2. Extraer de forma segura la política de emisión oficial de la red
+        $globalPctSetting = DB::table('global_settings')->where('setting_key', 'tokenization_pct')->value('setting_value');
+        $pctOficial = $globalPctSetting ? floatval($globalPctSetting) / 100 : 0.20; // Fallback seguro al 20%
 
         try {
-            DB::transaction(function () use ($activosSeleccionados, $porcentajes, $preciosAjustados, $lab) {
+            DB::transaction(function () use ($activosSeleccionados, $preciosAjustados, $pctOficial, $lab) {
                 foreach ($activosSeleccionados as $id) {
                     $asset = DB::table('lab_assets')->where('id', $id)->where('lab_id', $lab->id)->first();
                     
                     if ($asset && $asset->status === 'enlisted') {
-                        $pct = floatval($porcentajes[$id] ?? 0.50);
-                        $precio = floatval($preciosAjustados[$id] ?? 10.00);
+                        // Forzamos a que el precio sea positivo y le ponemos un techo prudente de control
+                        $precio = abs(floatval($preciosAjustados[$id] ?? 10.00));
+                        if ($precio > 1000.00) { $precio = 1000.00; } // Candado preventivo contra inflaciones inducidas
                         
-                        // Ecuación Contable Inmutable: Horas Base * Porcentaje Comprometido * Precio Ajustado
-                        $montoGenerar = ($asset->useful_life_hours * $pct) * $precio;
+                        // 🎯 REGLA DE INFRAESTRUCTURA: El porcentaje viene de la Gobernanza Central, NO del cliente
+                        $montoGenerar = ($asset->useful_life_hours * $pctOficial) * $precio;
 
                         // Actualización de estado en el inventario real
                         DB::table('lab_assets')->where('id', $id)->update([
                             'status'           => 'active',
-                            'tokenization_pct' => intval($pct * 100),
+                            'tokenization_pct' => intval($pctOficial * 100),
                             'set_price_fc'     => $precio,
                             'generated_fc'     => $montoGenerar,
                             'updated_at'       => now()
                         ]);
 
-                        // Asentamiento del bloque contable en el Ledger histórico
+                        // Asentamiento inmutable en el Ledger histórico
                         DB::table('transactions')->insert([
                             'user_id'     => $lab->id,
-                            'description' => "Transformación (Mint): " . $asset->custom_name . " (" . intval($pct * 100) . "%)",
+                            'description' => "Transformación (Mint): " . $asset->custom_name . " (" . intval($pctOficial * 100) . "%)",
                             'amount'      => $montoGenerar,
                             'type'        => 'mint',
                             'created_at'  => now(),
@@ -136,9 +143,12 @@ class AssetController extends Controller
                 }
             });
 
+            // 🚀 TRIGGER ASENTADO: Alerta al laboratorio de su emisión base con éxito
+            MailService::notificarTokenizacion($lab->email, $lab->name, 'Lote de infraestructura tokenizado', $request->input('transformar_activo'));
+
             return redirect()->route('lab.dashboard')->with('msg', 'mint_ok');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', 'Fallo en la verificación del Ledger: ' . $e->getMessage());
         }
     }
 

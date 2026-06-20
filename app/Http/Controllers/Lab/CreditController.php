@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Lab;
 
 use App\Http\Controllers\Controller;
+use App\Services\MailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -37,7 +38,7 @@ class CreditController extends Controller
                 ]);
 
             // 2. Avisarle al alumno por la campanita
-            $idAlumno = $credit->maker_id ?? $credit->creator_id;
+            $idAlumno = $credit->creator_id ?? $credit->creator_id;
             DB::table('notifications')->insert([
                 'user_id' => $idAlumno, 
                 'message' => '✅ El Lab ha aprobado tu solicitud de financiamiento. ¡Tu reserva está lista para ser liberada!',
@@ -78,7 +79,7 @@ class CreditController extends Controller
                 ]);
 
             // 2. Avisarle al alumno del rechazo
-            $idAlumno = $credit->maker_id ?? $credit->creator_id;
+            $idAlumno = $credit->creator_id ?? $credit->creator_id;
             DB::table('notifications')->insert([
                 'user_id' => $idAlumno,
                 'message' => '❌ El Lab ha rechazado tu solicitud de crédito ISA.',
@@ -86,6 +87,10 @@ class CreditController extends Controller
                 'created_at' => now()
             ]);
         });
+
+        // 🚀 TRIGGER: Notificación al creador de que su Crédito ISA de honor ya está activo
+        $cUser = DB::table('users')->where('id', $credit->creator_id)->first();
+        if ($cUser) { MailService::creditoIsaAprobadoAlCreator($cUser->email, $cUser->name, auth()->user()->name, $credit->amount_initial); }
 
         return redirect()->back()->with('msg', 'credit_cancelled');
     }

@@ -143,7 +143,7 @@
                 <div style="display: flex; flex-direction: column; justify-content: space-between;">
                     
                     <div style="display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-bottom: 15px;">
-                        <div class="main-hub-value text-success-neon" style="margin: 0;" title="Emisión Histórica Respaldada">{{ number_format($totalMinted, 0, '.', ' ') }} FC</div>
+                        <div class="main-hub-value" style="color: #ffffff; margin: 0;" title="Emisión Histórica Respaldada">{{ number_format($totalMinted, 0, '.', ' ') }} FC</div>
                         <div style="font-size: 14px; color: #e67e22; font-weight: 700; font-family: 'Rajdhani', sans-serif;">
                             / {{ number_format($realConsumed, 0, '.', ' ') }} <span style="font-size: 9px; font-family: 'Inter', sans-serif; text-transform: uppercase; color: #bdc3c7;">{{ __('messages.badge_consumed') }}</span>
                         </div>
@@ -151,8 +151,8 @@
 
                     <div class="bullet-metrics-compact">
                         <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#3498db;"></span> <strong>{{ number_format($realLiquid, 0, '.', ' ') }}</strong> {{ __('messages.lbl_reserve') }}</div>
-                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#f1c40f;"></span> <strong>{{ number_format($congeladosReales, 0, '.', ' ') }}</strong> {{ __('messages.lbl_frozen') }}</div>
                         <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#2ecc71;"></span> <strong>{{ number_format($enCirculacion, 0, '.', ' ') }}</strong> {{ __('messages.lbl_circulating') }}</div>
+                        <div class="metric-compact-row"><span class="color-dot-indicator" style="background:#f1c40f;"></span> <strong>{{ number_format($congeladosReales, 0, '.', ' ') }}</strong> {{ __('messages.lbl_frozen') }}</div>
                     </div>
                 </div>
             </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
+use App\Services\MailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;

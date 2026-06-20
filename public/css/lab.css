@@ -31,7 +31,7 @@
 }
 
 .premium-input, .premium-select {
-    width: 100%; background: #1c2230; border: 1px solid rgba(255, 255, 255, 0.06);
+    width: 100%; background: #131722; border: 1px solid rgba(255, 255, 255, 0.06);
     color: #ffffff; height: 38px; border-radius: 6px; font-size: 12.5px; padding: 0 15px;
     box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s; margin-bottom: 0;
 }
@@ -1035,6 +1035,7 @@
 .text-neutral-muted { color: #cbd5e0 !important; }
 .text-muted-dark { color: #4a5568 !important; }
 .text-warning-neon { color: #f1c40f !important; }
+.text-azul-neon { color: #3498db !important; }
 .text-white-pure { color: #ffffff !important; }
 .bg-warning-neon { background: #f1c40f !important; }
 

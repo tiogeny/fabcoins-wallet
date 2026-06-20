@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
+use App\Services\MailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -25,7 +26,6 @@ class ReservationController extends Controller
         }
 
         $costoTotal = $horas * $asset->set_price_fc;
-
         $querySaldo = DB::select("SELECT SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END) as saldo FROM transactions WHERE user_id = ?", [$creator->id]);
         $saldoTotal = $querySaldo[0]->saldo ?? 0;
 
@@ -110,6 +110,13 @@ class ReservationController extends Controller
             }
         });
 
+        // 📨 TRIGGER: Despacha correo bilingüe de alerta de reserva hacia el Laboratorio dueño del activo
+        $lab = DB::table('users')->where('id', $asset->lab_id)->first();
+        if ($lab) {
+            $parametroTexto = ($asset->asset_type === 'workshop') ? "$horas cupos solicitado(s)" : "$horas horas solicitadas";
+            MailService::reservaHardwareAlLab($lab->email, $lab->name, $creator->name, $asset->custom_name, $parametroTexto, $costoTotal, $fecha);
+        }
+
         // Podemos usar el mismo mensaje de éxito por ahora
         return redirect()->route('creator.dashboard')->with('msg', 'rental_pending');
     }
@@ -136,6 +143,15 @@ class ReservationController extends Controller
             ]);
         });
         
+        // 📨 TRIGGER: Notifica al Lab que el creador dio el visto bueno a la nueva fecha propuesta
+        $lab = DB::table('users')->where('id', $asset->lab_id)->first();
+        $creator = auth()->user();
+        if ($lab) {
+            $msgEs = "<p>Hola <strong>{$lab->name}</strong>,</p><p>El Creador <strong>{$creator->name}</strong> ha **ACEPTADO** tu propuesta de nueva fecha de calendario para usar el activo <strong>{$asset->custom_name}</strong>.</p><p>Por favor ingresa a tu panel para proceder con la aprobación de la reserva.</p>";
+            $msgEn = "<p>Hello <strong>{$lab->name}</strong>,</p><p>The Creator <strong>{$creator->name}</strong> has **ACCEPTED** your new calendar date proposal to use the asset <strong>{$asset->custom_name}</strong>.</p><p>Please log into your dashboard to proceed with the reservation approval.</p>";
+            MailService::enviar($lab->email, "📅 Fecha de Reprogramación Aceptada", "📅 Rescheduling Date Accepted", "📅 Calendario Confirmado", "📅 Schedule Confirmed", $msgEs, $msgEn);
+        }
+
         return redirect()->route('creator.dashboard')->with('msg', 'date_accepted');
     }
 
@@ -168,6 +184,15 @@ class ReservationController extends Controller
                 'created_at' => now()
             ]);
         });
+
+        // 📨 TRIGGER: Alerta al Lab que la reserva fue cancelada y archivada por rechazo de fecha
+        $lab = DB::table('users')->where('id', $asset->lab_id)->first();
+        $creator = auth()->user();
+        if ($lab) {
+            $msgEs = "<p>Hola <strong>{$lab->name}</strong>,</p><p>Te informamos que el Creador <strong>{$creator->name}</strong> ha declinado la nueva propuesta de calendario para el activo <strong>{$asset->custom_name}</strong>.</p><p>La orden ha sido archivada como cancelada y los FabCoins en garantía fueron reembolsados de inmediato al usuario.</p>";
+            $msgEn = "<p>Hello <strong>{$lab->name}</strong>,</p><p>We inform you that the Creator <strong>{$creator->name}</strong> has declined the new schedule proposal for the asset <strong>{$asset->custom_name}</strong>.</p><p>The order has been archived as canceled and the collateral FabCoins were instantly refunded to the user.</p>";
+            MailService::enviar($lab->email, "❌ Reserva Reclamada y Cancelada", "❌ Reservation Declined and Canceled", "❌ Cancelación de Calendario", "❌ Schedule Cancellation", $msgEs, $msgEn);
+        }
         
         return redirect()->route('creator.dashboard')->with('msg', 'date_rejected');
     }
@@ -230,6 +255,12 @@ class ReservationController extends Controller
                 'created_at' => now()
             ]);
         });
+
+        // 📨 TRIGGER: Envía la alerta de estrellas y reseña ganada al correo oficial del Lab calificado
+        $lab = DB::table('users')->where('id', $labId)->first();
+        if ($lab) {
+            MailService::notificarNuevaResenaAlLab($lab->email, $lab->name, auth()->user()->name, $rating);
+        }
         
         return redirect()->route('creator.dashboard')->with('msg', 'review_ok');
     }

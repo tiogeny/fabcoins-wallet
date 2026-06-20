@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Services\MailService; // 🚀 IMPORTACIÓN DE NUESTRO SERVICIO DE MAILING
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -24,8 +25,15 @@ class SystemController extends Controller
             return redirect()->route('superadmin.dashboard')->with('error', "El correo institucional ya se encuentra registrado.");
         }
 
-        // Slugificación limpia nativa de Laravel
-        $slug = Str::slug($name) . '-' . rand(100, 999);
+        // 🧠 LÓGICA DE SLUG INTELIGENTE CONDICIONAL
+        $baseSlug = Str::slug($name);
+        $slug = $baseSlug;
+
+        // 🔍 Si el slug limpio ya está tomado por otro Lab, recién ahí concatenamos el número
+        if (DB::table('users')->where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . rand(100, 999);
+        }
+
         $avatar = "https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=2ecc71&color=fff";
 
         DB::table('users')->insert([
@@ -33,6 +41,9 @@ class SystemController extends Controller
             'role' => 'lab', 'avatar_url' => $avatar, 'slug' => $slug,
             'force_password_change' => 1, 'preferred_lang' => $lab_lang, 'created_at' => now()
         ]);
+
+        // 📨 TRIGGER: Despacha la plantilla de bienvenida oficial bilingüe
+        MailService::bienvenidaLab($email, $name, $password);
 
         return redirect()->route('superadmin.dashboard')->with('msg', 'lab_ok');
     }

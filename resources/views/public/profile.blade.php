@@ -5,10 +5,6 @@
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=1.0">
     <link rel="stylesheet" href="{{ asset('css/creator.css') }}?v=1.3">
-    
-    <style>
-        
-    </style>
 @endpush
 
 @section('content')

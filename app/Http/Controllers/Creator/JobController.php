@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Creator;
 
 use App\Http\Controllers\Controller;
+use App\Services\MailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -47,6 +48,12 @@ class JobController extends Controller
             ]);
         });
 
+        // 📨 TRIGGER: Avisa al Laboratorio emisor que tiene un nuevo especialista en el radar
+        $lab = DB::table('users')->where('id', $mission->lab_id)->first();
+        if ($lab) {
+            MailService::postulacionMisionAlLab($lab->email, $lab->name, $creator->name, $mission->title);
+        }
+
         return redirect()->route('creator.dashboard')->with('msg', 'mission_applied_ok');
     }
 
@@ -68,6 +75,15 @@ class JobController extends Controller
                     'deuda_lab_id' => $contract->lab_id
                 ]);
             });
+
+            // 📨 TRIGGER: Notifica al Lab que el creador firmó formalmente el acuerdo de honor ISA
+            $lab = DB::table('users')->where('id', $contract->lab_id)->first();
+            if ($lab) {
+                $msgEs = "<p>Hola <strong>{$lab->name}</strong>,</p><p>¡Buenas noticias! El Creador <strong>{$creator->name}</strong> ha firmado y aceptado el contrato de financiamiento ISA de honor por <strong>" . number_format($contract->amount_initial, 0) . " FC</strong>.</p><p>El sistema comenzará a auditar y retener los saldos de forma automática en misiones futuras.</p>";
+                $msgEn = "<p>Hello <strong>{$lab->name}</strong>,</p><p>Great news! The Creator <strong>{$creator->name}</strong> has signed and accepted the ISA honor financing agreement for <strong>" . number_format($contract->amount_initial, 0) . " FC</strong>.</p><p>The system will automatically audit and hold balances on future milestones.</p>";
+                MailService::enviar($lab->email, "🎓 Contrato ISA Firmado y Activo", "🎓 ISA Contract Signed and Active", "🎓 Acuerdo de Honor Concluido", "🎓 Honor Agreement Concluded", $msgEs, $msgEn);
+            }
+
             return redirect()->route('creator.dashboard')->with('msg', 'credit_accepted');
         }
         return redirect()->route('creator.dashboard');
@@ -78,10 +94,11 @@ class JobController extends Controller
         $creator = auth()->user();
         $emailDestino = trim($request->input('dest_email'));
         $monto = floatval($request->input('monto_p2p'));
+        $motivo = $request->input('mensaje_p2p') ? trim($request->input('mensaje_p2p')) : 'Transferencia directa P2P';
 
         $receptor = DB::table('users')->where('email', $emailDestino)->where('role', 'creator')->first();
 
-        if (!$receptor) return redirect()->route('creator.dashboard')->with('error', "Usuario destinatario no encontrado en la red Creator.");
+        if (!$receptor) return redirect()->route('creator.dashboard')->with('error', "Usuario destinatario no encontrado en la red.");
         if ($receptor->id === $creator->id) return redirect()->route('creator.dashboard')->with('error', "Operación inválida: No puedes enviarte fondos a ti mismo.");
 
         // Validar Disponibilidad líquida en cuenta
@@ -93,6 +110,16 @@ class JobController extends Controller
             DB::table('transactions')->insert(['user_id' => $receptor->id, 'description' => "Recibido P2P de " . $creator->name, 'amount' => $monto, 'type' => 'income', 'created_at' => now()]);
             DB::table('notifications')->insert(['user_id' => $receptor->id, 'message' => "💰 Has recibido $monto FC de " . $creator->name, 'type' => 'success', 'created_at' => now()]);
         });
+
+        // 📨 TRIGGER RECEPTOR: Alerta de abono inmediato en su cuenta
+        $msgRecEs = "<p>Hola <strong>{$receptor->name}</strong>,</p><p>Has recibido una transferencia digital directa de <strong>{$creator->name}</strong> por un valor de:</p><h3 style='color:#2ecc71; text-align:center; font-size:24px;'>+" . number_format($monto, 0) . " FC</h3><p>Concepto adjunto: <em>\"$motivo\"</em></p>";
+        $msgRecEn = "<p>Hello <strong>{$receptor->name}</strong>,</p><p>You have received a direct digital transfer from <strong>{$creator->name}</strong> for a value of:</p><h3 style='color:#2ecc71; text-align:center; font-size:24px;'>+" . number_format($monto, 0) . " FC</h3><p>Concept attached: <em>\"$motivo\"</em></p>";
+        MailService::enviar($receptor->email, "💰 Has recibido FabCoins P2P", "💰 You received FabCoins P2P", "💰 Saldo Acreditado", "💰 Balance Credited", $msgRecEs, $msgRecEn);
+
+        // 📨 TRIGGER EMISOR: Comprobante digital de débito de remesa
+        $msgEmiEs = "<p>Hola <strong>{$creator->name}</strong>,</p><p>Tu transferencia P2P hacia <strong>{$receptor->name}</strong> por un valor de <strong>" . number_format($monto, 0) . " FC</strong> ha sido procesada y debitada con éxito de tu libro contable.</p>";
+        $msgEmiEn = "<p>Hello <strong>{$creator->name}</strong>,</p><p>Your P2P transfer to <strong>{$receptor->name}</strong> for an amount of <strong>" . number_format($monto, 0) . " FC</strong> has been successfully processed and debited from your ledger.</p>";
+        MailService::enviar($creator->email, "💸 Comprobante de Envío P2P", "💸 P2P Transfer Receipt", "💸 Remesa Despachada", "💸 Remittance Dispatched", $msgEmiEs, $msgEmiEn);
 
         return redirect()->route('creator.dashboard')->with('msg', 'p2p_ok');
     }
@@ -216,6 +243,14 @@ class JobController extends Controller
                 'created_at' => now()
             ]);
         });
+
+        // 📨 TRIGGER: Alerta al Lab sobre el reingreso contable por pasarela voluntaria
+        $lab = DB::table('users')->where('id', $contract->lab_id)->first();
+        if ($lab) {
+            $msgEs = "<p>Hola <strong>{$lab->name}</strong>,</p><p>El Creador de la red <strong>{$creator->name}</strong> ha ejecutado un abono voluntario de amortización a su cuenta por un valor de:</p><h3 style='color:#e67e22; text-align:center; font-size:24px;'>{$amountToPay} FC</h3><p>Los fondos han ingresado directamente como capacidad consumida e inyectada a tus bóvedas.</p>";
+            $msgEn = "<p>Hello <strong>{$lab->name}</strong>,</p><p>The network Creator <strong>{$creator->name}</strong> has executed a voluntary amortization payment to their account for a value of:</p><h3 style='color:#e67e22; text-align:center; font-size:24px;'>{$amountToPay} FC</h3><p>Funds have entered directly as consumed capacity injected into your vaults.</p>";
+            MailService::enviar($lab->email, "💰 Amortización Voluntaria Recibida", "💰 Voluntary Amortization Received", "💰 Fondos Recuperados", "💰 Funds Recovered", $msgEs, $msgEn);
+        }
 
         return redirect()->back()->with('msg', 'debt_paid_ok');
     }
