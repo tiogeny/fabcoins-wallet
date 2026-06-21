@@ -23,9 +23,9 @@ class SetLocale
             }
         }
 
-        // 2. Determinar qué idioma activar (Prioridad: Sesión -> BD del Usuario -> Idioma por defecto de Laravel)
+        // 2. Determinar qué idioma activar (Prioridad: Sesión -> BD del Usuario -> Forzado a Español Core)
         $locale = Session::get('lang', function() {
-            return auth()->check() ? auth()->user()->preferred_lang : config('app.locale', 'es');
+            return auth()->check() ? auth()->user()->preferred_lang : 'es'; // 👈 Candado definitivo
         });
 
         // 3. Le decimos a Laravel que traduzca la aplicación a ese idioma para esta petición

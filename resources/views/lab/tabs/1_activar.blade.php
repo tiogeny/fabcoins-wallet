@@ -1,4 +1,4 @@
-<div class="focus-glow-verde">
+<div class="focus-glow-green">
     <div class="premium-glass-card">
         <h2 class="premium-glass-card-title">🏢 {{ __('messages.register_asset_title') }}</h2>
         <p class="premium-glass-card-subtitle">{{ __('messages.register_asset_desc') }}</p>
@@ -26,7 +26,7 @@
                 <div></div>
             </div>
 
-            <div id="contenedor-filas-enlistar">
+            <div id="contenedor-filas-enlistar" class="w-100">
                 <div class="row-token row-token-enlistar">
                     <div>
                         <select name="asset_type[]" class="premium-select select-macro-tipo-activar" onchange="adaptarFilaEcosistema(this)" required>
@@ -58,7 +58,7 @@
 
             <div class="form-actions-row">
                 <button type="button" onclick="agregarFilaEnlistar()" class="btn-back-minimal">+ {{ __('messages.btn_add_more') }}</button>
-                <button type="submit" class="btn-premium btn-verde-hub">💾 {{ __('messages.btn_save_inventory') }}</button>
+                <button type="submit" class="btn-premium btn-green-hub">💾 {{ __('messages.btn_save_inventory') }}</button>
             </div>
         </form>
     </div>
@@ -128,7 +128,7 @@
                                     <div class="action-cell-flex">
                                         @if($activo->status === 'enlisted')
                                             <span class="badge-semantic badge-status-enlisted">{{ __('messages.status_enlisted') }}</span>
-                                            <button type="button" onclick="abrirHubPersistente('hub-tokenizar')" class="btn-text-amarillo" title="Ir al panel de acuñación monetaria">🪙 TOKENIZAR</button>
+                                            <button type="button" onclick="abrirHubPersistente('hub-tokenizar')" class="btn-text-yellow" title="Ir al panel de acuñación monetaria">🪙 TOKENIZAR</button>
                                         @elseif($activo->status === 'active')
                                             <span class="badge-semantic badge-status-operative">{{ __('messages.status_operative') }}</span>
                                         @else
@@ -161,7 +161,7 @@
             @csrf
             <div class="premium-glass-card-header">
                 <h2 class="premium-glass-card-title">👤 {{ __('messages.title_bio_links') }}</h2>
-                <button type="submit" class="btn-premium btn-verde-hub">💾 {{ __('messages.btn_save_profile') }}</button>
+                <button type="submit" class="btn-premium btn-green-hub">💾 {{ __('messages.btn_save_profile') }}</button>
             </div>
 
             <div class="profile-panoramic-grid">
@@ -201,7 +201,7 @@
                     <label class="premium-label">{{ __('messages.lbl_city_country') }}</label>
                     <div class="address-input-wrapper">
                         <input type="text" name="address" id="address-input" value="{{ $lab->address }}" placeholder="{{ __('messages.ph_map_search') }}" class="premium-input" required>
-                        <button type="button" id="btn-search-map" class="btn-premium btn-verde-hub">🔍 {{ __('messages.btn_search_map') }}</button>
+                        <button type="button" id="btn-search-map" class="btn-premium btn-green-hub">🔍 {{ __('messages.btn_search_map') }}</button>
                     </div>
                 </div>
                 <input type="hidden" name="latitude" id="lat-input" value="{{ $lab->latitude }}">

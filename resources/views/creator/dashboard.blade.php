@@ -2,11 +2,6 @@
 
 @section('title', __('messages.creator_portal') . ' | FabCoins')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=2.1">
-    <link rel="stylesheet" href="{{ asset('css/creator.css') }}?v=2.1">
-@endpush
-
 @section('content')
 <div class="container">
     
@@ -14,12 +9,12 @@
        <button type="button" class="lab-profile-trigger" 
         onclick="abrirHubPersistente('hub-billetera'); setTimeout(() => { document.getElementById('seccion-perfil-habilidades').scrollIntoView({ behavior: 'smooth' }); }, 250);" 
         title="{{ __('messages.edit_profile') }}">
-            <div class="lab-avatar-wrapper status-active hub-border-azul">
+            <div class="lab-avatar-wrapper status-active hub-border-blue">
                 <img src="{{ $creator->avatar_url ?: 'https://ui-avatars.com/api/?name='.urlencode($creator->name).'&background=3498db&color=fff' }}" alt="{{ $creator->name }}">
             </div>
             <div class="lab-identity-meta">
                 <h1>{{ $creator->name }}</h1>
-                <div class="lab-reputation-stars hub-text-azul">
+                <div class="lab-reputation-stars hub-text-blue">
                     ⭐ {{ number_format($creator->reputation_score, 1) }} <span>{{ __('messages.reputation') }}</span>
                 </div>
             </div>
@@ -33,7 +28,7 @@
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                     </svg>
                     @if(($unreadCount ?? 0) > 0)
-                        <span class="notif-badge-v2 hub-bg-azul">{{ $unreadCount }}</span>
+                        <span class="notif-badge-v2 hub-bg-blue">{{ $unreadCount }}</span>
                     @endif
                 </button>
                 
@@ -42,7 +37,7 @@
                         <div class="notif-item notif-empty-state">{{ __('messages.no_notifications') }}</div>
                     @else
                         @foreach($notificaciones as $n)
-                            <div class="notif-item {{ !$n->is_read ? 'unread' : '' }} notif-item-azul" 
+                            <div class="notif-item {{ !$n->is_read ? 'unread' : '' }} notif-item-blue" 
                                  style="cursor: pointer; transition: background 0.2s;" 
                                  onclick="enrutarNotificacionInteligenteCreator('{{ strtolower($n->message) }}')"
                                  onmouseover="this.style.background='rgba(52, 152, 219, 0.05)'" 
@@ -93,7 +88,7 @@
                     </svg>
                 </div>
                 <div>
-                    <div class="main-hub-value text-rosado-neon">{{ $postPendientes + $postAceptadas + $postCompletas }} {{ __('messages.lbl_missions_unit') }}</div>
+                    <div class="main-hub-value text-pink-neon">{{ $postPendientes + $postAceptadas + $postCompletas }} {{ __('messages.lbl_missions_unit') }}</div>
                     <div class="bullet-metrics-compact">
                         <div class="metric-compact-row"><span class="color-dot-indicator dot-warning"></span> <strong>{{ $postPendientes }}</strong> {{ __('messages.status_waiting') }}</div>
                         <div class="metric-compact-row"><span class="color-dot-indicator dot-info"></span> <strong>{{ $postAceptadas }}</strong> {{ __('messages.lbl_working_bullet') }}</div>
@@ -129,7 +124,7 @@
                     </svg>
                 </div>
                 <div>
-                    <div class="main-hub-value hub-text-azul">{{ $resCustodia + $resConfirmadas + $resConsumidas }} {{ __('Reservas') }}</div>
+                    <div class="main-hub-value hub-text-blue">{{ $resCustodia + $resConfirmadas + $resConsumidas }} {{ __('Reservas') }}</div>
                     <div class="bullet-metrics-compact">
                         <div class="metric-compact-row"><span class="color-dot-indicator dot-warning"></span> <strong>{{ $resCustodia }}</strong> {{ __('messages.status_pending') }}</div>
                         <div class="metric-compact-row"><span class="color-dot-indicator dot-info"></span> <strong>{{ $resConfirmadas }}</strong> {{ __('Por Usar') }}</div>
@@ -167,7 +162,7 @@
                     </svg>
                 </div>
                 <div>
-                    <div class="main-hub-value text-verde-neon">{{ number_format($fcLíquidos + $fcCustodia + $fcGastados, 0, '.', ' ') }} FC</div>
+                    <div class="main-hub-value text-green-neon">{{ number_format($fcLíquidos + $fcCustodia + $fcGastados, 0, '.', ' ') }} FC</div>
                     <div class="bullet-metrics-compact">
                         <div class="metric-compact-row"><span class="color-dot-indicator dot-success"></span> <strong>{{ number_format($fcLíquidos, 0, '.', ' ') }}</strong> {{ __('messages.kpi_wallet') }}</div>
                         <div class="metric-compact-row"><span class="color-dot-indicator dot-info"></span> <strong>{{ number_format($fcCustodia, 0, '.', ' ') }}</strong> {{ __('messages.status_pending') }}</div>
@@ -180,9 +175,9 @@
     </div>
 
     <div id="hub-misiones" class="hub-section">
-        <div class="hub-active-bar-v2 hub-bar-rosado">
+        <div class="hub-active-bar-v2 hub-bar-pink">
             <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-misiones')">← {{ __('messages.btn_back') }}</button>
-            <div class="hub-title-node hub-text-rosado">
+            <div class="hub-title-node hub-text-pink">
                 <img src="{{ asset('images/hubs/icon_ofertar.webp') }}" alt="">
                 {{ __('messages.hub_missions_btn') }}
             </div>
@@ -191,9 +186,9 @@
     </div>
 
     <div id="hub-mercado" class="hub-section">
-        <div class="hub-active-bar-v2 hub-bar-amarillo">
+        <div class="hub-active-bar-v2 hub-bar-yellow">
             <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-mercado')">← {{ __('messages.btn_back') }}</button>
-            <div class="hub-title-node hub-text-amarillo">
+            <div class="hub-title-node hub-text-yellow">
                 <img src="{{ asset('images/hubs/icon_activar.webp') }}" style="filter: hue-rotate(180deg);" alt="">
                 {{ __('messages.hub_market_btn') }}
             </div>
@@ -202,9 +197,9 @@
     </div>
 
     <div id="hub-billetera" class="hub-section">
-        <div class="hub-active-bar-v2 hub-bar-azul">
+        <div class="hub-active-bar-v2 hub-bar-blue">
             <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-billetera')">← {{ __('messages.btn_back') }}</button>
-            <div class="hub-title-node hub-text-azul">
+            <div class="hub-title-node hub-text-blue">
                 <img src="{{ asset('images/hubs/icon_tokenizar.webp') }}" style="filter: hue-rotate(280deg);" alt="">
                 {{ __('messages.hub_wallet_btn') }}
             </div>

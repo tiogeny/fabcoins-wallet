@@ -2,10 +2,6 @@
 
 @section('title', __('messages.lab_portal'))
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=4.0">
-@endpush
-
 @section('content')
 <div class="container">
     
@@ -42,7 +38,7 @@
                         <div class="notif-item" style="text-align: center; color: #7f8c8d; border-left: none;">{{ __('messages.no_notifications') }}</div>
                     @else
                         @foreach($notificaciones as $n)
-                            <div class="notif-item {{ !$n->is_read ? 'unread' : '' }} notif-item-azul" 
+                            <div class="notif-item {{ !$n->is_read ? 'unread' : '' }} notif-item-bluel" 
                                  style="cursor: pointer; transition: background 0.2s;" 
                                  onclick="enrutarNotificacionInteligenteLab('{{ strtolower($n->message) }}')"
                                  onmouseover="this.style.background='rgba(52, 152, 219, 0.05)'" 
@@ -109,8 +105,10 @@
                             $circunferencia = 213.6;
 
                             // 1. Emisión Base (Masa Monetaria Inalterable)
-                            $totalMinted = DB::table('transactions')->where('user_id', $labId)->where('type', 'mint')->sum('amount');
-                            $totalMinted = max(5000, $totalMinted); // Salvaguarda base
+                            $totalMinted = DB::table('transactions')
+                                ->where('user_id', $labId)
+                                ->where('type', 'mint')
+                                ->sum('amount') ?: 0;
 
                             // 2. Fondos en Custodia (Misiones Abiertas o En Ejecución actualmente)
                             $congeladosReales = DB::table('missions')
@@ -130,10 +128,17 @@
                             // 5. Contador Independiente: Servicios Liquidados / Deudas Quemadas
                             $realConsumed = DB::table('transactions')->where('user_id', $labId)->where('type', 'consumed')->sum('amount');
 
-                            // Perímetros del gráfico circular perfectos sobre base 5000
-                            $pLiq = ($realLiquid / $totalMinted) * $circunferencia;
-                            $pFrz = ($congeladosReales / $totalMinted) * $circunferencia;
-                            $pCir = ($enCirculacion / $totalMinted) * $circunferencia;
+                            // 🛡️ REPLICA DE APAGADO SEGURO (Evita el colapso por división entre cero)
+                            if ($totalMinted > 0) {
+                                $pLiq = ($realLiquid / $totalMinted) * $circunferencia;
+                                $pFrz = ($congeladosReales / $totalMinted) * $circunferencia;
+                                $pCir = ($enCirculacion / $totalMinted) * $circunferencia;
+                            } else {
+                                // Si el balance es 0, los perímetros se apagan por completo (igual que Activar)
+                                $pLiq = 0;
+                                $pFrz = 0;
+                                $pCir = 0;
+                            }
                         @endphp
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $pLiq }} 214"></circle>
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#f1c40f" stroke-width="12" stroke-dasharray="{{ $pFrz }} 214" stroke-dashoffset="-{{ $pLiq }}"></circle>
@@ -192,9 +197,9 @@
     
     <!-- ACTIVAR (ESMERALDA SOLIDO) -->
     <div id="hub-activar" class="hub-section">
-        <div class="hub-active-bar-v2 hub-bar-verde">
+        <div class="hub-active-bar-v2 hub-bar-green">
             <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-activar')">← {{ __('messages.btn_back') }}</button>
-            <div class="hub-title-node hub-text-verde">
+            <div class="hub-title-node hub-text-green">
                 <img src="{{ asset('images/hubs/icon_activar.webp') }}" alt="">
                 {{ __('messages.hub_activate_title') }}
             </div>
@@ -203,9 +208,9 @@
     </div>
 
     <div id="hub-tokenizar" class="hub-section">
-        <div class="hub-active-bar-v2 hub-bar-amarillo">
+        <div class="hub-active-bar-v2 hub-bar-yellow">
             <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-tokenizar')">← {{ __('messages.btn_back') }}</button>
-            <div class="hub-title-node hub-text-amarillo">
+            <div class="hub-title-node hub-text-yellow">
                 <img src="{{ asset('images/hubs/icon_tokenizar.webp') }}" alt="">
                 {{ __('messages.hub_tokenise_title') }}
             </div>
@@ -214,9 +219,9 @@
     </div>
 
     <div id="hub-publicar" class="hub-section">
-        <div class="hub-active-bar-v2 hub-bar-rosado">
+        <div class="hub-active-bar-v2 hub-bar-pink">
             <button type="button" class="btn-back-minimal" onclick="regresarAlHubCentralPersistente('hub-publicar')">← {{ __('messages.btn_back') }}</button>
-            <div class="hub-title-node hub-text-rosado">
+            <div class="hub-title-node hub-text-pink">
                 <img src="{{ asset('images/hubs/icon_ofertar.webp') }}" alt="">
                 {{ __('messages.hub_publish_title') }}
             </div>

@@ -98,7 +98,10 @@ class AssetController extends Controller
         $request->validate([
             'transformar_activo'   => 'required|array',
             'set_price_fc'         => 'required|array',
+            'percentage_committed' => 'required|array', // 🔥 CORRECCIÓN: Validamos el input de la vista
         ]);
+
+        $porcentajesCliente = $request->input('percentage_committed'); // Recibe los valores
 
         $lab = auth()->user();
         $activosSeleccionados = $request->input('transformar_activo');
@@ -114,17 +117,17 @@ class AssetController extends Controller
                     $asset = DB::table('lab_assets')->where('id', $id)->where('lab_id', $lab->id)->first();
                     
                     if ($asset && $asset->status === 'enlisted') {
-                        // Forzamos a que el precio sea positivo y le ponemos un techo prudente de control
-                        $precio = abs(floatval($preciosAjustados[$id] ?? 10.00));
-                        if ($precio > 1000.00) { $precio = 1000.00; } // Candado preventivo contra inflaciones inducidas
-                        
-                        // 🎯 REGLA DE INFRAESTRUCTURA: El porcentaje viene de la Gobernanza Central, NO del cliente
-                        $montoGenerar = ($asset->useful_life_hours * $pctOficial) * $precio;
+                        // 🔥 CORRECCIÓN: Si el cliente eligió un porcentaje lo usamos, de lo contrario usamos la base oficial
+                        $pctAsset = isset($porcentajesCliente[$id]) ? floatval($porcentajesCliente[$id]) : $pctOficial;
 
-                        // Actualización de estado en el inventario real
+                        $precio = abs(floatval($preciosAjustados[$id] ?? 10.00));
+                        
+                        // 🎯 AHORA LA EMISIÓN USA EL PORCENTAJE DEL SELECTOR DEL USUARIO
+                        $montoGenerar = ($asset->useful_life_hours * $pctAsset) * $precio;
+
                         DB::table('lab_assets')->where('id', $id)->update([
                             'status'           => 'active',
-                            'tokenization_pct' => intval($pctOficial * 100),
+                            'tokenization_pct' => intval($pctAsset * 100), // Guardará 40 o 50 en la BD
                             'set_price_fc'     => $precio,
                             'generated_fc'     => $montoGenerar,
                             'updated_at'       => now()
@@ -143,8 +146,13 @@ class AssetController extends Controller
                 }
             });
 
-            // 🚀 TRIGGER ASENTADO: Alerta al laboratorio de su emisión base con éxito
-            MailService::notificarTokenizacion($lab->email, $lab->name, 'Lote de infraestructura tokenizado', $request->input('transformar_activo'));
+            // 🚀 TRIGGER REPARADO: Se colapsa el lote usando array_sum para enviar un número limpio
+            MailService::notificarTokenizacion(
+                $lab->email, 
+                $lab->name, 
+                'Lote de infraestructura tokenizado', 
+                array_sum((array) $request->input('transformar_activo'))
+            );
 
             return redirect()->route('lab.dashboard')->with('msg', 'mint_ok');
         } catch (\Exception $e) {

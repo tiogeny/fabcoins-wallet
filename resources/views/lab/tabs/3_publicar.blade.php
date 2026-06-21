@@ -6,7 +6,7 @@
     $catalogoHabilidades = collect();
 @endphp
 
-<div class="focus-glow-rosado">
+<div class="focus-glow-pink">
     <div class="premium-glass-card">
         <h2 class="premium-glass-card-title">🚀 {{ __('messages.miss_create_title') }}</h2>
         <p class="premium-glass-card-subtitle">{{ __('messages.miss_create_desc') }}</p>
@@ -54,7 +54,7 @@
                         </div>
                     </div>
                     <div class="pt-24">
-                        <button type="submit" class="btn-premium btn-rosado-hub m-0 w-100">{{ __('messages.btn_publish_miss') }}</button>
+                        <button type="submit" class="btn-premium btn-pink-hub m-0 w-100">{{ __('messages.btn_publish_miss') }}</button>
                     </div>
                 </div>
             </div>

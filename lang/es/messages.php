@@ -142,7 +142,7 @@ return [
     'hub_activate_title'       => 'Activar',
     'hub_activate_desc'        => 'Enlistar activos y capacidad instalada',
     'hub_tokenise_title'       => 'Tokenizar',
-    'hub_tokenise_desc'        => 'Valorización contable y emisión MINT',
+    'hub_tokenise_desc'        => 'Transformación de activos a Fab Coins',
     'hub_publish_title'        => 'Publicar',
     'hub_publish_desc'         => 'Convocatoria de misiones',
     'hub_missions_sub'         => 'Aplicar a Misiones Globales',
@@ -187,7 +187,7 @@ return [
     'ph_map_search'            => 'Ej: Centro Cultural Ricardo Palma, Miraflores',
     'ph_select_category'       => 'Selecciona categoría...',
     'ph_capacity_base'         => 'Cant. Base',
-    'ph_capacity_machine'      => 'Horas (Ej: 1000)',
+    'ph_capacity_machine'      => 'Horas (Ej: 2000)',
     'ph_capacity_service'      => 'Selecciona especialidad...',
     'ph_capacity_lab'          => 'Horas (Ej: 100)',
     'ph_model_machine'         => 'Ej: Ultimaker S5',
@@ -221,8 +221,6 @@ return [
     'rates_reg_desc'           => 'Balance y Movimientos',
     'btn_update_rate'          => 'Actualizar',
     'empty_active_rates'       => 'No tienes activos en circulación colateral en este momento.',
-    'swal_are_you_sure'     => '¿Estás completamente seguro?',
-    'swal_confirm_approve'  => '¿Estás seguro de aprobar la reserva de :asset para el creador :creator?',
     'msg_applied_ok'        => '¡Postulación enviada con éxito al Laboratorio!',
     'msg_credit_accepted'   => 'Crédito aprobado (los FabCoins se recuperarán mediante misiones). Ahora ve a la sección "Solicitudes de Alquiler" y aprueba la reserva.',
 
@@ -305,7 +303,6 @@ return [
     // 7. PORTAL DEL CREADOR (DASHBOARD & HUBS)
     // =========================================================
     'creator_portal'           => 'Panel del Creator',
-    'kpi_active_apps'          => 'Postulaciones Activas',
     'kpi_finished_missions'    => 'Misiones Completadas',
     'kpi_wallet'               => 'Saldo Disponible',
     'lbl_skills_bullet'        => 'Especialidades destacadas',
@@ -362,11 +359,9 @@ return [
     'materials'         => 'Materiales Compatibles',
     'lbl_avail_capacity' => 'Capacidad disponible:',
     // El error original que te salió
-    'swal_insufficient_escrow_desc' => 'Saldo insuficiente para completar esta reserva.',
 
     // Notificaciones y Alertas Generales
     'no_notifications'    => 'Sin notificaciones recientes',
-    'swal_are_you_sure'   => '¿Estás completamente seguro?',
     
     // Confirmación de Crédito personalizada
     'swal_confirm_approve_credit' => '¿Aprobar y activar este crédito por :amount FC para :creator?',
@@ -479,7 +474,7 @@ return [
     'swal_amortize_completed_desc' => 'El pago se ha retenido con éxito y se aplicó como abono directo a tu favor en el contrato educativo.',
     'swal_no_assets_selected'      => 'Ningún activo seleccionado',
     'swal_no_assets_selected_desc' => 'Debes marcar al menos una casilla de verificación para poder transformar infraestructura en FabCoins.',
-    'swal_confirm_tokenise'        => '¿Deseas transformar el colateral seleccionado en FabCoins oficiales de presupuesto? Quedarán asentados permanentemente en el Libro contable.',
+    'swal_confirm_tokenise'        => 'Los activos seleccionados se tonekinarán y estarán a disposición de los creadores para reservarlos.',
     'swal_confirm_price_change'    => '¿Estás seguro de actualizar la tarifa comercial de este activo? Impactará de forma inmediata en las próximas órdenes de la red.',
     'swal_confirm_rating'          => '¿Deseas registrar esta calificación en el récord público de reputación del Lab?',
     
@@ -544,8 +539,6 @@ return [
     // Campos del formulario Breeze (Para cuando quieras actualizarlos allí también)
     'lbl_fab_academy'     => 'Link de Fab Academy',
     'lbl_instagram'       => 'Instagram',
-    'lbl_city'            => 'Ciudad',
-    'lbl_country'         => 'País',
     'ph_instagram'   => 'URL de Instagram',
     'ph_fab_academy' => 'URL de Fab Academy',
     'lbl_city'       => 'Ciudad',
@@ -606,15 +599,15 @@ return [
     'lbl_amortization_balance' => 'Amortización / Saldo',
     'lbl_returned_percentage' => 'devuelto',
     'hub3_title' => 'HUB III: Gobernanza Global, Control de Políticas & Catálogo',
-    'lbl_invite_incorporate_node' => 'Invitar e Incorporar Nuevo Nodo Fab Lab',
-    'lbl_institution_name' => 'Nombre de la Institución',
-    'lbl_official_email' => 'Correo Electrónico Oficial',
-    'lbl_temp_password' => 'Contraseña Temporal de Acceso',
+    'lbl_invite_incorporate_node' => 'Invitar e incorporar nuevo nodo Lab',
+    'lbl_institution_name' => 'Nombre del Lab',
+    'lbl_official_email' => 'Correo electrónico',
+    'lbl_temp_password' => 'Contraseña temporal de acceso',
     'lbl_node_lang' => 'Idioma del Nodo',
     
     // Alertas de confirmación del Core
-    'msg_lab_ok' => '¡Invitación formal despachada e inicializada con éxito!',
-    'msg_cat_ok' => '¡Nuevos activos de referencia añadidos exitosamente al catálogo global!',
+    'msg_lab_ok' => '¡Invitación enviada con éxito!',
+    'msg_cat_ok' => '¡Nuevos activos añadidos al catálogo global!',
     'msg_pct_updated' => '¡Política de tasa de respaldo central actualizada correctamente!',
     'msg_precio_ok' => '¡Tarifa de referencia homologada y sincronizada en la red!',
     'msg_borrado_ok' => '¡Descriptor de activo eliminado de forma absoluta del registro!',
@@ -623,7 +616,7 @@ return [
     'lbl_central_backing_rate' => 'Tasa de Respaldo Central',
     'lbl_backing_rate_desc' => 'Ajusta el porcentaje de respaldo global que colateraliza la tokenización física de maquinaria en los nodos.',
     'lbl_required_co_market' => '% COALMERCADO REQUERIDO',
-    'lbl_multi_line_structuring' => 'Estructuración de Ítems Multi-Línea al Catálogo de Referencia Global',
+    'lbl_multi_line_structuring' => 'Nombre (ES)',
     'lbl_multi_line_desc' => 'Inserta nuevos activos de referencia industrial para unificar los precios sugeridos en toda la red.',
     'lbl_asset_nature' => 'Naturaleza',
     'lbl_descriptor_unit' => 'Descriptor de Activo / Unidad de Medida',

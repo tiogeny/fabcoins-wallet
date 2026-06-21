@@ -1,11 +1,11 @@
-<div class="focus-glow-amarillo">
+<div class="focus-glow-yellow">
     <div class="premium-glass-card">
         <h2 class="premium-glass-card-title">🗺️ {{ __('messages.map_explorer_title') }}</h2>
         <p class="premium-glass-card-subtitle">{{ __('messages.map_explorer_desc') }}</p>
         
         <div class="market-search-bar">
             <input type="text" id="creator-search-input" placeholder="{{ __('messages.ph_search_district') }}" class="premium-input m-0">
-            <button type="button" id="btn-creator-search" class="btn-premium btn-amarillo-hub m-0 w-auto">🔍 {{ __('messages.btn_search') }}</button>
+            <button type="button" id="btn-creator-search" class="btn-premium btn-yellow-hub m-0 w-auto">🔍 {{ __('messages.btn_search') }}</button>
         </div>
         
         <div id="creator-map" class="map-container-380"></div>
@@ -51,7 +51,7 @@
                         @php 
                             $bgBadge = '#7f8c8d';
                             if($r->asset_type === 'machine') $bgBadge = '#1abc9c'; // Verde
-                            elseif($r->asset_type === 'service') $bgBadge = '#3498db'; // Azul
+                            elseif($r->asset_type === 'service') $bgBadge = '#3498db'; // blue
                             elseif(in_array($r->asset_type, ['lab', 'space', 'workshop'])) $bgBadge = '#9b59b6'; // Morado
                         @endphp
                         <span class="asset-type-badge" style="background: {{ $bgBadge }}; color: white;">{{ $r->display_name }}</span>
@@ -74,7 +74,7 @@
                                 <input type="date" name="reservation_date" required min="{{ date('Y-m-d') }}" class="input-date-sm">
                             </div>
                             <input type="number" name="hours" step="0.5" min="0.5" max="{{ $disp }}" placeholder="Hrs" required class="input-hours-sm">
-                            <button type="submit" class="btn-premium btn-amarillo-hub btn-reserve-sm" onclick="interceptarCalculoReserva(event, this)">{{ __('messages.btn_reserve') }}</button>
+                            <button type="submit" class="btn-premium btn-yellow-hub btn-reserve-sm" onclick="interceptarCalculoReserva(event, this)">{{ __('messages.btn_reserve') }}</button>
                         </div>
                     </form>
                 </div>
@@ -320,7 +320,7 @@ function interceptarCalculoReserva(event, boton) {
             background: '#1c2230',
             color: '#fff',
             showCancelButton: true,
-            confirmButtonColor: '#f39c12', // Color Naranja/Amarillo de crédito
+            confirmButtonColor: '#f39c12', // Color Naranja/yellow de crédito
             cancelButtonColor: '#7f8c8d',
             confirmButtonText: "🤝 {{ __('messages.btn_req_credit') }}",
             cancelButtonText: "{{ __('messages.swal_cancel') }}"

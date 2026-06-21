@@ -2,9 +2,7 @@
 
 @section('title', __('messages.tab_login') . ' | FabCoins')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/auth.css') }}?v=1.0">
-@endpush
+<link rel="stylesheet" href="{{ asset('css/style.css') }}?v=2.0">
 
 @section('content')
 <div class="auth-card-v2">

@@ -1,4 +1,4 @@
-<div class="focus-glow-amarillo">
+<div class="focus-glow-yellow">
 
     <div class="premium-glass-card">
         <h2 class="premium-glass-card-title">🪙 {{ __('messages.tokenise_title') }}</h2>
@@ -62,7 +62,7 @@
                 </div>
 
                 <div class="flex-end-mt20">
-                    <button type="submit" onclick="validarSeleccionBoveda(event)" class="btn-premium btn-amarillo-hub m-0">{{ __('messages.btn_execute_tokenise') }}</button>
+                    <button type="submit" onclick="validarSeleccionBoveda(event)" class="btn-premium btn-yellow-hub m-0">{{ __('messages.btn_execute_tokenise') }}</button>
                 </div>
             </form>
         @endif

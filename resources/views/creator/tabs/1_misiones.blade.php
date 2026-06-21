@@ -14,7 +14,7 @@
                     <div>
                         <div class="creator-asset-header">
                             <div class="flex-col-gap-4">
-                                <a href="{{ route('public.profile', $m->lab_slug ?? $m->lab_id) }}" target="_blank" class="asset-lab-badge text-rosado-neon font-bold text-decoration-none">
+                                <a href="{{ route('public.profile', $m->lab_slug ?? $m->lab_id) }}" target="_blank" class="asset-lab-badge text-pink-neon font-bold text-decoration-none">
                                     🏭 {{ $m->lab_name }} ↗️
                                 </a>
                             </div>
@@ -29,7 +29,7 @@
                         
                         <div class="font-rajdhani-15 text-blue-neon font-bold mb-8 font-size-11">👥 {{ $m->spots_filled }} / {{ $m->spots_total }} {{ __('messages.lbl_spots_status') }}</div>
                         <p class="text-neutral-muted mb-15 font-size-12 line-height-15">{{ $m->description }}</p>
-                        <div class="text-rosado-neon font-bold mb-15 font-size-11">📅 {{ __('messages.th_deadline') }}: {{ date('d M Y', strtotime($m->deadline)) }}</div>
+                        <div class="text-pink-neon font-bold mb-15 font-size-11">📅 {{ __('messages.th_deadline') }}: {{ date('d M Y', strtotime($m->deadline)) }}</div>
                     </div>
                     
                     <form action="{{ route('creator.apply_mission') }}" method="POST" class="form-reserve-integrated mt-10">
@@ -38,7 +38,7 @@
                         
                         <textarea name="message" rows="2" placeholder="{{ __('messages.ph_why_ideal_creator') }}" class="premium-textarea m-0 h-60" required></textarea>
                         
-                        <button type="button" class="btn-premium btn-rosado-hub m-0" onclick="confirmarAccion(event, '¿Confirmas tu postulación a esta misión?', 'info', '#e84393')">
+                        <button type="button" class="btn-premium btn-pink-hub m-0" onclick="confirmarAccion(event, '¿Confirmas tu postulación a esta misión?', 'info', '#e84393')">
                             🚀 {{ __('messages.btn_send_application') }}
                         </button>
                     </form>
@@ -161,7 +161,7 @@
                 </div>
                 <div>
                     <div class="modal-rating-label-container">
-                        {{-- 🔵 REUTILIZACIÓN: Pinta la insignia de misión con tu color azul de servicios --}}
+                        {{-- 🔵 REUTILIZACIÓN: Pinta la insignia de misión con tu color blue de servicios --}}
                         <span class="badge-semantic badge-service">{{ __('messages.th_mission') }}</span>
                     </div>
                     <div id="swal-mission-nombre-activo" class="modal-creator-name text-white-pure">-</div>

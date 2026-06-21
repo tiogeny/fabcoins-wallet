@@ -2,11 +2,6 @@
 
 @section('title', __('messages.title_superadmin_dashboard'))
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=1.1">
-    <link rel="stylesheet" href="{{ asset('css/creator.css') }}?v=1.1">
-@endpush
-
 @section('content')
 <div class="profile-container-v2">
     
@@ -44,9 +39,9 @@
     <!-- =======================================================================
          🪙 HUB I: ESTABILIDAD MACROECONÓMICA & EMISIÓN (FÓRMULA MAESTRA)
          ======================================================================= -->
-    <div class="premium-glass-card hub-bar-amarillo" style="padding: 26px;">
+    <div class="premium-glass-card hub-bar-yellow" style="padding: 26px;">
         <div class="premium-glass-card-header" style="margin-bottom: 12px;">
-            <h3 class="premium-glass-card-title m-0 hub-text-amarillo">{{ __('messages.hub1_title') }}</h3>
+            <h3 class="premium-glass-card-title m-0 hub-text-yellow">{{ __('messages.hub1_title') }}</h3>
         </div>
         <p class="premium-glass-card-subtitle" style="margin-bottom: 25px;">{{ __('messages.hub1_desc') }}</p>
         
@@ -64,19 +59,19 @@
             </div>
             
             <div class="action-hubs-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; min-height: auto; margin: 0;">
-                <div class="creator-asset-card hub-bar-azul cursor-pointer" style="background: #1c2230;" onclick="cargarDesglose('bovedas', '{{ __('messages.lbl_vault_reservations') }}', '🏦')">
+                <div class="creator-asset-card hub-bar-blue cursor-pointer" style="background: #1c2230;" onclick="cargarDesglose('bovedas', '{{ __('messages.lbl_vault_reservations') }}', '🏦')">
                     <div class="stat-label">{{ __('messages.lbl_vault_reservations') }}</div>
-                    <div class="stat-value text-azul-neon" style="font-size: 20px;">🏦 {{ number_format($total_bovedas, 0) }}</div>
+                    <div class="stat-value text-blue-neon" style="font-size: 20px;">🏦 {{ number_format($total_bovedas, 0) }}</div>
                     <div class="td-date-dim style-custom-mtop" style="margin-top:12px; font-size:10px;">{{ __('messages.lbl_vault_click') }}</div>
                 </div>
 
-                <div class="creator-asset-card hub-bar-verde cursor-pointer" style="background: #1c2230;" onclick="cargarDesglose('circulante', '{{ __('messages.lbl_circulating_creators') }}', '🥮')">
+                <div class="creator-asset-card hub-bar-green cursor-pointer" style="background: #1c2230;" onclick="cargarDesglose('circulante', '{{ __('messages.lbl_circulating_creators') }}', '🥮')">
                     <div class="stat-label">{{ __('messages.lbl_circulating_creators') }}</div>
-                    <div class="stat-value text-verde-neon" style="font-size: 20px;">🥮 {{ number_format($total_circulando, 0) }}</div>
+                    <div class="stat-value text-green-neon" style="font-size: 20px;">🥮 {{ number_format($total_circulando, 0) }}</div>
                     <div class="td-date-dim style-custom-mtop" style="margin-top:12px; font-size:10px;">{{ __('messages.lbl_circulating_click') }}</div>
                 </div>
 
-                <div class="creator-asset-card hub-bar-amarillo cursor-pointer" style="background: #1c2230;" onclick="cargarDesglose('escrow', '{{ __('messages.lbl_total_escrow') }}', '🔒')">
+                <div class="creator-asset-card hub-bar-yellow cursor-pointer" style="background: #1c2230;" onclick="cargarDesglose('escrow', '{{ __('messages.lbl_total_escrow') }}', '🔒')">
                     <div class="stat-label">{{ __('messages.lbl_total_escrow') }}</div>
                     <div class="stat-value" style="color: #f1c40f !important; font-size: 20px;">🔒 {{ number_format($total_escrow, 0) }}</div>
                     <div class="td-date-dim style-custom-mtop" style="margin-top:12px; font-size:10px;">{{ __('messages.lbl_escrow_click') }}</div>
@@ -91,9 +86,9 @@
         </div>
 
         <div class="action-hubs-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; min-height: auto; margin-top: 0; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 20px;">
-            <div class="creator-asset-card hub-bar-azul cursor-pointer" style="background: rgba(52, 152, 219, 0.01);" onclick="cargarDesglose('pib', '{{ __('messages.lbl_pib_30d') }}', '⚡')">
+            <div class="creator-asset-card hub-bar-blue cursor-pointer" style="background: rgba(52, 152, 219, 0.01);" onclick="cargarDesglose('pib', '{{ __('messages.lbl_pib_30d') }}', '⚡')">
                 <div class="stat-label">{{ __('messages.lbl_pib_30d') }}</div>
-                <div class="stat-value text-azul-neon" style="font-size: 22px;">⚡ {{ number_format($volumen_30d, 0) }} FC</div>
+                <div class="stat-value text-blue-neon" style="font-size: 22px;">⚡ {{ number_format($volumen_30d, 0) }} FC</div>
                 <div class="td-date-dim style-custom-mtop" style="margin-top:10px; font-size:10px;">{{ __('messages.lbl_pib_click') }}</div>
             </div>
 
@@ -106,7 +101,7 @@
     </div>
 
     <!-- 🔍 CONSOLA DE AUDITORÍA CLÍNICA DE NODOS -->
-        <div class="premium-glass-card hub-bar-azul" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="premium-glass-card hub-bar-blue" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
             <div>
                 <h2 class="premium-glass-card-title" style="font-size: 16px; margin-bottom: 8px;">🔍 Auditoría Clínica Inmediata</h2>
                 <p class="td-date-dim" style="font-size: 11px; line-height: 1.4;">Inspecciona los libros contables y desgloses de saldo líquido de cualquier nodo o creador sin comprometer sus claves de acceso.</p>
@@ -127,10 +122,10 @@
          ======================================================================= -->
     <div class="profile-panoramic-grid">
         
-        <div class="premium-glass-card hub-bar-verde" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="premium-glass-card hub-bar-green" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
             <div>
                 <div class="premium-glass-card-header">
-                    <h3 class="premium-glass-card-title m-0 hub-text-verde">{{ __('messages.hub2_title') }}</h3>
+                    <h3 class="premium-glass-card-title m-0 hub-text-green">{{ __('messages.hub2_title') }}</h3>
                 </div>
                 <p class="premium-glass-card-subtitle">{{ __('messages.hub2_desc') }}</p>
                 
@@ -168,7 +163,7 @@
             </div>
         </div>
 
-        <div class="premium-glass-card hub-bar-amarillo" style="margin-bottom: 0;">
+        <div class="premium-glass-card hub-bar-yellow" style="margin-bottom: 0;">
             <div class="premium-glass-card-header">
                 <h3 class="premium-glass-card-title m-0 text-warning-neon">{{ __('messages.lbl_isa_global_debt') }}</h3>
                 <span class="badge-semantic badge-machine" style="background: rgba(241,196,15,0.1); color: #f1c40f !important; border: 1px solid rgba(241,196,15,0.2); font-weight: 700;">Activos: {{ number_format($total_deuda_global, 0) }} FC</span>
@@ -219,7 +214,7 @@
     
     <div class="profile-panoramic-grid" style="grid-template-columns: 1fr;">
         
-        <div class="premium-glass-card hub-bar-verde" style="margin-bottom: 0;">
+        <div class="premium-glass-card hub-bar-green" style="margin-bottom: 0;">
             <h2 class="premium-glass-card-title" style="font-size: 16px; margin-bottom: 12px;">{{ __('messages.lbl_invite_incorporate_node') }}</h2>
             <form method="POST" action="{{ route('superadmin.lab.invite') }}" class="flex-col-gap-10">
                 @csrf
@@ -250,7 +245,7 @@
                 </div>
                 
                 <div class="text-right" style="margin-top: 10px;">
-                    <button type="submit" class="btn-premium btn-verde-hub w-100" style="background:#2ecc71; border-color:#2ecc71;">{{ __('messages.btn_dispatch_invite') }}</button>
+                    <button type="submit" class="btn-premium btn-green-hub w-100" style="background:#2ecc71; border-color:#2ecc71;">{{ __('messages.btn_dispatch_invite') }}</button>
                 </div>
             </form>
         </div>
@@ -294,7 +289,7 @@
 
             <div class="form-actions-row">
                 <button type="button" onclick="agregarFilaAdmin()" class="btn-back-minimal">➕</button>
-                <button type="submit" class="btn-premium btn-amarillo-hub" style="flex-grow: 1; width: auto !important; margin:0;">{{ __('messages.btn_confirm_sync_lines') }}</button>
+                <button type="submit" class="btn-premium btn-yellow-hub" style="flex-grow: 1; width: auto !important; margin:0;">{{ __('messages.btn_confirm_sync_lines') }}</button>
             </div>
         </form>
     </div>
@@ -415,9 +410,9 @@
     </div>
 
     <!-- RADAR DE MISIONES DE CO-CREACIÓN -->
-    <div class="premium-glass-card hub-bar-rosado" style="margin-top:25px;">
+    <div class="premium-glass-card hub-bar-pink" style="margin-top:25px;">
         <div class="premium-glass-card-header">
-            <h3 class="premium-glass-card-title m-0 text-rosado-neon">{{ __('messages.lbl_global_missions_radar') }}</h3>
+            <h3 class="premium-glass-card-title m-0 text-pink-neon">{{ __('messages.lbl_global_missions_radar') }}</h3>
         </div>
         <div class="table-container">
             <table class="premium-data-table">
