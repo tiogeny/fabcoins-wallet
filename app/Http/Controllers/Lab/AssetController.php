@@ -94,49 +94,58 @@ class AssetController extends Controller
      */
     public function tokenise(Request $request)
     {
-        // 1. Validar la estructura base de los arreglos entrantes
         $request->validate([
             'transformar_activo'   => 'required|array',
             'set_price_fc'         => 'required|array',
-            'percentage_committed' => 'required|array', // 🔥 CORRECCIÓN: Validamos el input de la vista
+            'percentage_committed' => 'required|array',
         ]);
-
-        $porcentajesCliente = $request->input('percentage_committed'); // Recibe los valores
 
         $lab = auth()->user();
         $activosSeleccionados = $request->input('transformar_activo');
         $preciosAjustados = $request->input('set_price_fc');
+        $porcentajesCliente = $request->input('percentage_committed');
 
-        // 2. Extraer de forma segura la política de emisión oficial de la red
         $globalPctSetting = DB::table('global_settings')->where('setting_key', 'tokenization_pct')->value('setting_value');
-        $pctOficial = $globalPctSetting ? floatval($globalPctSetting) / 100 : 0.20; // Fallback seguro al 20%
+        $pctOficial = $globalPctSetting ? floatval($globalPctSetting) / 100 : 0.20;
+
+        $totalFcGenerados = 0;
+        $detallesLote = []; 
 
         try {
-            DB::transaction(function () use ($activosSeleccionados, $preciosAjustados, $pctOficial, $lab) {
+            DB::transaction(function () use ($activosSeleccionados, $preciosAjustados, $porcentajesCliente, $pctOficial, $lab, &$totalFcGenerados, &$detallesLote) {
                 foreach ($activosSeleccionados as $id) {
                     $asset = DB::table('lab_assets')->where('id', $id)->where('lab_id', $lab->id)->first();
                     
                     if ($asset && $asset->status === 'enlisted') {
-                        // 🔥 CORRECCIÓN: Si el cliente eligió un porcentaje lo usamos, de lo contrario usamos la base oficial
                         $pctAsset = isset($porcentajesCliente[$id]) ? floatval($porcentajesCliente[$id]) : $pctOficial;
-
+                        
+                        // 🔥 REPARADO: Eliminamos el tope limitador de 1,000 FC para soportar el valor real
                         $precio = abs(floatval($preciosAjustados[$id] ?? 10.00));
                         
-                        // 🎯 AHORA LA EMISIÓN USA EL PORCENTAJE DEL SELECTOR DEL USUARIO
                         $montoGenerar = ($asset->useful_life_hours * $pctAsset) * $precio;
+                        $totalFcGenerados += $montoGenerar;
+
+                        // 📊 Enviamos las propiedades limpias para que el correo decida el color y la unidad
+                        $detallesLote[] = [
+                            'nombre'      => $asset->custom_name,
+                            'tipo'        => $asset->asset_type,
+                            'subcategory' => $asset->subcategory,
+                            'cantidad'    => $asset->useful_life_hours * $pctAsset,
+                            'precio'      => $precio,
+                            'fc'          => $montoGenerar
+                        ];
 
                         DB::table('lab_assets')->where('id', $id)->update([
                             'status'           => 'active',
-                            'tokenization_pct' => intval($pctAsset * 100), // Guardará 40 o 50 en la BD
+                            'tokenization_pct' => intval($pctAsset * 100),
                             'set_price_fc'     => $precio,
                             'generated_fc'     => $montoGenerar,
                             'updated_at'       => now()
                         ]);
 
-                        // Asentamiento inmutable en el Ledger histórico
                         DB::table('transactions')->insert([
                             'user_id'     => $lab->id,
-                            'description' => "Transformación (Mint): " . $asset->custom_name . " (" . intval($pctOficial * 100) . "%)",
+                            'description' => "Transformación (Mint): " . $asset->custom_name . " (" . intval($pctAsset * 100) . "%)",
                             'amount'      => $montoGenerar,
                             'type'        => 'mint',
                             'created_at'  => now(),
@@ -146,17 +155,17 @@ class AssetController extends Controller
                 }
             });
 
-            // 🚀 TRIGGER REPARADO: Se colapsa el lote usando array_sum para enviar un número limpio
             MailService::notificarTokenizacion(
                 $lab->email, 
                 $lab->name, 
                 'Lote de infraestructura tokenizado', 
-                array_sum((array) $request->input('transformar_activo'))
+                $totalFcGenerados,
+                $detallesLote 
             );
 
             return redirect()->route('lab.dashboard')->with('msg', 'mint_ok');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Fallo en la verificación del Ledger: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Fallo en la verificación: ' . $e->getMessage());
         }
     }
 

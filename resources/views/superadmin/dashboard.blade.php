@@ -34,6 +34,7 @@
         @if(session('msg') == 'precio_ok') <div class="badge-semantic badge-status-operative w-100 mb-20 text-center block-16">💾 {{ __('messages.msg_precio_ok') }}</div> @endif
         @if(session('msg') == 'borrado_ok') <div class="badge-semantic badge-status-retired w-100 mb-20 text-center block-16">🗑️ {{ __('messages.msg_borrado_ok') }}</div> @endif
         @if(session('error')) <div class="badge-alert-neon w-100 mb-20 text-center block-16">❌ {{ session('error') }}</div> @endif
+        @if(session('msg') == 'skill_ok') <div class="badge-semantic badge-service w-100 mb-20 text-center block-16">🧠 Habilidad registrada exitosamente en la base de datos global.</div> @endif
     </div>
 
     <!-- =======================================================================
@@ -212,7 +213,7 @@
          ======================================================================= -->
     <h3 style="margin: 30px 0 15px 0; font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px;">⚙️ {{ __('messages.hub3_title') }}</h3>
     
-    <div class="profile-panoramic-grid" style="grid-template-columns: 1fr;">
+    <div class="profile-panoramic-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         
         <div class="premium-glass-card hub-bar-green" style="margin-bottom: 0;">
             <h2 class="premium-glass-card-title" style="font-size: 16px; margin-bottom: 12px;">{{ __('messages.lbl_invite_incorporate_node') }}</h2>
@@ -290,6 +291,36 @@
             <div class="form-actions-row">
                 <button type="button" onclick="agregarFilaAdmin()" class="btn-back-minimal">➕</button>
                 <button type="submit" class="btn-premium btn-yellow-hub" style="flex-grow: 1; width: auto !important; margin:0;">{{ __('messages.btn_confirm_sync_lines') }}</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="premium-glass-card hub-bar-blue" style="margin-bottom: 0;">
+        <h2 class="premium-glass-card-title" style="font-size: 16px; margin-bottom: 12px;">🧠 {{ __('messages.title_register_skills') }}</h2>
+        
+        <form method="POST" action="{{ route('superadmin.skills.store_multiple') }}">
+            @csrf
+            
+            <div id="contenedor-filas-habilidades" style="width: 100%;">
+                <div class="row-token-enlistar" style="display: grid; grid-template-columns: 2.5fr 2.5fr 2fr auto; gap: 10px; margin-bottom: 10px; background: transparent; padding: 0;">
+                    <div>
+                        <input type="text" name="name_es[]" placeholder="Competencia (ES)" class="premium-input" style="margin-bottom:0;" required>
+                    </div>
+                    <div>
+                        <input type="text" name="name_en[]" placeholder="Skill Name (EN)" class="premium-input" style="margin-bottom:0;" required>
+                    </div>
+                    <div>
+                        <select name="type[]" class="premium-select" style="margin-bottom:0;">
+                            <option value="hard">⚙️ {{ __('messages.lbl_hard_skill') }}</option>
+                            <option value="soft">🧠 {{ __('messages.lbl_soft_skill') }}</option>
+                        </select>
+                    </div>
+                    <div style="width: 30px;"></div> </div>
+            </div>
+
+            <div class="form-actions-row" style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="button" onclick="agregarFilaHabilidadGobernanza()" class="btn-back-minimal" style="width: auto;">+ {{ __('messages.btn_add_more') }}</button>
+                <button type="submit" class="btn-premium btn-blue-hub" style="margin: 0; flex: 1;">💾 {{ __('messages.btn_save_skill') }}</button>
             </div>
         </form>
     </div>
@@ -559,6 +590,32 @@ function auditarUsuarioDirecto(userId, userName) {
                 }
             });
         });
+}
+
+function agregarFilaHabilidadGobernanza() {
+    const contenedor = document.getElementById('contenedor-filas-habilidades');
+    const nuevaFila = document.createElement('div');
+    nuevaFila.className = 'row-token-enlistar';
+    nuevaFila.style = 'display: grid; grid-template-columns: 2.5fr 2.5fr 2fr auto; gap: 10px; margin-bottom: 10px; background: transparent; padding: 0;';
+
+    nuevaFila.innerHTML = `
+        <div>
+            <input type="text" name="name_es[]" placeholder="Competencia (ES)" class="premium-input" style="margin-bottom:0;" required>
+        </div>
+        <div>
+            <input type="text" name="name_en[]" placeholder="Skill Name (EN)" class="premium-input" style="margin-bottom:0;" required>
+        </div>
+        <div>
+            <select name="type[]" class="premium-select" style="margin-bottom:0;">
+                <option value="hard">⚙️ {{ __('messages.lbl_hard_skill') }}</option>
+                <option value="soft">🧠 {{ __('messages.lbl_soft_skill') }}</option>
+            </select>
+        </div>
+        <div>
+            <button type="button" onclick="this.closest('.row-token-enlistar').remove()" class="btn-delete-icon" style="padding: 4px 8px; font-size: 16px;">&times;</button>
+        </div>
+    `;
+    contenedor.appendChild(nuevaFila);
 }
 </script>
 @endsection

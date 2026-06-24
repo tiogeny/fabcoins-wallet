@@ -22,13 +22,14 @@
         
         <div class="lab-controls-node">
             <div class="notif-wrapper" style="position: relative;">
-                <button type="button" class="notif-icon-btn" title="{{ __('messages.notifications') }}" onclick="const dd = this.nextElementSibling; dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex';">
+                <button type="button" class="notif-icon-btn" title="{{ __('messages.notifications') }}" onclick="interceptarCampanaYLimpiarContador(this)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                     </svg>
-                    @if(($unreadCount ?? 0) > 0)
-                        <span class="notif-badge-v2 hub-bg-blue">{{ $unreadCount }}</span>
+                    <!-- 🔴 Agregamos el id 'badge-notif-dinamico' para poder borrarlo con JavaScript -->
+                    @if(($unread_count ?? 0) > 0)
+                        <span class="notif-badge-v2" id="badge-notif-dinamico">{{ $unread_count }}</span>
                     @endif
                 </button>
                 
@@ -368,5 +369,23 @@ if (inputEmailP2P && feedbackP2P) {
         }, 500); // Espera 500ms después de dejar de teclear para no saturar el servidor
     });
 }
+
+function interceptarCampanaYLimpiarContador(btn) {
+        // 1. MANTENER TU LOGICA ORIGINAL: Abre y cierra el menú exactamente igual que antes
+        const dd = btn.nextElementSibling;
+        dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex';
+        
+        // 2. DISPARADOR ASÍNCRONO: Si el menú se está abriendo, limpiamos los datos
+        if (dd.style.display === 'flex') {
+            const badge = document.getElementById('badge-notif-dinamico');
+            if (badge) {
+                badge.remove(); // 🧼 Desaparece el número rojo de la pantalla al instante
+                
+                // Realiza la petición silenciosa al backend usando tu ruta nativa de Laravel
+                fetch('{{ route("lab.read_notifs") }}')
+                    .catch(error => console.error('Aviso de lectura no procesado:', error));
+            }
+        }
+    }
 </script>
 @endpush

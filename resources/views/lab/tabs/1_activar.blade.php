@@ -188,6 +188,14 @@
                     <input type="hidden" name="bio" id="lab-bio-hidden" value="{{ $lab->bio }}">
                 </div>
                 <div class="social-links-grid-activar">
+                    <div style="position: relative; width: 100%;">
+                        <input type="text" name="phone" value="{{ auth()->user()->phone }}" placeholder="{{ __('messages.onb_ph_phone') ?? '💬 WhatsApp (Ej: +51999888777)' }}" pattern="^\+[0-9]{8,15}$" style="padding-right: 35px;" required>
+                        <span class="fx-tooltip to-bottom to-left" style="position: absolute; right: 10px; top: 11px; background: #232b38; color: #f1c40f; font-weight: bold; width: 16px; height: 16px; font-size: 11px;">?
+                            <span class="fx-tooltip-card" style="border-top: 2px solid #f1c40f; width: 250px; font-weight: 500; text-transform: none; font-family: 'Inter', sans-serif; letter-spacing: normal; line-height: 1.4;">
+                                {{ __('messages.tooltip_phone_rule') ?? 'Formato internacional obligatorio: incluye el signo + seguido del código de país y tu número telefónico, sin espacios ni guiones.' }}
+                            </span>
+                        </span>
+                    </div>
                     <input type="url" name="social_fabacademy" value="{{ $lab->social_fabacademy }}" placeholder="🎓 URL Fab Academy">
                     <input type="url" name="social_linkedin" value="{{ $lab->social_linkedin }}" placeholder="🔗 URL LinkedIn">
                     <input type="url" name="social_github" value="{{ $lab->social_github }}" placeholder="🐙 URL GitHub">

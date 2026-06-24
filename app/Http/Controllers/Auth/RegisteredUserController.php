@@ -40,11 +40,15 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'creator', // <-- OBLIGAR A QUE SEA ROLES CREATOR
-            'slug' => \Illuminate\Support\Str::slug($request->name), // <-- GENERAR EL SLUG AUTOMÁTICO
+            'role' => 'creator', // OBLIGAR A QUE SEA ROLES CREATOR[cite: 8]
+            'slug' => \Illuminate\Support\Str::slug($request->name), // GENERAR EL SLUG AUTOMÁTICO[cite: 8]
+            'force_password_change' => 0, // 👈 LA CORRECCIÓN: Apaga el onboarding para los creadores públicos
         ]);
 
         event(new Registered($user));
+
+        // 🚀 TRIGGER: Despacha el correo de bienvenida oficial usando la ruta absoluta del servicio
+        \App\Services\MailService::bienvenidaCreator($user->email, $user->name);
 
         Auth::login($user);
 

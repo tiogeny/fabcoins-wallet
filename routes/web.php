@@ -17,8 +17,21 @@ Route::middleware(['auth', 'locale'])->group(function () {
      * Recibe el login de Breeze y redirige al panel correcto
      */
     Route::get('/dashboard', function () {
-        $role = auth()->user()->role;
+        $user = auth()->user();
         
+        // 🔒 CANDADO DE SEGURIDAD: Si es su primer ingreso con clave temporal
+        if ($user->force_password_change) {
+            $userId = $user->id;
+            auth()->logout(); // Lo sacamos para que complete el proceso de forma segura
+            
+            return view('auth.login', [
+                'require_onboarding' => true,
+                'temp_user_id' => $userId
+            ]);
+        }
+
+        // Flujo normal si ya cambió su clave anteriormente:
+        $role = $user->role;
         if ($role === 'lab') {
             return redirect()->route('lab.dashboard');
         } elseif ($role === 'creator') {
@@ -70,6 +83,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         // 🎓 CONTROL DE CRÉDITOS ISA
         Route::post('/credit/approve', [\App\Http\Controllers\Lab\CreditController::class, 'approve'])->name('lab.credit.approve');
         Route::post('/credit/reject', [\App\Http\Controllers\Lab\CreditController::class, 'reject'])->name('lab.credit.reject');
+
     });
 
     // 🎨 PORTAL DE OPERACIONES DEL CREATOR (Rol 'creator')
@@ -116,6 +130,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
         // Módulo de Control de Red y Política Monetaria
         Route::post('/lab/invitar', [\App\Http\Controllers\SuperAdmin\SystemController::class, 'createLab'])->name('superadmin.lab.invite');
         Route::post('/politica/actualizar', [\App\Http\Controllers\SuperAdmin\SystemController::class, 'updatePolicy'])->name('superadmin.policy.update');
+
+        Route::post('/habilidades/guardar-multiple', [\App\Http\Controllers\SuperAdmin\CatalogController::class, 'storeMultipleSkills'])->name('superadmin.skills.store_multiple');
     }); // <-- Cierra superadmin
 
     // 📨 Reclutamiento (dentro de auth, requiere login)
@@ -125,6 +141,9 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
 // --- 🔐 RUTAS DE AUTENTICACIÓN PROTEGIDAS POR LOCALE ---
 Route::middleware(['locale'])->group(function () {
+    // 🔓 RUTA LIBRE: Permite procesar el formulario de clave nueva sin estar logueado aún
+    Route::post('/onboarding/complete', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'completeOnboarding'])->name('onboarding.complete');
+        
     require __DIR__.'/auth.php';
 });
 

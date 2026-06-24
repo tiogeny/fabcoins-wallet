@@ -21,12 +21,12 @@ class DashboardController extends Controller
         $total_fc = floatval(DB::table('transactions')->where('type', 'mint')->sum('amount'));
         $total_quemado = floatval(DB::table('transactions')->where('type', 'consumed')->sum('amount'));
         
-        // Custodia Activa: Fondos bloqueados en misiones abiertas o en ejecución
+        // Custodia Activa: Los fondos de las misiones permanecen congelados al 100% hasta que concluyen
         $total_escrow = floatval(DB::table('missions')
             ->whereIn('status', ['open', 'assigned'])
-            ->sum(DB::raw("reward_fc * (spots_total - spots_filled)")));
+            ->sum(DB::raw("reward_fc * spots_total"))); // 🌟 REPARADO: Multiplica por cupos totales siempre
 
-        // En Bóvedas (Labs): Balance real emitido restándole las misiones liquidadas y las bloqueadas en Escrow
+        // En Bóvedas (Labs): Balance real emitido restándole las misiones activas y las ya liquidadas terminadas
         $total_bovedas = $total_fc - $total_escrow - floatval(DB::table('mission_applications')
             ->where('is_reviewed', 1)
             ->join('missions', 'mission_applications.mission_id', '=', 'missions.id')
@@ -126,19 +126,25 @@ class DashboardController extends Controller
             foreach($rows as $r) { $html .= '<tr><td>'.date('d/m/y', strtotime($r->created_at)).'</td><td>'.htmlspecialchars($r->name).'</td><td>'.htmlspecialchars($r->description).'</td><td style="color:#3498db; font-weight:bold;">'.number_format($r->amount,2).'</td></tr>'; }
         } elseif ($tipo === 'bovedas') {
             $html .= '<tr><th>Laboratorio</th><th>Balance Líquido (FC)</th></tr>';
-            // 🚀 MÁGICA: El saldo de cada Lab es su emisión original menos las misiones liquidadas a la comunidad
+            
+            // 🚀 RECONCILIACIÓN PURA: Resta la emisión original menos el Escrow total de sus misiones activas
             $rows = DB::table('users as u')
                 ->where('u.role', 'lab')
                 ->select('u.name', DB::raw("
                     (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = u.id AND type = 'mint') 
                     - 
+                    (SELECT COALESCE(SUM(reward_fc * spots_total), 0) FROM missions WHERE lab_id = u.id AND status IN ('open', 'assigned'))
+                    - 
                     (SELECT COALESCE(SUM(m.reward_fc), 0) 
-                     FROM mission_applications ma 
-                     JOIN missions m ON ma.mission_id = m.id 
-                     WHERE m.lab_id = u.id AND ma.is_reviewed = 1) 
+                    FROM mission_applications ma 
+                    JOIN missions m ON ma.mission_id = m.id 
+                    WHERE m.lab_id = u.id AND ma.is_reviewed = 1) 
                     as balance
                 "))->get();
-            foreach($rows as $r) { $html .= '<tr><td>'.htmlspecialchars($r->name).'</td><td style="color:#3498db; font-weight:bold;">'.number_format($r->balance,2).'</td></tr>'; }
+                
+            foreach($rows as $r) { 
+                $html .= '<tr><td>'.htmlspecialchars($r->name).'</td><td style="color:#3498db; font-weight:bold;">'.number_format($r->balance, 2).'</td></tr>'; 
+            }
 
         } elseif ($tipo === 'circulante') {
             $html .= '<tr><th>🚀 Creador</th><th>Balance Líquido Neto (FC)</th></tr>';

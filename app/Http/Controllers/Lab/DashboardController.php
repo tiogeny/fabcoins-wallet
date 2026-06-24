@@ -180,6 +180,7 @@ class DashboardController extends Controller
             DB::table('users')->where('id', $labId)->update([
                 'bio'               => $nuevaBio,
                 'address'           => trim($request->input('address')),
+                'phone'             => $request->input('phone') ? preg_replace('/\s+/', '', $request->input('phone')) : null, 
                 'social_fabacademy' => trim($request->input('social_fabacademy')),
                 'social_linkedin'   => trim($request->input('social_linkedin')),
                 'social_github'     => trim($request->input('social_github')),
@@ -189,6 +190,9 @@ class DashboardController extends Controller
                 'longitude'         => $request->input('longitude') ? floatval($request->input('longitude')) : null,
                 'updated_at'        => now()
             ]);
+
+            // 📨 TRIGGER DE SEGURIDAD: Despacha el aviso de modificación al correo institucional
+            MailService::notificarActualizacionPerfil(auth()->user()->email, auth()->user()->name);
 
             return redirect()->route('lab.dashboard')->with('msg', 'profile_updated');
         } catch (\Exception $e) {

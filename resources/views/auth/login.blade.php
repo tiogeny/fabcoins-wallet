@@ -40,16 +40,7 @@
             
             <div class="auth-input-group">
                 <input type="password" name="new_password" placeholder="{{ __('messages.onb_ph_pass') }}" required>
-            </div>
-            
-            <div class="auth-input-group">
-                <input type="text" name="address" placeholder="{{ __('messages.onb_ph_loc') }}" required>
-            </div>
-            
-            <div class="auth-input-group">
-                <textarea name="bio" rows="3" placeholder="{{ __('messages.onb_ph_bio') }}" required></textarea>
-            </div>
-            
+            </div>            
             <button type="submit" class="btn-auth-submit">{{ __('messages.onb_btn') }}</button>
         </form>
 

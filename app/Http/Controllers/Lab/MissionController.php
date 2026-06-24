@@ -30,6 +30,7 @@ class MissionController extends Controller
             return redirect()->back()->with('error', __('messages.swal_insufficient_escrow_desc'));
         }
 
+        // ... Todo el inicio de tu método store() se queda exactamente igual
         try {
             DB::transaction(function () use ($labId, $request, $rewardUnit, $targetCreatorId, $spots, $totalEscrowRequired) {
                 DB::table('missions')->insert([
@@ -49,8 +50,8 @@ class MissionController extends Controller
 
                 DB::table('transactions')->insert([
                     'user_id'     => $labId,
-                    'description' => "Reserva en Escrow: " . trim($request->input('title')) . " ($spots cupos)",
-                    'amount'      => $totalEscrowRequired,
+                    'description' => "Reserva en Custodia: " . trim($request->input('title')) . " ($spots cupos)",
+                    'amount'  => $totalEscrowRequired,
                     'type'        => 'escrow',
                     'created_at'  => now(),
                     'updated_at'  => now()
@@ -59,16 +60,26 @@ class MissionController extends Controller
                 if ($targetCreatorId) {
                     DB::table('notifications')->insert([
                         'user_id'    => $targetCreatorId,
-                        'message'    => "🎯 Misión exclusiva enviada para amortizar tu deuda.",
+                        'message'    => __('messages.notif_exclusive_mission'),
                         'type'       => 'info',
                         'created_at' => now()
                     ]);
                 }
             });
 
-            // 🚀 TRIGGER: Alerta de inicio de labores con Escrow asegurado
-            $cUser = DB::table('users')->where('id', $creatorId)->first();
-            if ($cUser) { MailService::misionAsignadaAlCreator($cUser->email, $cUser->name, $lab->name ?? 'Lab', $mission->title, $mission->reward_fc); }
+            // 🚀 REPARACIÓN AQUÍ: Solo dispara el correo si la misión fue DIRIGIDA a alguien específico
+            if ($targetCreatorId) {
+                $cUser = DB::table('users')->where('id', $targetCreatorId)->first();
+                if ($cUser) { 
+                    MailService::misionAsignadaAlCreator(
+                        $cUser->email, 
+                        $cUser->name, 
+                        auth()->user()->name, 
+                        trim($request->input('title')), 
+                        $rewardUnit
+                    ); 
+                }
+            }
 
             return redirect()->route('lab.dashboard')->with('msg', 'mission_published_ok');
         } catch (\Exception $e) {
@@ -104,11 +115,27 @@ class MissionController extends Controller
 
                 DB::table('notifications')->insert([
                     'user_id'    => $creatorId,
-                    'message'    => "¡Felicidades! Has sido asignado a la misión: " . $mission->title,
+                    'message'    => __('messages.notif_mission_assigned', ['title' => $mission->title]),
                     'type'       => 'success',
                     'created_at' => now()
                 ]);
             });
+
+            // 🚀 EL COMPONENTE FALTANTE: Extraemos las entidades para alimentar la pasarela bilingüe
+            $mission = DB::table('missions')->where('id', $missionId)->first();
+            $creator = DB::table('users')->where('id', $creatorId)->first();
+            $lab = DB::table('users')->where('id', $mission->lab_id)->first();
+
+            if ($creator && $mission && $lab) {
+                // Envía el correo premium 3B estructurado en el paso anterior
+                MailService::misionAsignadaAlCreator(
+                    $creator->email,
+                    $creator->name,
+                    $lab->name,
+                    $mission->title,
+                    $mission->reward_fc
+                );
+            }
 
             return redirect()->route('lab.dashboard')->with('msg', 'mission_assigned_ok');
         } catch (\Exception $e) {
@@ -167,7 +194,7 @@ class MissionController extends Controller
 
                     DB::table('transactions')->insert([
                         'user_id'     => $labId,
-                        'description' => "Retorno de Crédito Fab (Misiones #" . $missionId . ")",
+                        'description' => __('messages.tx_credit_return', ['id' => $missionId]),
                         'amount'      => $retornoEjecutado,
                         'type'        => 'income',
                         'created_at'  => now(),
@@ -178,7 +205,7 @@ class MissionController extends Controller
                 if ($pagoRestante > 0) {
                     DB::table('transactions')->insert([
                         'user_id'     => $creatorId,
-                        'description' => "Pago recibido por Misiones #" . $missionId . " de " . auth()->user()->name,
+                        'description' => __('messages.tx_payment_received', ['id' => $missionId, 'name' => auth()->user()->name]),
                         'amount'      => $pagoRestante,
                         'type'        => 'income',
                         'created_at'  => now(),
@@ -186,9 +213,15 @@ class MissionController extends Controller
                     ]);
                 }
 
+                $descripcionTransaccion = __('messages.tx_release_prefix', ['id' => $missionId]) . ' ' . (
+                    $esMisionDeRetorno 
+                        ? __('messages.tx_release_amortized', ['amount' => number_format($mission->reward_fc)]) 
+                        : __('messages.tx_release_transferred', ['name' => $creator->name])
+                );
+
                 DB::table('transactions')->insert([
                     'user_id'     => $labId,
-                    'description' => "Liberación (Misiones #$missionId): " . ($esMisionDeRetorno ? "Amortizados " . number_format($mission->reward_fc) . " FC de deuda." : "Transferidos a " . $creator->name),
+                    'description' => $descripcionTransaccion,
                     'amount'      => 0.00,
                     'type'        => 'info',
                     'created_at'  => now(),

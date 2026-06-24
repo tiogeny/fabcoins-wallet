@@ -37,24 +37,27 @@
                     </div>
                 </div>
 
-                <div class="grid-mission-config">
+                <div class="grid-mission-config" style="align-items: flex-end;">
                     <div>
                         <label class="premium-label">{{ __('messages.lbl_spots') }}</label>
                         <input type="number" name="spots_total" id="input-spots-mision" value="1" min="1" class="premium-input m-0 text-center-wrapper font-rajdhani-15">
                     </div>
                     <div>
                         <label class="premium-label">{{ __('messages.lbl_reward_per_creator') }}</label>
-                        <input type="number" name="reward_fc" value="" placeholder="0" min="1" class="input-reward-gold" required>
+                        <input type="number" name="reward_fc" value="" placeholder="0" min="1" class="premium-input m-0 text-center-wrapper font-rajdhani-15" required>
                     </div>
                     <div>
                         <label class="premium-label">{{ __('messages.th_limit') }}</label>
                         <div class="relative-flex-w100">
                             <span class="calendar-icon-overlay">📅</span>
-                            <input type="date" name="deadline" value="{{ date('Y-m-d', strtotime('+7 days')) }}" class="input-date-premium" required>
+                            <input type="date" name="deadline" value="{{ date('Y-m-d', strtotime('+7 days')) }}" class="premium-input m-0 text-center-wrapper font-rajdhani-15" required>
                         </div>
                     </div>
-                    <div class="pt-24">
-                        <button type="submit" class="btn-premium btn-pink-hub m-0 w-100">{{ __('messages.btn_publish_miss') }}</button>
+                    <!-- 🎯 CORRECCIÓN: Quitamos el 'pt-24' que descuadraba el botón y forzamos su altura exacta -->
+                    <div>
+                        <button type="submit" class="btn-premium btn-pink-hub m-0 w-100" style="height: 38px; background-color: #e84393; border-color: #e84393;">
+                            {{ __('messages.btn_publish_miss') }}
+                        </button>
                     </div>
                 </div>
             </div>
