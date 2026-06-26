@@ -14,32 +14,33 @@ class ProfileController extends Controller
     {
         $creator = auth()->user();
 
-        // 1. Añade los nuevos campos a la validación
+        // 1. Reglas de Validación con Nomenclatura Unificada
         $request->validate([
             'bio'              => 'required|string|max:1000',
             'social_linkedin'  => 'nullable|url|max:255',
             'social_github'    => 'nullable|url|max:255',
             'social_portfolio' => 'nullable|url|max:255',
-            'instagram_url'    => 'nullable|url|max:255',   // 👈 NUEVO
-            'fab_academy_url'  => 'nullable|url|max:255',   // 👈 NUEVO
-            'city'             => 'nullable|string|max:100', // 👈 NUEVO
-            'country'          => 'nullable|string|max:100', // 👈 NUEVO
+            'social_instagram' => 'nullable|url|max:255',
+            'social_fabacademy'=> 'nullable|url|max:255',
+            'city'             => 'nullable|string|max:100',
+            'country'          => 'nullable|string|max:100',
             'skills'           => 'nullable|array'
         ]);
 
-        // 2. Añade los nuevos campos a la actualización del modelo
-        $creator->update([
-            'bio'              => $request->input('bio'),
-            'social_linkedin'  => $request->input('social_linkedin'),
-            'social_github'    => $request->input('social_github'),
-            'social_portfolio' => $request->input('social_portfolio'),
-            'instagram_url'    => $request->input('instagram_url'),     // 👈 NUEVO
-            'fab_academy_url'  => $request->input('fab_academy_url'),   // 👈 NUEVO
-            'city'             => $request->input('city'),              // 👈 NUEVO
-            'country'          => $request->input('country'),           // 👈 NUEVO
+        // 2. Query Builder Directo: Guarda toda la información de golpe sin trabas de $fillable
+        DB::table('users')->where('id', $creator->id)->update([
+            'bio'               => $request->input('bio'),
+            'social_linkedin'   => $request->input('social_linkedin'),
+            'social_github'     => $request->input('social_github'),
+            'social_portfolio'  => $request->input('social_portfolio'),
+            'social_instagram'  => $request->input('social_instagram'),
+            'social_fabacademy' => $request->input('social_fabacademy'),
+            'city'              => $request->input('city'),
+            'country'           => $request->input('country'),
+            'updated_at'        => now()
         ]);
 
-        // 3. Sincronización atómica de Especializaciones Técnicas
+        // 3. Sincronización limpia de Especializaciones Técnicas (Habilidades)
         DB::table('user_skills')->where('user_id', $creator->id)->delete();
         $skillsElegidas = $request->input('skills', []);
 
@@ -47,7 +48,7 @@ class ProfileController extends Controller
             foreach ($skillsElegidas as $skillId) {
                 DB::table('user_skills')->insert([
                     'user_id'  => $creator->id,
-                    'skill_id' => $skillId
+                    'skill_id' => intval($skillId)
                 ]);
             }
         }
@@ -58,11 +59,20 @@ class ProfileController extends Controller
     public function security(Request $request)
     {
         $creator = auth()->user();
+        
         if (!Hash::check($request->input('current_password'), $creator->password)) {
-            return redirect()->route('creator.dashboard')->with('error', __('messages.err_current_pass_wrong'));
+            return redirect()->back()->withErrors(['current_password' => __('messages.validation_password_mismatch')]);
         }
 
-        $creator->update(['password' => Hash::make($request->input('new_password'))]);
-        return redirect()->route('creator.dashboard')->with('msg', 'pass_ok');
+        $request->validate([
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        DB::table('users')->where('id', $creator->id)->update([
+            'password'   => Hash::make($request->input('new_password')),
+            'updated_at' => now()
+        ]);
+
+        return redirect()->route('creator.dashboard')->with('msg', 'password_updated');
     }
 }

@@ -2,8 +2,22 @@
     $misionesDelLab = DB::table('missions')->where('lab_id', auth()->id())->orderBy('id', 'desc')->get();
     $alumnosFinanciados = DB::table('users')->where('deuda_lab_id', auth()->id())->where('deuda_fc', '>', 0)->get();
     
-    // 🔥 CONTROL DE INTRUSIÓN: Como no tienes tablas de habilidades mapeadas, inicializamos un array vacío seguro
-    $catalogoHabilidades = collect();
+    // 🎯 OPTIMIZACIÓN MACROECONÓMICA: Mapeamos en memoria las habilidades de los creadores en una sola query
+    $postulantesIds = DB::table('mission_applications')
+        ->join('missions', 'mission_applications.mission_id', '=', 'missions.id')
+        ->where('missions.lab_id', auth()->id())
+        ->pluck('mission_applications.creator_id')
+        ->unique();
+
+    $mapaHabilidadesPostulantes = collect();
+    if (!$postulantesIds->isEmpty()) {
+        $mapaHabilidadesPostulantes = DB::table('user_skills')
+            ->join('skills', 'user_skills.skill_id', '=', 'skills.id')
+            ->whereIn('user_skills.user_id', $postulantesIds)
+            ->select('user_skills.user_id', 'skills.id', 'skills.name_es', 'skills.name_en', 'skills.type')
+            ->get()
+            ->groupBy('user_id');
+    }
 @endphp
 
 <div class="focus-glow-pink">
@@ -104,22 +118,29 @@
 
                                 <td>
                                     @php
-                                        $postulantes = DB::table('mission_applications')
-                                            ->join('users', 'mission_applications.creator_id', '=', 'users.id')
-                                            ->where('mission_applications.mission_id', $m->id)
-                                            ->select('users.name', 'users.id as creator_id', 'users.deuda_fc', 'users.deuda_lab_id', 'mission_applications.status', 'mission_applications.is_reviewed')
-                                            ->get();
+                                        // 🚀 ADIOS N+1: Leemos del array indexado que el controlador preparó en caché de ejecución
+                                        $postulantes = $postulantesPorMision[$m->id] ?? [];
                                     @endphp
 
-                                    @if($postulantes->isEmpty())
+                                    @if(empty($postulantes))
                                         <span class="empty-italic-text">{{ __('messages.lbl_no_applicants') }}</span>
                                     @else
                                         <div class="flex-col-gap-8">
                                             @foreach($postulantes as $p)
-                                                @php $esDeudorDirecto = ($p->deuda_lab_id == auth()->id() && $p->deuda_fc > 0); @endphp
+                                                @php 
+                                                    // Usamos las propiedades del objeto del controlador
+                                                    $esDeudorDirecto = ($p->deuda_lab_id == auth()->id() && $p->deuda_fc > 0); 
+                                                @endphp
                                                 <div class="applicant-row-card">
                                                     <div class="flex-col-gap-2">
-                                                        <span class="applicant-name-text">{{ $p->name }}</span>
+                                                        <a href="{{ route('public.profile', $p->creator_slug ?? $p->creator_id) }}" 
+                                                        target="_blank" 
+                                                        class="text-blue-neon font-bold text-decoration-none font-13" 
+                                                        style="transition: opacity 0.2s;" 
+                                                        onmouseover="this.style.opacity='0.8'" 
+                                                        onmouseout="this.style.opacity='1'">
+                                                            👤 {{ $p->creator_name }} ↗️
+                                                        </a>
                                                         @if($esDeudorDirecto)
                                                             <span class="badge-financiado">{{ __('messages.lbl_financiado') }}</span>
                                                         @endif
@@ -140,7 +161,6 @@
                                                                 <button type="submit" class="btn-back-minimal btn-min-assign">{{ __('messages.btn_assign_creator') }}</button>
                                                             </form>
                                                         @elseif($p->status === 'invited')
-                                                            {{-- NUEVO: Mensaje para el Lab indicando que ya invitó --}}
                                                             <div class="mt-5">
                                                                 <span class="badge-ghost-warning" style="font-size: 10px; opacity: 0.8;">
                                                                     ⏳ Esperando respuesta del Creador
@@ -151,7 +171,11 @@
                                                                 $llaveBotonEval = $esDeudorDirecto ? 'messages.btn_eval_amortize' : 'messages.btn_eval_pay';
                                                                 $claseBotonEval = $esDeudorDirecto ? 'btn-min-eval-gold' : 'btn-min-eval-green';
                                                             @endphp
-                                                            <button type="button" onclick="ejecutarAperturaModalAuditoria({{ $m->id }}, {{ $p->creator_id }}, '{{ $p->name }}', {{ $esDeudorDirecto ? 'true' : 'false' }}, {{ intval($m->reward_fc) }})" class="btn-back-minimal {{ $claseBotonEval }}">
+                                                           <button type="button" 
+                                                                    onclick="ejecutarAperturaModalAuditoria({{ $m->id }}, {{ $p->creator_id }}, '{{ $p->creator_name }}', {{ $esDeudorDirecto ? 'true' : 'false' }}, {{ intval($m->reward_fc) }}, this)" 
+                                                                    data-skills="{{ json_encode($mapaHabilidadesPostulantes[$p->creator_id] ?? collect()) }}"
+                                                                    data-mission-title="{{ $m->title }}"
+                                                                    class="btn-back-minimal {{ $claseBotonEval }}">
                                                                 {{ __($llaveBotonEval) }}
                                                             </button>
                                                         @elseif($p->status === 'accepted' && $p->is_reviewed)
@@ -180,27 +204,32 @@
             <input type="hidden" name="mission_id" id="swal-field-mission-id">
             <input type="hidden" name="creator_id" id="swal-field-creator-id">
 
-            <div class="modal-info-box">
+            <div class="modal-info-box" style="margin-bottom: 12px; border-left: 3px solid #e84393;">
+                <div class="premium-label m-0">{{ __('messages.th_mission') }}</div>
+                <div id="swal-pizarra-titulo-mision" class="modal-creator-name text-white-pure font-bold" style="font-size: 13.5px; white-space: normal;">-</div>
+                <div class="font-11 text-green-neon mt-5px font-bold" id="swal-pizarra-pago-mision">0 FC</div>
+            </div>
+
+            <div class="modal-info-box" style="margin-bottom: 20px;">
                 <div class="premium-label m-0">{{ __('messages.lbl_assigned_creator') }}</div>
                 <div id="swal-pizarra-nombre-creator" class="modal-creator-name text-white-pure">-</div>
             </div>
 
-            <div class="mb-20">
-                <label class="premium-label">{{ __('messages.lbl_what_skills') }}</label>
-                <div class="skill-tags-wrapper">
-                    @if($catalogoHabilidades->isEmpty())
-                        <span class="empty-italic-text">{{ __('messages.lbl_no_skills_registered') }}</span>
-                    @else
-                        @foreach($catalogoHabilidades as $skill)
-                            @php $esHard = ($skill->type === 'hard'); @endphp
-                            <label class="skill-tag-label">
-                               <input type="checkbox" name="endorsed_skills[]" value="{{ $skill->id }}" class="m-0">
-                                {{ $skill->name }} 
-                                <small class="skill-tag-sub">({{ $skill->type }})</small>
-                            </label>
-                        @endforeach
-                    @endif
-                </div>
+            <style>
+                .premium-popup .swal2-actions { gap: 12px !important; margin-top: 15px !important; }
+                .premium-popup .swal2-actions button { width: auto !important; padding: 10px 24px !important; font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; height: 38px !important; }
+            </style>
+
+            <div class="mb-20" style="text-align: left;">
+                <p class="text-neutral-muted" style="font-size: 11.5px; margin-bottom: 14px; font-style: italic; opacity: 0.85; line-height: 1.4; white-space: normal;">
+                    {{ __('messages.lbl_what_skills') }}
+                </p>
+
+                <label class="premium-label" style="color: #3498db; font-weight: 800; margin-bottom: 6px;">⚙️ {{ __('messages.lbl_hard_skills') }}</label>
+                <div class="skills-chips-matrix" id="modal-skills-hard-container" style="background: #131722; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); min-height: 40px; margin-bottom: 12px;"></div>
+                
+                <label class="premium-label" style="color: #f39c12; font-weight: 800; margin-bottom: 6px;">🧠 {{ __('messages.lbl_soft_skills') }}</label>
+                <div class="skills-chips-matrix" id="modal-skills-soft-container" style="background: #131722; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); min-height: 40px;"></div>
             </div>
 
             <div class="rating-stars-row">
@@ -240,36 +269,79 @@ function evaluarRulesCuposMision(selectNode) {
     }
 }
 
-function ejecutarAperturaModalAuditoria(missionId, creatorId, creatorName, esDeudor, rewardFc) {
-    // 1. Clonamos el esqueleto HTML puro de nuestra plantilla template
+function ejecutarAperturaModalAuditoria(missionId, creatorId, creatorName, esDeudor, rewardFc, buttonNode) {
     const template = document.getElementById('audit-modal-template');
     const clonDOM = template.content.cloneNode(true);
 
-    // 2. Inyectamos los valores relacionales de la fila seleccionada
     clonDOM.querySelector('#swal-field-mission-id').value = missionId;
     clonDOM.querySelector('#swal-field-creator-id').value = creatorId;
     clonDOM.querySelector('#swal-pizarra-nombre-creator').textContent = creatorName;
+    clonDOM.querySelector('#swal-pizarra-titulo-mision').textContent = buttonNode.getAttribute('data-mission-title');
+    
+    // 🎯 FIX "0 FC": Corregido el selector para apuntar exactamente al id de tu HTML
+    const elPago = clonDOM.querySelector('#swal-pizarra-pago-mision');
+    if (elPago) elPago.textContent = `+${rewardFc} FC`;
 
-    // 🧮 MOTOR ADAPTATIVO: Configura la naturaleza contable del botón SweetAlert
+    // 🪐 CIRCUITO INTEGRADO DE DISTRIBUCIÓN SEMÁNTICA
+    const habilidadesData = JSON.parse(buttonNode.getAttribute('data-skills') || '[]');
+    const containerHard = clonDOM.querySelector('#modal-skills-hard-container');
+    const containerSoft = clonDOM.querySelector('#modal-skills-soft-container');
+    const idiomaActivo = '{{ app()->getLocale() }}';
+
+    let tieneHard = 0;
+    let tieneSoft = 0;
+
+    if (containerHard && containerSoft) {
+        containerHard.innerHTML = '';
+        containerSoft.innerHTML = '';
+        
+        habilidadesData.forEach(skill => {
+            const nombreMostrar = (idiomaActivo === 'en') ? skill.name_en : skill.name_es;
+            
+            const labelWrapper = document.createElement('label');
+            labelWrapper.className = 'm-0';
+            labelWrapper.style.cursor = 'pointer';
+            labelWrapper.style.display = 'inline-block';
+            labelWrapper.innerHTML = `
+                <input type="checkbox" name="endorsed_skills[]" value="${skill.name_es}|${skill.type}" class="chip-${skill.type}">
+                <span class="skill-premium-chip-pill" style="padding: 5px 12px; font-size: 11px;">${nombreMostrar}</span>
+            `;
+            
+            if (skill.type === 'hard') {
+                containerHard.appendChild(labelWrapper);
+                tieneHard++;
+            } else {
+                containerSoft.appendChild(labelWrapper);
+                tieneSoft++;
+            }
+        });
+
+        if (tieneHard === 0) {
+            containerHard.innerHTML = `<span class="empty-italic-text" style="font-size:11px; color:#7f8c8d;">{{ __('messages.lbl_no_skills_registered') }}</span>`;
+        }
+        if (tieneSoft === 0) {
+            containerSoft.innerHTML = `<span class="empty-italic-text" style="font-size:11px; color:#7f8c8d;">{{ __('messages.lbl_no_skills_registered') }}</span>`;
+        }
+    }
+
     let textoConfirmacionBoton = "";
     let colorConfirmacionBoton = "";
 
     if (esDeudor) {
         textoConfirmacionBoton = "{{ __('messages.btn_approve_amortize') }}";
-        colorConfirmacionBoton = '#f1c40f'; // Oro Corporativo (Amortización de Deuda)
+        colorConfirmacionBoton = '#f1c40f'; 
     } else {
         textoConfirmacionBoton = "{{ __('messages.btn_pay_rate') }}";
-        colorConfirmacionBoton = '#2ecc71'; // Verde Esmeralda (Pago Líquido)
+        colorConfirmacionBoton = '#2ecc71'; 
     }
 
-    // Encapsulado preventivo para transferir la estructura procesada a Swal
     const wrapperTemporal = document.createElement('div');
     wrapperTemporal.appendChild(clonDOM);
 
-    // 3. Lanzamiento del Tablero mediante SweetAlert en la raíz del DOM
     Swal.fire({
         title: '⭐ {{ __('messages.lbl_evaluate_creator') }}',
         html: wrapperTemporal.innerHTML,
+        width: '620px', // 🚀 ANCHO DE ALTA GAMA: Modal expandido para evitar colapsos de texto
         background: '#1c2230',
         color: '#fff',
         showCancelButton: true,

@@ -116,23 +116,23 @@ class DashboardController extends Controller
         $notificaciones = DB::table('notifications')->where('user_id', $creator->id)->latest()->limit(10)->get();
         $unreadCount = $notificaciones->where('is_read', false)->count();
 
-        // Listados Maestros para la pestaña Perfil
-        // 🚀 REEMPLAZO CON FUSIBLE CONTABLE PREVENCION DE EXCEPCIONES
+        // 🚀 CORRECCIÓN MAESTRA: Carga de Habilidades con Soporte Bilingüe Real de la tabla 'skills'
+        $userLang = $creator->preferred_lang ?? 'es';
+        $columnaNombreSkill = ($userLang === 'en') ? 'name_en' : 'name_es';
+
         try {
-            $catalogoSkills = DB::table('skills_catalog')->orderBy('type')->orderBy('name')->get();
+            $catalogoSkills = DB::table('skills')
+                ->orderBy('type')
+                ->orderBy($columnaNombreSkill)
+                ->get();
         } catch (\Exception $e) {
-            // Intento de respaldo por si la llamaste simplemente 'skills'
-            try {
-                $catalogoSkills = DB::table('skills')->orderBy('type')->orderBy('name')->get();
-            } catch (\Exception $ex) {
-                $catalogoSkills = collect(); // Devuelve una colección vacía segura si no existe ninguna
-            }
+            $catalogoSkills = collect(); // Evita colapsos si la tabla está vacía
         }
 
         try {
             $misSkillsIds = DB::table('user_skills')->where('user_id', $creator->id)->pluck('skill_id')->toArray();
         } catch (\Exception $e) {
-            $misSkillsIds = []; // Devuelve un array vacío seguro si no existe la tabla relacional
+            $misSkillsIds = []; 
         }
 
         return view('creator.dashboard', compact(

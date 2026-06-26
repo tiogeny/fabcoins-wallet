@@ -24,7 +24,7 @@
                             <span class="badge-ghost-warning mb-10 display-inline-block">🎯 {{ __('messages.badge_directed_mission') }}</span>
                         @endif
                         
-                        <h4 class="asset-display-title asset-title-large mb-10">{{ $m->title }}</h3>
+                        <h4 class="font-14 font-bold text-white-pure mb-10">{{ $m->title }}</h4>
                         
                         <div class="font-rajdhani-15 text-blue-neon font-bold mb-8 font-11">👥 {{ $m->spots_filled }} / {{ $m->spots_total }} {{ __('messages.lbl_spots_status') }}</div>
                         <p class="text-neutral-muted mb-15 font-12 line-height-15">{{ $m->description }}</p>
@@ -37,7 +37,7 @@
                         
                         <textarea name="message" rows="2" placeholder="{{ __('messages.ph_why_ideal_creator') }}" class="premium-textarea m-0 h-60" required></textarea>
                         
-                        <button type="button" class="btn-premium btn-pink-hub m-0" onclick="confirmarAccion(event, '{{ __('messages.confirm_application') }}', 'info', '#e84393')">
+                        <button type="button" class="btn-premium btn-pink-hub m-0" style="width: max-content !important; padding: 0 20px; align-self: flex-end;" onclick="confirmarAccion(event, '{{ __('messages.confirm_application') }}', 'info', '#e84393')">
                             🚀 {{ __('messages.btn_send_application') }}
                         </button>
                     </form>
@@ -80,7 +80,7 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <div class="text-white-pure font-bold">
+                                    <div class="text-white-pure font-bold font-13">
                                         {{ $p->title }}
                                         
                                         {{-- Indicador de Invitación Directa / Misión Dirigida --}}
@@ -103,36 +103,39 @@
                                     @if($p->status === 'pending')
                                         <span class="badge-ghost-warning">⏳ {{ __('messages.status_waiting') }}</span>
                                     @elseif($p->status === 'invited')
-                                        {{-- NUEVO: Botones para que el Creador acepte o rechace la invitación --}}
+                                        {{-- NUEVO: Botones para que el Creador acepte o rechace la invitación bilingüe --}}
                                         <div style="display: flex; gap: 8px;">
-                                            <form action="{{ route('creator.mission.accept_invite') }}" method="POST">
+                                            <form action="{{ route('creator.mission.accept_invite') }}" method="POST" class="m-0">
                                                 @csrf
                                                 <input type="hidden" name="mission_id" value="{{ $p->mission_id ?? $p->id }}">
-                                                <button type="submit" class="badge-ghost-success" style="border: none; cursor: pointer;">
-                                                    ✅ Aceptar
+                                                <button type="submit" class="badge-ghost-success font-bold" style="border: none; cursor: pointer; padding: 4px 12px; border-radius: 4px;">
+                                                    ✅ {{ __('messages.btn_accept') }}
                                                 </button>
                                             </form>
-                                            <form action="{{ route('creator.mission.reject_invite') }}" method="POST">
+                                            <form action="{{ route('creator.mission.reject_invite') }}" method="POST" class="m-0">
                                                 @csrf
                                                 <input type="hidden" name="mission_id" value="{{ $p->mission_id ?? $p->id }}">
-                                                <button type="submit" class="badge-ghost-danger" style="border: none; cursor: pointer;">
-                                                    ❌ Rechazar
+                                                <button type="submit" class="badge-ghost-danger font-bold" style="border: none; cursor: pointer; padding: 4px 12px; border-radius: 4px;">
+                                                    ❌ {{ __('messages.btn_reject') }}
                                                 </button>
                                             </form>
                                         </div>
                                     @elseif($p->status === 'accepted')
-                                        @if($p->mission_status === 'completed')
+                                        {{-- 🎯 CORRECCIÓN: Si ya fue revisado individualmente por el Lab o la misión cerró por completo --}}
+                                        @if($p->is_reviewed || $p->mission_status === 'completed')
                                             <div class="action-cell-flex-6">
-                                                <span class="badge-ghost-success">🎉 {{ __('messages.status_approved_consumed') }}</span>
+                                                <span class="badge-ghost-success">🎉 {{ __('messages.status_mission_finished') }}</span>
                                                 @if($p->ya_calificado == 0)
-                                                    {{-- 🚀 Si el contador es cero, el creador aún no ha opinado --}}
-                                                    <button type="button" class="btn-back-minimal btn-min-eval-gold" onclick="abrirModalReputacionMision({{ $p->mission_id ?? $p->id }}, {{ $p->lab_id }}, '{{ $p->lab_name }}', '{{ $p->title }}')">⭐ {{ __('messages.btn_rate_service') }}</button>
+                                                    {{-- 🚀 Si el creador no ha dejado su reseña de vuelta hacia el Lab, abrimos el modal --}}
+                                                    <button type="button" class="btn-back-minimal btn-min-eval-gold font-11" style="width: auto !important; height: auto;" onclick="abrirModalReputacionMision({{ $p->mission_id ?? $p->id }}, {{ $p->lab_id }}, '{{ $p->lab_name }}', '{{ $p->title }}')">
+                                                        ⭐ {{ __('messages.btn_rate_service') }}
+                                                    </button>
                                                 @else
-                                                    <span class="status-text-approved">✓ {{ __('messages.lbl_rating_sent') ?? 'Calificado' }}</span>
+                                                    <span class="status-text-approved">✓ {{ __('messages.lbl_rating_sent') }}</span>
                                                 @endif
                                             </div>
                                         @else
-                                            <span class="badge-ghost-success">✅ {{ __('messages.status_accepted_working') }}</span>
+                                            <span class="badge-ghost-info">✓ {{ __('messages.status_accepted_working') }}</span>
                                         @endif
                                     @elseif($p->status === 'rejected')
                                         <span class="badge-ghost-danger">❌ {{ __('messages.status_not_selected') }}</span>
@@ -179,7 +182,7 @@
             </div>
 
             <div class="mb-22">
-                <textarea name="comment" placeholder="{{ __('messages.ph_review_comment') }}" class="premium-textarea m-0 h-90" required></textarea>
+                <textarea name="comment" placeholder="{{ __('messages.ph_review_lab_mision') }}" class="premium-textarea m-0 h-90" required></textarea>
             </div>
         </form>
     </template>

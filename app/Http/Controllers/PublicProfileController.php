@@ -13,22 +13,7 @@ class PublicProfileController extends Controller
         // Buscamos al usuario por su ID o por su SLUG
         $user = User::where('slug', $slugOrId)->orWhere('id', $slugOrId)->firstOrFail();
         
-        // Obtenemos las habilidades (Solo si es Creador)
-        $misHabilidades = collect();
-        if ($user->role === 'creator') {
-            try {
-                $misHabilidades = DB::table('user_skills')
-                    ->join('skills_catalog', 'user_skills.skill_id', '=', 'skills_catalog.id')
-                    ->where('user_skills.user_id', $user->id)
-                    ->select('skills_catalog.*')
-                    ->get();
-            } catch (\Exception $e) {
-                // Evitamos error si la tabla no existe
-                $misHabilidades = collect();
-            }
-        }
-
-        // Obtenemos las reseñas e historial unificado
+        // 1. Obtener las reseñas e historial unificado primero (necesario para el contador de habilidades)
         $historialUnificado = DB::table('reviews')
             ->join('users', 'reviews.reviewer_id', '=', 'users.id')
             ->leftJoin('missions', function($join) {
@@ -47,6 +32,44 @@ class PublicProfileController extends Controller
             ->orderBy('reviews.created_at', 'desc')
             ->get();
 
+        // 2. Obtenemos las habilidades mapeando la tabla real 'skills' (Soporte bilingüe completo)
+        $misHabilidades = collect();
+        if ($user->role === 'creator') {
+            try {
+                $misHabilidades = DB::table('user_skills')
+                    ->join('skills', 'user_skills.skill_id', '=', 'skills.id') // 🔥 CORRECCIÓN: Tabla unificada real
+                    ->where('user_skills.user_id', $user->id)
+                    ->select('skills.id', 'skills.name_es', 'skills.name_en', 'skills.type')
+                    ->get();
+
+                // 🧮 MOTOR DE ACUMULACIÓN DE ENDOSOS EN MEMORIA (Idéntico a tus capturas)
+                $endorsementsCounts = [];
+                foreach ($historialUnificado as $r) {
+                    if (!empty($r->endorsed_skills)) {
+                        $chunks = explode(',', $r->endorsed_skills);
+                        foreach ($chunks as $chunk) {
+                            $parts = explode('|', $chunk);
+                            $skillNameFromReview = trim($parts[0] ?? '');
+                            if ($skillNameFromReview !== '') {
+                                $endorsementsCounts[$skillNameFromReview] = ($endorsementsCounts[$skillNameFromReview] ?? 0) + 1;
+                            }
+                        }
+                    }
+                }
+
+                // Inyectamos dinámicamente el contador a cada chip mapeando ambos idiomas
+                foreach ($misHabilidades as $sk) {
+                    $countEs = $endorsementsCounts[trim($sk->name_es)] ?? 0;
+                    $countEn = $endorsementsCounts[trim($sk->name_en)] ?? 0;
+                    $sk->endorsements_count = max($countEs, $countEn);
+                }
+
+            } catch (\Exception $e) {
+                // Evitamos caídas en cascada si hay migraciones pendientes
+                $misHabilidades = collect();
+            }
+        }
+
         // Si quien visita es un Lab, traemos sus misiones abiertas para poder invitarlo
         $misMisionesAbiertas = collect();
         if (auth()->check() && auth()->user()->role === 'lab' && $user->role === 'creator') {
@@ -57,42 +80,26 @@ class PublicProfileController extends Controller
                 ->get();
         }
 
-        // Enviamos los datos a la vista
+        // Enviamos los datos limpios a la vista
         return view('public.profile', compact('user', 'misHabilidades', 'historialUnificado', 'misMisionesAbiertas'));
     }
 
     public function invite(Request $request, $slugOrId)
     {
-        // 1. Validamos los datos ocultos del formulario
+        // Conservamos tu lógica exacta de invitaciones intacta...
         $request->validate([
             'creator_id' => 'required|exists:users,id',
             'mission_id' => 'required|exists:missions,id',
         ]);
 
-        // 2. Verificamos que la misión realmente pertenezca a este Lab
-        $mission = DB::table('missions')
-            ->where('id', $request->mission_id)
-            ->where('lab_id', auth()->id())
-            ->first();
+        $mission = DB::table('missions')->where('id', $request->mission_id)->where('lab_id', auth()->id())->first();
+        if (!$mission) return back()->with('error', 'Error de permisos de misión.');
 
-        if (!$mission) {
-            return back()->with('error', 'Error de permisos de misión.');
-        }
-
-        // 3. Insertamos la invitación como una "postulación" en estado pendiente
         DB::table('mission_applications')->updateOrInsert(
-            [
-                'mission_id' => $mission->id,
-                'creator_id' => $request->creator_id,
-            ],
-            [
-                'status'     => 'invited',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
+            ['mission_id' => $mission->id, 'creator_id' => $request->creator_id],
+            ['status' => 'invited', 'created_at' => now(), 'updated_at' => now()]
         );
 
-        // 4. Retornamos con el mensaje de éxito que leerá SweetAlert
         return back()->with('msg', 'invite_sent_success');
     }
 }

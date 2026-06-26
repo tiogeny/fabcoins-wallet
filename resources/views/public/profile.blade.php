@@ -4,13 +4,13 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=1.0">
-    <link rel="stylesheet" href="{{ asset('css/creator.css') }}?v=1.3">
+    <link rel="stylesheet" href="{{ asset('css/creator.css') }}?v=1.6">
 @endpush
 
 @section('content')
-<div class="profile-container-v2 px-4">
+<div class="profile-container-v2 container px-4">
     
-    {{-- 1. CABECERA PÚBLICA (NAVBAR) --}}
+    {{-- 1. CABECERA PÚBLICA (NAVBAR GLOBAL) --}}
     <nav class="public-navbar">
         <a href="{{ route('home') }}" class="public-logo-wrapper">
             <img src="{{ asset('images/logo-icon.webp') }}" alt="FabCoins">
@@ -19,74 +19,72 @@
         
         <div class="public-nav-actions">
             <div class="lang-pill">
-                <a href="?{{ http_build_query(array_merge($_GET, ['lang' => 'es'])) }}" class="{{ app()->getLocale() == 'es' ? 'lang-active' : 'lang-muted' }}">🇪🇸</a>
+                <a href="?{{ http_build_query(array_merge($_GET, ['lang' => 'es'])) }}" class="{{ app()->getLocale() == 'es' ? 'lang-active' : 'lang-muted' }}">🇲🇽</a>
                 <a href="?{{ http_build_query(array_merge($_GET, ['lang' => 'en'])) }}" class="{{ app()->getLocale() == 'en' ? 'lang-active' : 'lang-muted' }}">🇺🇸</a>
             </div>
 
             @auth
-                <a href="{{ route('dashboard') }}" class="btn-premium btn-blue-hub m-0 btn-nav-action">
+                <a href="{{ route('dashboard') }}" class="btn-premium btn-blue-hub m-0 font-12">
                     ⚙️ {{ __('messages.btn_dashboard') }}
                 </a>
             @else
-                <a href="{{ route('login', ['tab' => 'register']) }}" class="btn-premium m-0 btn-nav-action btn-success-nav">
+                <a href="{{ route('login', ['tab' => 'register']) }}" class="btn-premium m-0 font-12 btn-success-nav">
                     🚀 {{ __('messages.btn_join_network') }}
                 </a>
             @endauth
         </div>
     </nav>
 
-    {{-- CÁLCULO DE MÉTRICAS RÁPIDAS --}}
     @php
         $totalResenas = isset($historialUnificado) ? count($historialUnificado) : 0;
         $totalMisiones = isset($historialUnificado) ? collect($historialUnificado)->where('context_type', 'mission')->count() : 0;
-        
-        // Fallback robusto del Avatar
         $avatarFinal = !empty($user->avatar_url) ? $user->avatar_url : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=131722&color=3498db&size=200&font-size=0.4&bold=true';
     @endphp
 
-    {{-- 2. BLOQUE SUPERIOR (IDENTIDAD Y BIOGRAFÍA EQUILIBRADOS) --}}
+    {{-- 2. BLOQUE SUPERIOR DE IDENTIDAD (MATRIZ REUTILIZADA NATIVA) --}}
     <div class="grid-top-identity">
         
-        {{-- Columna Izquierda: Pasaporte del Maker --}}
-        <div class="premium-glass-card m-0" style="text-align: center; padding: 30px 20px; display: flex; flex-direction: column; justify-content: center;">
+        {{-- Pasaporte Maker (Columna Izquierda) --}}
+        <div class="premium-glass-card m-0 text-center">
             <div class="avatar-showcase">
                 <img src="{{ $avatarFinal }}" onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=131722&color=3498db&size=200'" alt="Avatar">
             </div>
             
-            <h1 style="font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 26px; color: #fff; margin: 0 0 6px 0; line-height: 1.2;">{{ $user->name }}</h1>
+            <h1 class="font-24 font-bold text-white-pure m-0 mb-5px" style="font-family: 'Rajdhani', sans-serif;">{{ $user->name }}</h1>
             
-            <div style="margin-bottom: 6px;">
-                <span class="badge-role badge-creator" style="text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;">⚙️ {{ $user->role }}</span>
+            <div class="mb-10">
+                <span class="badge-role-fintech badge-semantic badge-orange font-11">
+                    {{ __('messages.badge_creator_spec') }}
+                </span>
             </div>
 
-            {{-- ⭐ NUEVO: Fila de reputación promedio dinámica para el Perfil Público --}}
-            <div style="color: #f1c40f; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 12px; letter-spacing: 1px;">
+            <div class="text-warning-neon font-12 font-bold mb-10 text-center-wrapper">
                 {!! str_repeat('★', floor($user->reputation_score ?? 5)) !!}{!! str_repeat('☆', 5 - floor($user->reputation_score ?? 5)) !!}
-                <span style="color: #cbd5e0; font-size: 11px; font-family: 'Inter', sans-serif; font-weight: 500; margin-left: 2px;">({{ number_format($user->reputation_score ?? 5.0, 1) }})</span>
+                <span class="text-neutral-neon font-11 font-mono">({{ number_format($user->reputation_score ?? 5.0, 1) }})</span>
             </div>
 
             @if(!empty($user->city) || !empty($user->country))
-                <div style="color: #3498db; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 5px;">
-                    📍 <span style="font-size: 12px; color: #a0aec0;">{{ implode(', ', array_filter([$user->city, $user->country])) }}</span>
+                <div class="text-blue-neon font-12 font-bold mb-15">
+                    📍 <span class="text-neutral-muted font-11">{{ implode(', ', array_filter([$user->city, $user->country])) }}</span>
                 </div>
             @endif
 
-            {{-- Motor de Reclutamiento Industrial (Solo para Labs autenticados) --}}
+            {{-- Nodo Reclutador (Solo visible para Laboratorios Externos) --}}
             @if(auth()->check() && auth()->user()->role === 'lab' && auth()->user()->id !== $user->id)
-                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.05);">
+                <div class="mt-10 pt-10" style="border-top: 1px dashed rgba(255,255,255,0.05);">
                     @if(isset($misMisionesAbiertas) && $misMisionesAbiertas->isEmpty())
-                        <p class="text-danger-neon m-0" style="font-size: 11px;">No tienes misiones con cupos libres.</p>
+                        <p class="text-danger-neon m-0 font-11 font-bold">{{ __('messages.err_no_open_missions') }}</p>
                     @elseif(isset($misMisionesAbiertas))
                         <form action="{{ route('public.profile.invite', ['slugOrId' => $user->slug ?: $user->id]) }}" method="POST" class="m-0 flex-col-gap-10">
                             @csrf
                             <input type="hidden" name="creator_id" value="{{ $user->id }}">
-                            <select name="mission_id" class="premium-select" style="height: 34px; font-size: 11px; padding: 0 10px;" required>
-                                <option value="">-- Selecciona misión --</option>
+                            <select name="mission_id" class="premium-select font-11" style="height: 32px;" required>
+                                <option value="">-- {{ __('messages.opt_select_mission') }} --</option>
                                 @foreach($misMisionesAbiertas as $ma)
                                     <option value="{{ $ma->id }}">{{ $ma->title }}</option>
                                 @endforeach
                             </select>
-                            <button type="submit" class="btn-premium btn-blue-hub m-0 w-100" style="height: 34px; font-size: 11px;">🎯 {{ __('messages.btn_invite_mission') }}</button>
+                            <button type="submit" class="btn-premium btn-blue-hub m-0 w-100 font-11" style="height: 32px;">🎯 {{ __('messages.btn_invite_mission') }}</button>
                         </form>
                     @endif
                 </div>
@@ -94,55 +92,54 @@
 
             <div class="stats-row">
                 <div class="stat-box">
-                    <div class="stat-value">{{ $totalMisiones }}</div>
-                    <div class="stat-label">{{ __('messages.lbl_missions_count') }}</div>
+                    <div class="stat-value">{{ $totalResenas }}</div>
+                    <div class="stat-label font-11">{{ __('messages.lbl_reviews_count') }}</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-value">{{ $totalResenas }}</div>
-                    <div class="stat-label">{{ __('messages.lbl_reviews_count') }}</div>
+                    <div class="stat-value">{{ $totalMisiones }}</div>
+                    <div class="stat-label font-11">{{ __('messages.lbl_missions_count') }}</div>
                 </div>
             </div>
         </div>
 
-        {{-- Columna Derecha: Biografía + Ajuste Magnético de Redes --}}
-        <div class="premium-glass-card m-0" style="display: flex; flex-direction: column; justify-content: space-between; padding: 30px;">
+        {{-- Presentación y Redes Reales (Columna Derecha) --}}
+        <div class="premium-glass-card m-0 flex-col-gap-15" style="justify-content: space-between;">
             <div>
-                <label class="premium-label" style="font-size: 11px; margin-bottom: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px;">{{ __('messages.title_prof_bio') }}</label>
-                <p class="text-neutral-muted m-0" style="font-size: 14px; line-height: 1.6; color: #cbd5e0;">
-                    {{-- 🚀 Usamos {!! !!} para interpretar las negritas y listas visuales --}}
+                <label class="premium-label font-11">{{ __('messages.title_prof_bio') }}</label>
+                <div class="text-neutral-muted font-12" style="line-height: 1.6;">
                     {!! $user->bio ?: __('messages.empty_bio') !!}
-                </p>
+                </div>
             </div>
 
-            {{-- REDES ESTILIZADAS PREMIUM TIPO TAG --}}
-            @if(!empty($user->fab_academy_url) || !empty($user->instagram_url) || !empty($user->social_linkedin) || !empty($user->social_github) || !empty($user->social_portfolio))
-                <div class="social-grid-wrapper">
-                    @if(!empty($user->fab_academy_url))
-                        <a href="{{ $user->fab_academy_url }}" target="_blank" class="social-tag-link social-tag-fab">
+            {{-- Botones de Redes Sociales con Clases Nativas del Core --}}
+            @if(!empty($user->social_fabacademy) || !empty($user->social_instagram) || !empty($user->social_linkedin) || !empty($user->social_github) || !empty($user->social_portfolio))
+                <div class="social-bar m-0 mt-20" style="flex-wrap: wrap; gap: 8px;">
+                    @if(!empty($user->social_fabacademy))
+                        <a href="{{ $user->social_fabacademy }}" target="_blank" class="social-tag social-tag-fab font-11">
                             🎓 Fab Academy
                         </a>
                     @endif
 
                     @if(!empty($user->social_linkedin))
-                        <a href="{{ $user->social_linkedin }}" target="_blank" class="social-tag-link">
+                        <a href="{{ $user->social_linkedin }}" target="_blank" class="social-tag font-11">
                             💼 LinkedIn
                         </a>
                     @endif
 
                     @if(!empty($user->social_portfolio))
-                        <a href="{{ $user->social_portfolio }}" target="_blank" class="social-tag-link">
-                            🌐 Portafolio
+                        <a href="{{ $user->social_portfolio }}" target="_blank" class="social-tag font-11">
+                            🌐 {{ __('messages.lbl_portfolio') }}
                         </a>
                     @endif
 
                     @if(!empty($user->social_github))
-                        <a href="{{ $user->social_github }}" target="_blank" class="social-tag-link">
+                        <a href="{{ $user->social_github }}" target="_blank" class="social-tag font-11">
                             🐙 GitHub
                         </a>
                     @endif
 
-                    @if(!empty($user->instagram_url))
-                        <a href="{{ $user->instagram_url }}" target="_blank" class="social-tag-link">
+                    @if(!empty($user->social_instagram))
+                        <a href="{{ $user->social_instagram }}" target="_blank" class="social-tag font-11">
                             📸 Instagram
                         </a>
                     @endif
@@ -152,89 +149,103 @@
 
     </div>
 
-    {{-- 3. BLOQUE INFERIOR (HABILIDADES E HISTORIAL) --}}
-    <div class="grid-bottom-data">
+    {{-- 3. BLOQUE INFERIOR (MATRIZ DE HABILIDADES & COMPENSACIONES GENERALES) --}}
+    <div class="grid-bottom-data mt-25">
         
-        {{-- Columna Izquierda: Habilidades --}}
+        {{-- Módulo de Habilidades (Chips con Borde e Idioma Inteligente) --}}
         <div class="premium-glass-card m-0">
             <div class="premium-glass-card-header">
                 <h3 class="premium-glass-card-title m-0">🛠️ {{ __('messages.title_validated_skills') }}</h3>
             </div>
             
             @if(isset($misHabilidades) && $misHabilidades->isEmpty())
-                <p class="text-neutral-muted m-0" style="font-size: 13px; font-style: italic;">{{ __('messages.empty_skills') }}</p>
+                <p class="text-neutral-muted m-0 font-italic font-11">{{ __('messages.empty_skills') }}</p>
             @elseif(isset($misHabilidades))
-                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                    @foreach($misHabilidades as $sk)
-                        @php 
-                            $esHard = ($sk->type === 'hard');
-                            $color = $esHard ? '#3498db' : '#1abc9c';
-                            $bg = $esHard ? 'rgba(52, 152, 219, 0.06)' : 'rgba(26, 188, 156, 0.06)';
-                            $border = $esHard ? 'rgba(52, 152, 219, 0.2)' : 'rgba(26, 188, 156, 0.2)';
-                        @endphp
-                        <div style="background: {{ $bg }}; border: 1px solid {{ $border }}; padding: 6px 12px; border-radius: 6px; display: flex; align-items: center; gap: 8px;">
-                            <span style="font-size: 12px; font-weight: 600; color: #fff;">{{ $sk->name }}</span>
-                            <span style="background: {{ $color }}; color: #000; font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 4px;">
-                                {{-- 🚀 Fusible de seguridad anticaídas --}}
-                                {{ $sk->endorsements_count ?? 0 }}
-                            </span>
+                @php 
+                    $locale = app()->getLocale(); 
+                    $tecnicas = $misHabilidades->where('type', 'hard');
+                    $blandas = $misHabilidades->where('type', 'soft');
+                @endphp
+
+                {{-- Habilidades Técnicas (Gama Cian) --}}
+                <label class="premium-label font-11 text-blue-neon font-bold mt-10 mb-10">{{ __('messages.lbl_hard_skills') }}:</label>
+                <div class="skills-chips-matrix mb-20">
+                    @foreach($tecnicas as $sk)
+                        <div class="endorsement-chip hard m-0 font-12">
+                            <span>{{ $locale === 'en' ? $sk->name_en : $sk->name_es }}</span>
+                            {{-- 🎯 REGLA CONTABLE: Pinta el check verde solo si tiene validaciones hechas por laboratorios --}}
+                            @if(($sk->endorsements_count ?? 0) > 0)
+                                <span class="endorsement-count validated font-11">✓ {{ $sk->endorsements_count }}</span>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+
+                {{-- Habilidades Blandas (Gama Oro) --}}
+                <label class="premium-label font-11 text-warning-neon font-bold mt-10 mb-10">{{ __('messages.lbl_soft_skills') }}:</label>
+                <div class="skills-chips-matrix">
+                    @foreach($blandas as $sk)
+                        <div class="endorsement-chip soft m-0 font-12">
+                            <span>{{ $locale === 'en' ? $sk->name_en : $sk->name_es }}</span>
+                            {{-- 🎯 REGLA CONTABLE --}}
+                            @if(($sk->endorsements_count ?? 0) > 0)
+                                <span class="endorsement-count validated font-11">✓ {{ $sk->endorsements_count }}</span>
+                            @endif
                         </div>
                     @endforeach
                 </div>
             @endif
         </div>
 
-        {{-- Columna Derecha: Historial Unificado --}}
+        {{-- Libro Contable de Calificaciones y Portafolio --}}
         <div class="premium-glass-card m-0">
             <div class="premium-glass-card-header">
                 <h3 class="premium-glass-card-title m-0">🚀 {{ __('messages.title_portfolio_reviews') }}</h3>
             </div>
 
             @if(empty($historialUnificado) || count($historialUnificado) == 0)
-                <div style="background: #131722; border-radius: 8px; padding: 40px; text-align: center; border: 1px dashed rgba(255,255,255,0.05);">
-                    <p class="text-neutral-muted m-0" style="font-size: 13px;">{{ __('messages.empty_reviews') }}</p>
+                <div class="empty-state-warning text-center">
+                    <p class="text-neutral-muted m-0 font-11 font-italic">{{ __('messages.empty_reviews') }}</p>
                 </div>
             @else
-                <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div class="flex-col-gap-10">
                     @foreach($historialUnificado as $r)
                         @php 
                             $esMision = ($r->context_type === 'mission');
                             $tipoClase = $esMision ? 'review-mission' : 'review-market';
-                            $tituloContexto = $esMision ? ($r->mission_title ?? 'Misión Industrial') : ($r->asset_name ?? 'Servicio de Catálogo');
                             $iconoContexto = $esMision ? '🎯' : '🏪';
                         @endphp
                         
                         <div class="review-item-card {{ $tipoClase }}">
-                            <div style="display: flex; justify-content: space-between; align-items: start; gap: 10px;">
+                            <div class="flex-between" style="align-items: flex-start;">
                                 <div>
-                                    <div style="font-weight: 700; font-size: 14px; color: #fff; margin-bottom: 3px;">
-                                        {{ $iconoContexto }} {{ $tituloContexto }}
+                                    <div class="font-13 font-bold text-white-pure mb-5px">
+                                        {{ $iconoContexto }} {{ $r->context_title }}
                                     </div>
-                                    <div style="font-size: 11px; color: #7f8c8d;">
-                                        {{ __('messages.lbl_reviewed_by') }} <strong style="color: #3498db;">{{ $r->reviewer_name }}</strong> • {{ \Carbon\Carbon::parse($r->created_at)->format('d M Y') }}
+                                    <div class="font-11 text-neutral-neon">
+                                        {{ __('messages.lbl_reviewed_by') }} <strong class="text-blue-neon font-bold">{{ $r->reviewer_name }}</strong> • {{ \Carbon\Carbon::parse($r->created_at)->format('d M Y') }}
                                     </div>
                                 </div>
-                                <div style="text-align: right; shrink-0: 0;">
-                                    <div style="font-size: 14px; font-family: 'Rajdhani', sans-serif; font-weight: 800; color: #2ecc71; margin-bottom: 2px;">
-                                        +{{ number_format($r->context_fc ?? 0, 0) }} FC
+                                <div class="text-right">
+                                    <div class="tx-amount-value text-green-neon font-13 font-bold">
+                                        +{{ number_format($r->context_fc ?? 0, 0) }} <small class="font-11 font-mono">FC</small>
                                     </div>
-                                    <div style="font-size: 11px; color: #f1c40f; letter-spacing: 1px;">
+                                    <div class="text-warning-node font-11 mt-5px">
                                         {!! str_repeat('★', floor($r->rating)) !!}{!! str_repeat('☆', 5 - floor($r->rating)) !!}
                                     </div>
                                 </div>
                             </div>
 
                             @if(!empty($r->endorsed_skills))
-                                <div style="display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0 5px 0;">
+                                <div class="skills-chips-matrix mt-10 mb-5px" style="gap: 6px !important;">
                                     @foreach(explode(',', $r->endorsed_skills) as $skill_chunk)
                                         @php
                                             $parts = explode('|', $skill_chunk);
                                             $skill_name = $parts[0] ?? 'Habilidad';
                                             $skill_type = $parts[1] ?? 'hard';
-                                            $border_color = ($skill_type === 'hard') ? 'rgba(52, 152, 219, 0.3)' : 'rgba(243, 156, 18, 0.3)';
-                                            $text_color   = ($skill_type === 'hard') ? '#3498db' : '#f39c12';
+                                            $badge_type = ($skill_type === 'hard') ? 'hard' : 'soft';
                                         @endphp
-                                        <span style="border: 1px solid {{ $border_color }}; color: {{ $text_color }}; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; background: rgba(0,0,0,0.15);">
+                                        <span class="endorsement-chip {{ $badge_type }} font-11" style="padding: 2px 8px !important; font-size: 9.5px !important; margin: 0 !important;">
                                             ✓ {{ trim($skill_name) }}
                                         </span>
                                     @endforeach
@@ -242,7 +253,7 @@
                             @endif
 
                             @if(!empty($r->comment))
-                                <p class="m-0 review-comment-box">
+                                <p class="m-0 review-comment-box font-12 text-neutral-muted">
                                     "{{ $r->comment }}"
                                 </p>
                             @endif

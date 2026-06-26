@@ -111,17 +111,25 @@
                                 ->where('type', 'mint')
                                 ->sum('amount') ?: 0;
 
-                            // 2. Fondos en Custodia (Misiones Abiertas o En Ejecución actualmente)
-                            $congeladosReales = DB::table('missions')
+                            // 2. Fondos en Custodia (Misiones con cupos pendientes de liquidar de forma individual)
+                            $congeladosReales = floatval(DB::table('missions')
                                 ->where('lab_id', $labId)
                                 ->whereIn('status', ['open', 'assigned'])
-                                ->sum(DB::raw('reward_fc * spots_total'));
+                                ->get()
+                                ->sum(function($m) {
+                                    $reviewedSpots = DB::table('mission_applications')
+                                        ->where('mission_id', $m->id)
+                                        ->where('is_reviewed', 1)
+                                        ->count();
+                                    return $m->reward_fc * max(0, $m->spots_total - $reviewedSpots);
+                                }));
 
-                            // 3. En Circulación (Inyectado a la comunidad por misiones terminadas)
-                            $enCirculacion = DB::table('missions')
-                                ->where('lab_id', $labId)
-                                ->where('status', 'completed')
-                                ->sum(DB::raw('reward_fc * spots_filled'));
+                            // 3. En Circulación (Masa real liberada a creadores por cupos ya revisados y aprobados)
+                            $enCirculacion = floatval(DB::table('mission_applications')
+                                ->join('missions', 'mission_applications.mission_id', '=', 'missions.id')
+                                ->where('missions.lab_id', $labId)
+                                ->where('mission_applications.is_reviewed', 1)
+                                ->sum('missions.reward_fc'));
 
                             // 4. Tesorería Disponible (Lo que estrictamente le queda al Lab en caja)
                             $realLiquid = max(0, $totalMinted - $congeladosReales - $enCirculacion);
@@ -349,6 +357,12 @@
     }
 
     function enrutarNotificacionInteligenteLab(mensaje) {
+        // 🎯 REDIRECCIÓN DE REPUTACIÓN: Si la alerta contiene palabras clave de evaluación, viaja al perfil público
+        if (mensaje.includes('calificación') || mensaje.includes('estrellas') || mensaje.includes('reseña') || mensaje.includes('rating')) {
+            window.location.href = "{{ route('public.profile', auth()->user()->slug ?? auth()->id()) }}";
+            return;
+        }
+
         // Si habla de reservas, maquinaria, financiamiento o créditos -> Hub Tokenizar
         if (mensaje.includes('reserva') || mensaje.includes('crédito') || mensaje.includes('financiamiento') || mensaje.includes('máquina')) {
             abrirHubPersistente('hub-tokenizar'); 

@@ -21,11 +21,17 @@ class DashboardController extends Controller
         $total_fc = floatval(DB::table('transactions')->where('type', 'mint')->sum('amount'));
         $total_quemado = floatval(DB::table('transactions')->where('type', 'consumed')->sum('amount'));
         
-        // Custodia Activa: Los fondos de las misiones permanecen congelados al 100% hasta que concluyen
+        // Custodia Activa (Escrow): Descuenta de forma dinámica los cupos que ya fueron liquidados/revisados
         $total_escrow = floatval(DB::table('missions')
             ->whereIn('status', ['open', 'assigned'])
-            ->sum(DB::raw("reward_fc * spots_total"))); // 🌟 REPARADO: Multiplica por cupos totales siempre
-
+            ->get()
+            ->sum(function($m) {
+                $reviewed = DB::table('mission_applications')
+                    ->where('mission_id', $m->id)
+                    ->where('is_reviewed', 1)
+                    ->count();
+                return $m->reward_fc * max(0, $m->spots_total - $reviewed);
+            }));
         // En Bóvedas (Labs): Balance real emitido restándole las misiones activas y las ya liquidadas terminadas
         $total_bovedas = $total_fc - $total_escrow - floatval(DB::table('mission_applications')
             ->where('is_reviewed', 1)
@@ -127,18 +133,19 @@ class DashboardController extends Controller
         } elseif ($tipo === 'bovedas') {
             $html .= '<tr><th>Laboratorio</th><th>Balance Líquido (FC)</th></tr>';
             
-            // 🚀 RECONCILIACIÓN PURA: Resta la emisión original menos el Escrow total de sus misiones activas
+            // ⚖️ BALANCE CENTRAL AUDITADO: Emisión Base - Escrow de Cupos Vivos - Masa ya entregada a los Creadores
             $rows = DB::table('users as u')
                 ->where('u.role', 'lab')
                 ->select('u.name', DB::raw("
                     (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = u.id AND type = 'mint') 
                     - 
-                    (SELECT COALESCE(SUM(reward_fc * spots_total), 0) FROM missions WHERE lab_id = u.id AND status IN ('open', 'assigned'))
-                    - 
-                    (SELECT COALESCE(SUM(m.reward_fc), 0) 
-                    FROM mission_applications ma 
-                    JOIN missions m ON ma.mission_id = m.id 
-                    WHERE m.lab_id = u.id AND ma.is_reviewed = 1) 
+                    (SELECT COALESCE(SUM(m.reward_fc * (m.spots_total - (SELECT COUNT(*) FROM mission_applications WHERE mission_id = m.id AND is_reviewed = 1))), 0) 
+                     FROM missions m WHERE m.lab_id = u.id AND m.status IN ('open', 'assigned'))
+                    -
+                    (SELECT COALESCE(SUM(m2.reward_fc), 0) 
+                     FROM mission_applications ma2 
+                     JOIN missions m2 ON ma2.mission_id = m2.id 
+                     WHERE m2.lab_id = u.id AND ma2.is_reviewed = 1)
                     as balance
                 "))->get();
                 
@@ -201,8 +208,25 @@ class DashboardController extends Controller
                     // 🏭 SECCIÓN A: COMPILACIÓN MACROECONÓMICA DEL FAB LAB
                     // =========================================================
                     $minted = floatval(DB::table('transactions')->where('user_id', $userTarget->id)->where('type', 'mint')->sum('amount'));
-                    $escrow = floatval(DB::table('missions')->where('lab_id', $userTarget->id)->whereIn('status', ['open', 'assigned'])->sum(DB::raw("reward_fc * (spots_total - spots_filled)")));
-                    $pagadoCreadores = floatval(DB::table('mission_applications')->where('is_reviewed', 1)->join('missions', 'mission_applications.mission_id', '=', 'missions.id')->where('missions.lab_id', $userTarget->id)->sum('missions.reward_fc'));
+
+                    // 🎯 RECONCILIACIÓN DE AUDITORÍA: El dinero solo sale del Escrow si el cupo individual ya fue calificado y liquidado
+                    $escrow = floatval(DB::table('missions')
+                        ->where('lab_id', $userTarget->id)
+                        ->whereIn('status', ['open', 'assigned'])
+                        ->get()
+                        ->sum(function($m) {
+                            $reviewedSpots = DB::table('mission_applications')
+                                ->where('mission_id', $m->id)
+                                ->where('is_reviewed', 1)
+                                ->count();
+                            return $m->reward_fc * max(0, $m->spots_total - $reviewedSpots);
+                        }));
+
+                    $pagadoCreadores = floatval(DB::table('mission_applications')
+                        ->where('is_reviewed', 1)
+                        ->join('missions', 'mission_applications.mission_id', '=', 'missions.id')
+                        ->where('missions.lab_id', $userTarget->id)
+                        ->sum('missions.reward_fc'));
                     
                     $saldo = DB::table('transactions')->where('user_id', $userTarget->id)->selectRaw("SUM(CASE WHEN type = 'mint' THEN amount WHEN type IN ('expense', 'escrow') THEN -amount ELSE 0 END) as total")->value('total') ?? 0;
                     $consumed = floatval(DB::table('transactions')->where('user_id', $userTarget->id)->where('type', 'consumed')->sum('amount'));

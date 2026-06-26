@@ -189,7 +189,7 @@ class MailService
         <p style='color:#e74c3c; font-weight:bold;'>⚠️ Wasn't it you?</p>
         <p>If you did not execute these changes, please log into your dashboard immediately to reset your password or contact the support team.</p>";
 
-        return self::enviar($emailDestino, "🔒 Alerta de Seguridad: Perfil Actualizado", "🔒 Security Alert: Profile Updated", "🔒 Modificación de Perfil Confirmada", "🔒 Profile Modification Confirmed", $msgEs, $msgEn);
+        return self::enviar($emailDestino, "Perfil Actualizado", "Profile Updated", "🔒 Modificación de Perfil Confirmada", "🔒 Profile Modification Confirmed", $msgEs, $msgEn);
     }
 
     /**
@@ -399,5 +399,32 @@ class MailService
         <p style='margin-top:15px;'>Your public reputation score has been updated in the global network ranking. Thank you for your excellent technical work!</p>";
 
         return self::enviar($emailCreator, "💰 Pago Recibido - Misión Completada", "💰 Payment Received - Mission Completed", "💰 Comprobante de Pago y Calificación", "💰 Payment Settlement and Review", $msgEs, $msgEn);
+    }
+
+    /**
+     * CORREO 3D: ALERTA DE NUEVA RESEÑA RECIBIDA PARA EL LAB
+     * Disparado automáticamente desde el controlador cuando un Creador califica un nodo
+     */
+    public static function notificarNuevaResenaAlLab($emailLab, $nombreLab, $nombreCreator, $tituloContexto, $rating)
+    {
+        $estrellasHtml = str_repeat('⭐', $rating);
+
+        $msgEs = "
+        <p>Hola <strong>$nombreLab</strong>,</p>
+        <p>El creador <strong>$nombreCreator</strong> ha registrado una nueva calificación sobre tu soporte en la misión/servicio: <strong>\"$tituloContexto\"</strong>.</p>
+        <div style='background:#131722; padding:15px; border-radius:8px; text-align:center; margin:20px 0; border:1px solid rgba(255,255,255,0.02);'>
+            <p style='margin:0; font-size:14px; color:#ffffff;'>Puntuación Otorgada: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
+        </div>
+        <p>Ingresa a tu perfil público o panel para revisar la bitácora de comentarios y seguir optimizando tu reputación de red.</p>";
+
+        $msgEn = "
+        <p>Hello <strong>$nombreLab</strong>,</p>
+        <p>The creator <strong>$nombreCreator</strong> has left a new review regarding your support on the mission/service: <strong>\"$tituloContexto\"</strong>.</p>
+        <div style='background:#131722; padding:15px; border-radius:8px; text-align:center; margin:20px 0; border:1px solid rgba(255,255,255,0.02);'>
+            <p style='margin:0; font-size:14px; color:#ffffff;'>Rating Given: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
+        </div>
+        <p>Log into your public profile or dashboard to check the comment logs and keep optimizing your network reputation score.</p>";
+
+        return self::enviar($emailLab, "⭐ Nueva Calificación Recibida - FabCoins", "⭐ New Review Received - FabCoins", "⭐ Evaluación de Reputación", "⭐ Reputation Evaluation", $msgEs, $msgEn);
     }
 }

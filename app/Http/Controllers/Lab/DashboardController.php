@@ -93,9 +93,20 @@ class DashboardController extends Controller
         // 4. HUB C: Métricas Agrupadas de la Bolsa de Trabajo
         $totalMisionesCount = $misMisiones->count();
         $statsMisiones = [
+            // 1. Completadas: Estado explícito de cierre
             'completadas'  => $misMisiones->where('status', 'completed')->count(),
-            'en_ejecucion' => $misMisiones->where('status', 'assigned')->count(),
-            'abiertas'     => $misMisiones->where('status', 'open')->count(),
+            
+            // 2. En Ejecución: Ya tiene creadores asignados (spots_filled > 0) O su estado pasó a asignada por completo
+            'en_ejecucion' => $misMisiones->filter(fn($m) => 
+                $m->status === 'assigned' || ($m->status === 'open' && $m->spots_filled > 0)
+            )->count(),
+            
+            // 3. Abiertas Reales: Siguen abiertas Y nadie ha sido aceptado todavía (spots_filled == 0)
+            'abiertas'     => $misMisiones->filter(fn($m) => 
+                $m->status === 'open' && $m->spots_filled == 0
+            )->count(),
+            
+            // 4. Por Aceptar: Postulaciones en cola esperando revisión del Lab
             'por_aceptar'  => DB::table('mission_applications')
                                 ->join('missions', 'mission_applications.mission_id', '=', 'missions.id')
                                 ->where('missions.lab_id', $lab->id)
@@ -131,7 +142,14 @@ class DashboardController extends Controller
             ->join('users', 'mission_applications.creator_id', '=', 'users.id')
             ->join('missions', 'mission_applications.mission_id', '=', 'missions.id')
             ->where('missions.lab_id', $lab->id)
-            ->select('mission_applications.*', 'users.name as creator_name', 'users.slug as creator_slug', 'users.reputation_score')
+            ->select([
+                'mission_applications.*', 
+                'users.name as creator_name', 
+                'users.slug as creator_slug', // El slug ya viaja blindado aquí
+                'users.reputation_score',
+                'users.deuda_fc',             // ⚡ INYECTADO: Necesario para el Blade
+                'users.deuda_lab_id'          // ⚡ INYECTADO: Necesario para el Blade
+            ])
             ->get();
 
         $postulantesPorMision = [];

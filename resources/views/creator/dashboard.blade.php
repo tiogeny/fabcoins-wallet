@@ -74,8 +74,10 @@
                             $circunferencia = 213.6;
                             // Matemática de Misiones: Todo el pipeline del Creador
                             $postPendientes = $misPostulaciones->whereIn('status', ['pending', 'invited'])->count();
-                            $postAceptadas  = $misPostulaciones->where('status', 'accepted')->where('mission_status', 'open')->count();
-                            $postCompletas  = $misPostulaciones->where('mission_status', 'completed')->count();
+                            
+                            // 🎯 REPARACIÓN DE CUPOS: Filtramos basándonos en si el Lab ya calificó e indexó el trabajo de ESTE creador
+                            $postAceptadas  = $misPostulaciones->where('status', 'accepted')->where('is_reviewed', 0)->count();
+                            $postCompletas  = $misPostulaciones->where('is_reviewed', 1)->count();
                             
                             $totalMisiones = max(1, $postPendientes + $postAceptadas + $postCompletas);
                             
@@ -314,6 +316,12 @@ function confirmarAccion(event, mensaje, icono = 'warning', colorBoton = '#3498d
 }
 
 function enrutarNotificacionInteligenteCreator(mensaje) {
+    // 🎯 REGLA DE REPUTACIÓN: Si la alerta es sobre su evaluación, lo redirigimos a su perfil público en la misma pestaña
+    if (mensaje.includes('calificación') || mensaje.includes('estrellas') || mensaje.includes('reseña') || mensaje.includes('rating')) {
+        window.location.href = "{{ route('public.profile', auth()->user()->slug ?? auth()->id()) }}";
+        return;
+    }
+
     // 1. Excepción específica: Si la reserva YA fue aprobada, debe ir a Mercado (Monitor de alquileres)
     if (mensaje.includes('reserva ha sido aprobada')) {
         abrirHubPersistente('hub-mercado');

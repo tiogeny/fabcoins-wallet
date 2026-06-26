@@ -167,8 +167,12 @@ class MissionController extends Controller
         $comment = trim($request->input('comment'));
         $labId = auth()->id();
 
+        // 🎯 CAPTURA DE ENDOSOS SELECCIONADOS POR EL LAB
+        $endorsedSkillsArray = $request->input('endorsed_skills', []);
+        $endorsedSkillsString = !empty($endorsedSkillsArray) ? implode(',', $endorsedSkillsArray) : null;
+
         try {
-            $msgRedirect = DB::transaction(function () use ($missionId, $creatorId, $rating, $comment, $labId) {
+            $msgRedirect = DB::transaction(function () use ($missionId, $creatorId, $rating, $comment, $labId, $endorsedSkillsString) {
                 $mission = DB::table('missions')->where('id', $missionId)->first();
                 $creator = DB::table('users')->where('id', $creatorId)->first();
 
@@ -228,19 +232,29 @@ class MissionController extends Controller
                     'updated_at'  => now()
                 ]);
 
+                // 🔥 REPARACIÓN HISTÓRICA: Se inyecta la cadena de habilidades validadas en la auditoría
                 DB::table('reviews')->insertGetId([
-                    'reviewer_id'  => $labId,
-                    'reviewee_id'  => $creatorId,
-                    'context_type' => 'mission',
-                    'context_id'   => $missionId,
-                    'rating'       => $rating,
-                    'comment'      => $comment,
-                    'created_at'   => now()
+                    'reviewer_id'     => $labId,
+                    'reviewee_id'     => $creatorId,
+                    'context_type'    => 'mission',
+                    'context_id'      => $missionId,
+                    'rating'          => $rating,
+                    'comment'         => $comment,
+                    'endorsed_skills' => $endorsedSkillsString, // 🔥 SE GUARDA LA CADENA MUTADA
+                    'created_at'      => now()
                 ]);
 
                 DB::table('mission_applications')->where('mission_id', $missionId)->where('creator_id', $creatorId)->update(['is_reviewed' => true]);
                 $nuevoPromedio = DB::table('reviews')->where('reviewee_id', $creatorId)->avg('rating');
                 DB::table('users')->where('id', $creatorId)->update(['reputation_score' => round($nuevoPromedio, 1)]);
+
+                // 🔔 INYECTAR NOTIFICACIÓN EN LA CAMPANITA DEL CREADOR
+                DB::table('notifications')->insert([
+                    'user_id'    => $creatorId,
+                    'message'    => __('messages.msg_mission_completed') . " ($mission->title)",
+                    'type'       => 'success',
+                    'created_at' => now()
+                ]);
 
                 // 🚀 TRIGGER: Envío de comprobante de pago bilingüe con las estrellas ganadas
                 $cUser = DB::table('users')->where('id', $creatorId)->first();

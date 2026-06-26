@@ -101,8 +101,44 @@
         </div>
     </div>
 
-    <!-- 🔍 CONSOLA DE AUDITORÍA CLÍNICA DE NODOS -->
-        <div class="premium-glass-card hub-bar-blue" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+    <div class="profile-panoramic-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        
+        <div class="premium-glass-card hub-bar-green" style="margin-bottom: 0;">
+            <h2 class="premium-glass-card-title" style="font-size: 16px; margin-bottom: 12px;">{{ __('messages.lbl_invite_incorporate_node') }}</h2>
+            <form method="POST" action="{{ route('superadmin.lab.invite') }}" class="flex-col-gap-10">
+                @csrf
+                
+                <div class="grid-mission-inputs" style="grid-template-columns: 1fr 1fr;">
+                    <div>
+                        <label class="premium-label">{{ __('messages.lbl_institution_name') }}</label>
+                        <input type="text" name="name" placeholder="Ej: Fab Lab Lima" class="premium-input" required>
+                    </div>
+                    <div>
+                        <label class="premium-label">{{ __('messages.lbl_official_email') }}</label>
+                        <input type="email" name="email" placeholder="lab@institucion.org" class="premium-input" required>
+                    </div>
+                </div>
+
+                <div class="grid-mission-inputs" style="grid-template-columns: 1.2fr 0.8fr; margin-top: 5px;">
+                    <div>
+                        <label class="premium-label">{{ __('messages.lbl_temp_password') }}</label>
+                        <input type="text" name="password" placeholder="Clave robusta" class="premium-input" required>
+                    </div>
+                    <div>
+                        <label class="premium-label">{{ __('messages.lbl_node_lang') }}</label>
+                        <select name="lab_lang" class="premium-select">
+                            <option value="es">Español (ES)</option>
+                            <option value="en">English (EN)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="text-right" style="margin-top: 10px;">
+                    <button type="submit" class="btn-premium btn-green-hub w-100" style="background:#2ecc71; border-color:#2ecc71;">{{ __('messages.btn_dispatch_invite') }}</button>
+                </div>
+            </form>
+        </div>
+        <div class="premium-glass-card hub-bar-green" style="margin-bottom: 0;">
             <div>
                 <h2 class="premium-glass-card-title" style="font-size: 16px; margin-bottom: 8px;">🔍 Auditoría Clínica Inmediata</h2>
                 <p class="td-date-dim" style="font-size: 11px; line-height: 1.4;">Inspecciona los libros contables y desgloses de saldo líquido de cualquier nodo o creador sin comprometer sus claves de acceso.</p>
@@ -117,6 +153,11 @@
                 </select>
             </div>
         </div>
+
+    </div>
+
+    <!-- 🔍 CONSOLA DE AUDITORÍA CLÍNICA DE NODOS -->
+    
 
     <!-- =======================================================================
          📊 HUB II: CAPACIDAD PRODUCTIVA (DPI) & AUDITORÍA DE CRÉDITOS ISA
@@ -210,49 +251,8 @@
 
     <!-- =======================================================================
          ⚙️ HUB III: GOBERNANZA GLOBAL & PANEL OPERATIVO DE CONFIGURACIONES
-         ======================================================================= -->
-    <h3 style="margin: 30px 0 15px 0; font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px;">⚙️ {{ __('messages.hub3_title') }}</h3>
+         ======================================================================= --> 
     
-    <div class="profile-panoramic-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-        
-        <div class="premium-glass-card hub-bar-green" style="margin-bottom: 0;">
-            <h2 class="premium-glass-card-title" style="font-size: 16px; margin-bottom: 12px;">{{ __('messages.lbl_invite_incorporate_node') }}</h2>
-            <form method="POST" action="{{ route('superadmin.lab.invite') }}" class="flex-col-gap-10">
-                @csrf
-                
-                <div class="grid-mission-inputs" style="grid-template-columns: 1fr 1fr;">
-                    <div>
-                        <label class="premium-label">{{ __('messages.lbl_institution_name') }}</label>
-                        <input type="text" name="name" placeholder="Ej: Fab Lab Lima" class="premium-input" required>
-                    </div>
-                    <div>
-                        <label class="premium-label">{{ __('messages.lbl_official_email') }}</label>
-                        <input type="email" name="email" placeholder="lab@institucion.org" class="premium-input" required>
-                    </div>
-                </div>
-
-                <div class="grid-mission-inputs" style="grid-template-columns: 1.2fr 0.8fr; margin-top: 5px;">
-                    <div>
-                        <label class="premium-label">{{ __('messages.lbl_temp_password') }}</label>
-                        <input type="text" name="password" placeholder="Clave robusta" class="premium-input" required>
-                    </div>
-                    <div>
-                        <label class="premium-label">{{ __('messages.lbl_node_lang') }}</label>
-                        <select name="lab_lang" class="premium-select">
-                            <option value="es">Español (ES)</option>
-                            <option value="en">English (EN)</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="text-right" style="margin-top: 10px;">
-                    <button type="submit" class="btn-premium btn-green-hub w-100" style="background:#2ecc71; border-color:#2ecc71;">{{ __('messages.btn_dispatch_invite') }}</button>
-                </div>
-            </form>
-        </div>
-
-        
-    </div>
 
     <!-- CARGA DE ÍTEMS AL CATÁLOGO -->
     <div class="premium-glass-card">
@@ -295,35 +295,7 @@
         </form>
     </div>
 
-    <div class="premium-glass-card hub-bar-blue" style="margin-bottom: 0;">
-        <h2 class="premium-glass-card-title" style="font-size: 16px; margin-bottom: 12px;">🧠 {{ __('messages.title_register_skills') }}</h2>
-        
-        <form method="POST" action="{{ route('superadmin.skills.store_multiple') }}">
-            @csrf
-            
-            <div id="contenedor-filas-habilidades" style="width: 100%;">
-                <div class="row-token-enlistar" style="display: grid; grid-template-columns: 2.5fr 2.5fr 2fr auto; gap: 10px; margin-bottom: 10px; background: transparent; padding: 0;">
-                    <div>
-                        <input type="text" name="name_es[]" placeholder="Competencia (ES)" class="premium-input" style="margin-bottom:0;" required>
-                    </div>
-                    <div>
-                        <input type="text" name="name_en[]" placeholder="Skill Name (EN)" class="premium-input" style="margin-bottom:0;" required>
-                    </div>
-                    <div>
-                        <select name="type[]" class="premium-select" style="margin-bottom:0;">
-                            <option value="hard">⚙️ {{ __('messages.lbl_hard_skill') }}</option>
-                            <option value="soft">🧠 {{ __('messages.lbl_soft_skill') }}</option>
-                        </select>
-                    </div>
-                    <div style="width: 30px;"></div> </div>
-            </div>
-
-            <div class="form-actions-row" style="display: flex; gap: 10px; margin-top: 15px;">
-                <button type="button" onclick="agregarFilaHabilidadGobernanza()" class="btn-back-minimal" style="width: auto;">+ {{ __('messages.btn_add_more') }}</button>
-                <button type="submit" class="btn-premium btn-blue-hub" style="margin: 0; flex: 1;">💾 {{ __('messages.btn_save_skill') }}</button>
-            </div>
-        </form>
-    </div>
+    
 
     <!-- TABLA DE LISTADO DE REFERENCIA DEL MERCADO GLOBAL -->
     <div class="premium-glass-card">
@@ -392,8 +364,77 @@
         </div>
     </div>
 
+    <div class="premium-glass-card hub-bar-blue" style="padding: 26px;">
+        <h2 class="premium-glass-card-title" style="font-size: 16px; margin-bottom: 12px;">🧠 {{ __('messages.title_register_skills') }}</h2>
+        
+        <form method="POST" action="{{ route('superadmin.skills.store_multiple') }}">
+            @csrf
+            
+            <div id="contenedor-filas-habilidades" style="width: 100%;">
+                <div class="row-token-enlistar" style="display: grid; grid-template-columns: 2.5fr 2.5fr 2fr auto; gap: 10px; margin-bottom: 10px; background: transparent; padding: 0;">
+                    <div>
+                        <input type="text" name="name_es[]" placeholder="Competencia (ES)" class="premium-input" style="margin-bottom:0;" required>
+                    </div>
+                    <div>
+                        <input type="text" name="name_en[]" placeholder="Skill Name (EN)" class="premium-input" style="margin-bottom:0;" required>
+                    </div>
+                    <div>
+                        <select name="type[]" class="premium-select" style="margin-bottom:0;">
+                            <option value="hard">⚙️ {{ __('messages.lbl_hard_skill') }}</option>
+                            <option value="soft">🧠 {{ __('messages.lbl_soft_skill') }}</option>
+                        </select>
+                    </div>
+                    <div style="width: 30px;"></div> </div>
+            </div>
+
+            <div class="form-actions-row" style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="button" onclick="agregarFilaHabilidadGobernanza()" class="btn-back-minimal" style="width: auto;">+ {{ __('messages.btn_add_more') }}</button>
+                <button type="submit" class="btn-premium btn-blue-hub" style="margin: 0; flex: 1;">💾 {{ __('messages.btn_save_skill') }}</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="premium-glass-card hub-bar-yellow" style="padding: 26px;">
+        <div class="premium-glass-card-header">
+            <h3 class="premium-glass-card-title m-0">📋 Habilidades Activas en el Mercado</h3>
+        </div>
+        <div class="table-container">
+            <table class="premium-data-table">
+                <thead>
+                    <tr>
+                        <th>Naturaleza</th>
+                        <th>Competencia (Español)</th>
+                        <th>Competency Name (English)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php
+                        $todasLasSkills = DB::table('skills')->orderBy('type', 'asc')->orderBy('name_es', 'asc')->get();
+                    @endphp
+                    @forelse($todasLasSkills as $s)
+                        <tr>
+                            <td>
+                                @if($s->type === 'hard')
+                                    <span class="badge-semantic badge-machine">⚙️ HARD SKILL</span>
+                                @else
+                                    <span class="badge-semantic badge-lab">🧠 SOFT SKILL</span>
+                                @endif
+                            </td>
+                            <td class="text-white-pure font-bold">{{ $s->name_es }}</td>
+                            <td class="text-muted">{{ $s->name_en }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="empty-state">No hay habilidades registradas en el catálogo global aún.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- SECCIÓN PANORÁMICA DE REPUTACIÓN Y OPERACIONES EN RED -->
-    <div class="action-hubs-grid" style="align-items: start;">
+    <div class="action-hubs-grid" style="align-items: start; margin-bottom: 26px;">
         
         <!-- TOP LABS -->
         <div class="premium-glass-card m-0">
@@ -420,26 +461,26 @@
                 @endforeach
             </table>
         </div>
-
-        <!-- ÚLTIMAS TRANSACCIONES -->
-        <div class="premium-glass-card m-0">
-            <h2 class="premium-glass-card-title" style="font-size: 15px; margin-bottom: 15px;">{{ __('messages.lbl_last_ledger_operations') }}</h2>
-            <div class="table-container" style="max-height: 220px; overflow-y: auto;">
-                <table class="premium-data-table">
-                    @foreach($ultimas_tx as $tx)
-                    <tr>
-                        <td>
-                            <strong class="text-success-neon font-rajdhani-15" style="font-size:14px;">{{ number_format($tx->amount, 0) }} FC</strong><br>
-                            <span class="td-date-dim" style="font-size: 11px;">{{ $tx->user_name }}</span>
-                        </td>
-                        <td class="td-concept-desc" style="font-size: 11.5px; line-height:1.3;">{{ $tx->description }}</td>
-                    </tr>
-                    @endforeach
-                </table>
-            </div>
-        </div>
     </div>
 
+    <!-- ÚLTIMAS TRANSACCIONES -->
+    <div class="premium-glass-card hub-bar-yellow" style="padding: 26px;">
+        <h2 class="premium-glass-card-title" style="font-size: 15px; margin-bottom: 15px;">{{ __('messages.lbl_last_ledger_operations') }}</h2>
+        <div class="table-container" style="max-height: 220px; overflow-y: auto;">
+            <table class="premium-data-table">
+                @foreach($ultimas_tx as $tx)
+                <tr>
+                    <td>
+                        <strong class="text-success-neon font-rajdhani-15" style="font-size:14px;">{{ number_format($tx->amount, 0) }} FC</strong><br>
+                        <span class="td-date-dim" style="font-size: 11px;">{{ $tx->user_name }}</span>
+                    </td>
+                    <td class="td-concept-desc" style="font-size: 11.5px; line-height:1.3;">{{ $tx->description }}</td>
+                </tr>
+                @endforeach
+            </table>
+        </div>
+    </div>
+    
     <!-- RADAR DE MISIONES DE CO-CREACIÓN -->
     <div class="premium-glass-card hub-bar-pink" style="margin-top:25px;">
         <div class="premium-glass-card-header">

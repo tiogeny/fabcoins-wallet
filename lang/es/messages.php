@@ -52,6 +52,7 @@ return [
     'h1_forgot'                => 'Recuperar Acceso',
     'desc_forgot'              => 'Ingresa tu correo electrónico para recibir un enlace seguro de recuperación.',
     'btn_send_link'            => 'Enviar Enlace',
+    'validation_password_mismatch' => 'La contraseña actual ingresada no coincide con nuestros registros.',
 
     // =========================================================
     // 3. LANDING PAGE & MARKETING
@@ -258,9 +259,9 @@ return [
     'lbl_general_rating'       => 'Calificación General:',
     'ph_comment_work'          => 'Escribe una reseña honesta sobre la calidad del entregable...',
     'btn_approve_amortize'     => 'Confirmar y Reducir Deuda',
-    'btn_pay_rate'             => 'Confirmar Liberación de Pago',
+    'btn_pay_rate'             => 'Evaluar y liberar el pago hacia el creador',
     'lbl_mission_completed_by' => 'Misión Completada Por:',
-    'lbl_rating_sent'          => 'Calificación enviada',
+    'lbl_rating_sent'          => 'Calificación y pago enviado',
     'title_reservations'       => 'Solicitudes de Alquiler y Reservas de Maquinaria',
     'th_creator'               => 'Creador',
     'th_equipment'             => 'Equipo Solicitado',
@@ -269,7 +270,7 @@ return [
     'hist_empty'               => 'No hay solicitudes de reserva en tu bitácora contable.',
     'btn_assign_creator'     => 'Asignar Misión',
     'lbl_assigned_creator'   => 'Creador Asignado',
-    'msg_mission_completed'  => 'Misión finalizada. La transferencia ha sido procesada con éxito.',
+    'msg_mission_completed'  => 'Misión finalizada y pago a creador realizado.',
     'badge_info'             => 'Registro',
     'lbl_reward_per_creator' => 'Recompensa por Creador',
     // --- TRADUCCIONES DEL MERCADO DE MISIONES ---
@@ -280,7 +281,7 @@ return [
     'tx_release_prefix'       => 'Liberación (Misiones #:id):',
     'tx_release_amortized'    => 'Amortizados :amount FC de deuda.',
     'tx_release_transferred'  => 'Transferidos a :name',
-    'confirm_application'     => '¿Confirmas tu postulación a esta misión?',
+    'confirm_application'     => 'El Lab evaluará tu pefil antes de asignar esta misión',
     
     // Contratos ISA (Educativos)
     'title_isa_portfolio'      => 'Cartera de Financiamientos e ISA Activos',
@@ -316,6 +317,7 @@ return [
     'creator_portal'           => 'Panel del Creator',
     'kpi_finished_missions'    => 'Misiones Completadas',
     'kpi_wallet'               => 'Saldo Disponible',
+    'lbl_consumed'             => 'Consumidos',
     'lbl_skills_bullet'        => 'Especialidades destacadas',
     
     // Hubs Creator
@@ -440,6 +442,7 @@ return [
     'status_mission_finished'=> 'Misión Terminada',
 
     'swal_mission_applied_ok' => '¡Postulación enviada! El Lab la revisará pronto.',
+    'ph_review_lab_mision'       => 'Redacta una reseña honesta sobre el Lab, la precisión de la misión y los FC destinados a ella',
     
 
     // =========================================================
@@ -620,6 +623,9 @@ return [
     'lbl_hard_skill' => 'Habilidad Dura (Técnica / Fabricación)',
     'lbl_soft_skill' => 'Habilidad Blanda (Social / Gestión)',
     'btn_save_skill' => 'Guardar Competencia Global',
+    'msg_skill_ok' => 'Habilidades registradas con éxito',
+
+
     
     // Alertas de confirmación del Core
     'msg_lab_ok' => '¡Invitación enviada con éxito!',
