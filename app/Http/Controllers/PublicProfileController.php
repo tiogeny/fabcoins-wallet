@@ -10,10 +10,10 @@ class PublicProfileController extends Controller
 {
     public function show($slugOrId)
     {
-        // Buscamos al usuario por su ID o por su SLUG
+        // Buscamos al usuario por su ID o por su SLUG corporativo
         $user = User::where('slug', $slugOrId)->orWhere('id', $slugOrId)->firstOrFail();
         
-        // 1. Obtener las reseñas e historial unificado primero (necesario para el contador de habilidades)
+        // 1. Historial unificado de reseñas (Aplica tanto a Creadores como a Labs)
         $historialUnificado = DB::table('reviews')
             ->join('users', 'reviews.reviewer_id', '=', 'users.id')
             ->leftJoin('missions', function($join) {
@@ -32,17 +32,21 @@ class PublicProfileController extends Controller
             ->orderBy('reviews.created_at', 'desc')
             ->get();
 
-        // 2. Obtenemos las habilidades mapeando la tabla real 'skills' (Soporte bilingüe completo)
+        // Inicializamos colecciones vacías para prevenir fallas por variables no definidas
         $misHabilidades = collect();
+        $misMisionesAbiertas = collect();
+        $misActivos = collect();
+        $misMisionesNodo = collect();
+
+        // 2. Carga Dinámica Bifurcada según la naturaleza del Rol
         if ($user->role === 'creator') {
             try {
                 $misHabilidades = DB::table('user_skills')
-                    ->join('skills', 'user_skills.skill_id', '=', 'skills.id') // 🔥 CORRECCIÓN: Tabla unificada real
+                    ->join('skills', 'user_skills.skill_id', '=', 'skills.id')
                     ->where('user_skills.user_id', $user->id)
                     ->select('skills.id', 'skills.name_es', 'skills.name_en', 'skills.type')
                     ->get();
 
-                // 🧮 MOTOR DE ACUMULACIÓN DE ENDOSOS EN MEMORIA (Idéntico a tus capturas)
                 $endorsementsCounts = [];
                 foreach ($historialUnificado as $r) {
                     if (!empty($r->endorsed_skills)) {
@@ -57,7 +61,6 @@ class PublicProfileController extends Controller
                     }
                 }
 
-                // Inyectamos dinámicamente el contador a cada chip mapeando ambos idiomas
                 foreach ($misHabilidades as $sk) {
                     $countEs = $endorsementsCounts[trim($sk->name_es)] ?? 0;
                     $countEn = $endorsementsCounts[trim($sk->name_en)] ?? 0;
@@ -65,28 +68,45 @@ class PublicProfileController extends Controller
                 }
 
             } catch (\Exception $e) {
-                // Evitamos caídas en cascada si hay migraciones pendientes
                 $misHabilidades = collect();
             }
-        }
 
-        // Si quien visita es un Lab, traemos sus misiones abiertas para poder invitarlo
-        $misMisionesAbiertas = collect();
-        if (auth()->check() && auth()->user()->role === 'lab' && $user->role === 'creator') {
-            $misMisionesAbiertas = DB::table('missions')
-                ->where('lab_id', auth()->id())
+            // Si quien visita es un Lab, traemos sus misiones abiertas para poder invitarlo
+            if (auth()->check() && auth()->user()->role === 'lab') {
+                $misMisionesAbiertas = DB::table('missions')
+                    ->where('lab_id', auth()->id())
+                    ->where('status', 'open')
+                    ->whereRaw('spots_total > spots_filled')
+                    ->get();
+            }
+
+        } elseif ($user->role === 'lab') {
+            // 🏪 INFRAESTRUCTURA NODO: Activos reales activos que posean capacidad disponible mayor a cero
+            $misActivos = DB::table('lab_assets')
+                ->join('global_catalog', 'lab_assets.catalog_id', '=', 'global_catalog.id')
+                ->where('lab_assets.lab_id', $user->id)
+                ->where('lab_assets.status', 'active')
+                ->whereRaw('(lab_assets.useful_life_hours - lab_assets.consumed_hours) > 0')
+                ->select('lab_assets.*', 'global_catalog.generic_name as display_name')
+                ->get();
+
+            // 🎯 RADAR DE MISIONES NODO: Desafíos vigentes publicados exclusivamente por este laboratorio
+            $misMisionesNodo = DB::table('missions')
+                ->where('lab_id', $user->id)
                 ->where('status', 'open')
                 ->whereRaw('spots_total > spots_filled')
+                ->orderBy('created_at', 'desc')
                 ->get();
         }
 
-        // Enviamos los datos limpios a la vista
-        return view('public.profile', compact('user', 'misHabilidades', 'historialUnificado', 'misMisionesAbiertas'));
+        return view('public.profile', compact(
+            'user', 'misHabilidades', 'historialUnificado', 
+            'misMisionesAbiertas', 'misActivos', 'misMisionesNodo'
+        ));
     }
 
     public function invite(Request $request, $slugOrId)
     {
-        // Conservamos tu lógica exacta de invitaciones intacta...
         $request->validate([
             'creator_id' => 'required|exists:users,id',
             'mission_id' => 'required|exists:missions,id',

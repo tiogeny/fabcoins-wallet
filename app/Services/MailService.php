@@ -427,4 +427,272 @@ class MailService
 
         return self::enviar($emailLab, "⭐ Nueva Calificación Recibida - FabCoins", "⭐ New Review Received - FabCoins", "⭐ Evaluación de Reputación", "⭐ Reputation Evaluation", $msgEs, $msgEn);
     }
+
+    /**
+     * ==========================================================================
+     * 📅 BLOQUE 04 - ALQUILER CONTABLE DE HARDWARE Y RESERVAS (DINÁMICO)
+     * ==========================================================================
+     */
+
+    /**
+     * CORREO 4A: ALERTA DE RESERVA ENTRANTE (PAGO LÍQUIDO) PARA EL LAB
+     */
+    public static function reservaActivoAlLab($emailLab, $nombreLab, $nombreCreator, $nombreEquipo, $parametroTexto, $totalFc, $fecha, $tipoActivo = 'machine')
+    {
+        // 🎯 DETECTOR DE PALABRAS SEGÚN NATURALEZA
+        $conceptoEs = "un activo"; $unidadEs = "Cantidad";
+        $conceptoEn = "an asset";  $unidadEn = "Requested usage";
+
+        if ($tipoActivo === 'workshop' || $tipoActivo === 'service') {
+            $conceptoEs = "un taller / servicio"; $unidadEs = "Cupos reservados";
+            $conceptoEn = "a workshop / service";  $unidadEn = "Reserved slots";
+        } elseif ($tipoActivo === 'lab') {
+            $conceptoEs = "un espacio de trabajo"; $unidadEs = "Horas reservadas";
+            $conceptoEn = "a workspace";           $unidadEn = "Reserved hours";
+        } elseif ($tipoActivo === 'machine') {
+            $conceptoEs = "una maquinaria";        $unidadEs = "Horas reservadas";
+            $conceptoEn = "a machinery asset";     $unidadEn = "Reserved hours";
+        }
+
+        $msgEs = "
+        <p>Hola <strong>$nombreLab</strong>,</p>
+        <p>El creador <strong>$nombreCreator</strong> ha realizado la reserva de <strong>$conceptoEs</strong> en tu inventario utilizando sus FabCoins líquidos.</p>
+        <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
+            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Resumen de la Orden:</p>
+            <p style='margin:0 0 4px 0;'><strong>Nombre:</strong> $nombreEquipo</p>
+            <p style='margin:0 0 4px 0;'><strong>$unidadEs:</strong> $parametroTexto</p>
+            <p style='margin:0 0 4px 0;'><strong>Fecha de la cita:</strong> " . date('d/m/Y', strtotime($fecha)) . "</p>
+            <p style='margin:0;'><strong>Total transferido:</strong> <span style='color:#2ecc71; font-weight:bold;'>" . number_format($totalFc, 0) . " FC</span></p>
+        </div>
+        <p>Ingresa a tu panel de control para revisar el calendario y coordinar la entrega del servicio o la preparación del recurso.</p>";
+
+        $msgEn = "
+        <p>Hello <strong>$nombreLab</strong>,</p>
+        <p>The creator <strong>$nombreCreator</strong> has successfully booked <strong>$conceptoEn</strong> from your inventory using liquid FabCoins.</p>
+        <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
+            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Order Summary:</p>
+            <p style='margin:0 0 4px 0;'><strong>Name:</strong> $nombreEquipo</p>
+            <p style='margin:0 0 4px 0;'><strong>$unidadEn:</strong> $parametroTexto</p>
+            <p style='margin:0 0 4px 0;'><strong>Scheduled date:</strong> " . date('d/m/Y', strtotime($fecha)) . "</p>
+            <p style='margin:0;'><strong>Total transferred:</strong> <span style='color:#2ecc71; font-weight:bold;'>" . number_format($totalFc, 0) . " FC</span></p>
+        </div>
+        <p>Log into your dashboard to check the schedule logs and prepare the resource for the user.</p>";
+
+        $asuntoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "📅 Nueva Inscripción a Taller - FabCoins" : "📅 Nueva Reserva de Infraestructura - FabCoins";
+        $asuntoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "📅 New Workshop Registration - FabCoins" : "📅 New Infrastructure Booking - FabCoins";
+
+        return self::enviar($emailLab, $asuntoEs, $asuntoEn, "📅 Reserva Líquida Recibida", "📅 Liquid Booking Received", $msgEs, $msgEn);
+    }
+
+    /**
+     * CORREO 4B: PROPUESTA DE CAMBIO DE FECHA (RESCHEDULE)
+     */
+    public static function propuestaReprogramacionActivo($emailCreator, $nombreCreator, $nombreLab, $nombreEquipo, $nuevaFecha, $tipoActivo = 'machine')
+    {
+        $linkAcceso = route('login');
+
+        $recursoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "del taller" : (($tipoActivo === 'lab') ? "del espacio" : "del equipo");
+        $recursoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "of the workshop" : (($tipoActivo === 'lab') ? "of the space" : "of the equipment");
+
+        $msgEs = "
+        <p>Hola <strong>$nombreCreator</strong>,</p>
+        <p>El equipo técnico de <strong>$nombreLab</strong> nos informa que debido a problemas de agenda o mantenimiento físico, se debe cambiar la fecha de tu reserva $recursoEs <strong>$nombreEquipo</strong>.</p>
+        <p>El laboratorio te propone el siguiente día alternativo:</p>
+        <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; text-align:center; margin: 20px 0;'>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase;'>Nueva Fecha Propuesta:</span>
+            <span style='font-size:18px; font-weight:800; color:#f1c40f;'>" . date('d M Y', strtotime($nuevaFecha)) . "</span>
+        </div>
+        <p>Por favor, ingresa a tu cuenta para <strong>Aceptar</strong> o <strong>Rechazar</strong> este cambio. Si decides rechazarlo, tus FabCoins en garantía serán devueltos de inmediato a tu billetera.</p>
+        <p style='text-align:center; margin:25px 0 10px 0;'>
+            <a href='$linkAcceso' style='background-color:#f39c12; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Responder Reprogramación</a>
+        </p>";
+
+        $msgEn = "
+        <p>Hello <strong>$nombreCreator</strong>,</p>
+        <p>The technical support team at <strong>$nombreLab</strong> has informed us that due to calendar constraints or maintenance, they need to update your booking date $recursoEn <strong>$nombreEquipo</strong>.</p>
+        <p>The laboratory proposes the following alternative date:</p>
+        <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; text-align:center; margin: 20px 0;'>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase;'>New Proposed Date:</span>
+            <span style='font-size:18px; font-weight:800; color:#f1c40f;'>" . date('d M Y', strtotime($nuevaFecha)) . "</span>
+        </div>
+        <p>Please log into your dashboard to either <strong>Accept</strong> or <strong>Reject</strong> this change. If you decline, your escrowed tokens will be immediately returned to your wallet balance.</p>
+        <p style='text-align:center; margin:25px 0 10px 0;'>
+            <a href='$linkAcceso' style='background-color:#f39c12; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Respond to Reschedule</a>
+        </p>";
+
+        return self::enviar($emailCreator, "⏳ Propuesta de Cambio de Fecha - FabCoins", "⏳ Date Change Proposal - FabCoins", "⏳ Reprogramación de Calendario", "⏳ Schedule Reschedule Proposal", $msgEs, $msgEn);
+    }
+
+    /**
+     * CORREO 4C: RESPUESTA A LA REPROGRAMACIÓN (AVISO PARA EL LAB)
+     */
+    public static function respuestaReprogramacionAlLab($emailLab, $nombreLab, $nombreCreator, $nombreEquipo, $esAceptado, $tipoActivo = 'machine')
+    {
+        $estadoEs = $esAceptado ? "ACEPTADO tu propuesta de nueva fecha" : "DECLINADO tu propuesta de fecha y cancelado la orden";
+        $estadoEn = $esAceptado ? "ACCEPTED your new schedule proposal" : "DECLINED your schedule proposal and canceled the order";
+
+        $recursoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "al taller" : (($tipoActivo === 'lab') ? "al espacio" : "al equipo");
+        $recursoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "the workshop" : (($tipoActivo === 'lab') ? "the space" : "the equipment");
+
+        $msgEs = "
+        <p>Hola <strong>$nombreLab</strong>,</p>
+        <p>El creador <strong>$nombreCreator</strong> ha <strong>$estadoEs</strong> relativo $recursoEs: <strong>$nombreEquipo</strong>.</p>
+        <p>Por favor ingresa a tu panel de control para revisar los detalles actualizados de la agenda.</p>";
+
+        $msgEn = "
+        <p>Hello <strong>$nombreLab</strong>,</p>
+        <p>The creator <strong>$nombreCreator</strong> has <strong>$estadoEn</strong> regarding $recursoEn: <strong>$nombreEquipo</strong>.</p>
+        <p>Please log into your dashboard to check the updated schedule logs.</p>";
+
+        return self::enviar($emailLab, "📅 Respuesta de Reprogramación - FabCoins", "📅 Reschedule Response - FabCoins", "📅 Actualización de Calendario", "📅 Schedule Update", $msgEs, $msgEn);
+    }
+
+    /**
+     * CORREO 4D: CONFIRMACIÓN DE RESERVA APROBADA
+     */
+    public static function confirmacionReservaActivo($emailCreator, $nombreCreator, $nombreLab, $nombreEquipo, $fecha, $horas, $tipoActivo = 'machine')
+    {
+        // 🎯 ETIQUETAS DINÁMICAS DE UNIDAD Y TÍTULOS
+        $tituloEs = "Tu turno de uso ha sido asegurado en la agenda del laboratorio.";
+        $tituloEn = "Your time slot is now secured in the laboratory logbook.";
+        $unidadEs = "Horas reservadas"; $unidadEn = "Reserved hours";
+        $cantTexto = "$horas horas";
+
+        if ($tipoActivo === 'workshop' || $tipoActivo === 'service') {
+            $tituloEs = "Tu inscripción ha sido confirmada en la lista de asistencia.";
+            $tituloEn = "Your registration has been confirmed in the attendance logs.";
+            $unidadEs = "Cupos asegurados"; $unidadEn = "Secured slots";
+            $cantTexto = "$horas cupos";
+        }
+
+        $msgEs = "
+        <p>¡Hola <strong>$nombreCreator</strong>!</p>
+        <p>Tu solicitud ha sido aprobada por el equipo de <strong>$nombreLab</strong>. $tituloEs</p>
+        <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
+            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Datos Confirmados:</p>
+            <p style='margin:0 0 4px 0;'><strong>Nombre:</strong> $nombreEquipo</p>
+            <p style='margin:0 0 4px 0;'><strong>Fecha programada:</strong> " . date('d M Y', strtotime($fecha)) . "</p>
+            <p style='margin:0;'><strong>$unidadEs:</strong> $cantTexto</p>
+        </div>
+        <p style='margin-bottom:6px; font-weight:bold; color:#ffffff;'>⚠️ Normativas de Asistencia y Seguridad:</p>
+        <ul style='margin-top:0; padding-left:20px; color:#cbd5e0; font-size:13.5px;'>
+            <li>Llega con 15 minutes de anticipación para coordinar con los encargados de soporte.</li>
+            <li>Usa calzado cerrado y cabello recogido si vas a operar herramientas o maquinaria física.</li>
+            <li>Si requieres materiales adicionales o archivos de preparación previa, revísalos antes con el nodo.</li>
+        </ul>";
+
+        $msgEn = "
+        <p>Hello <strong>$nombreCreator</strong>!</p>
+        <p>Your request has been officially approved by the team at <strong>$nombreLab</strong>. $tituloEn</p>
+        <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
+            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Confirmed Data:</p>
+            <p style='margin:0 0 4px 0;'><strong>Name:</strong> $nombreEquipo</p>
+            <p style='margin:0 0 4px 0;'><strong>Scheduled Date:</strong> " . date('d M Y', strtotime($fecha)) . "</p>
+            <p style='margin:0;'><strong>$unidadEn:</strong> $cantTexto</p>
+        </div>
+        <p style='margin-bottom:6px; font-weight:bold; color:#ffffff;'>⚠️ Attendance & Safety Regulations:</p>
+        <ul style='margin-top:0; padding-left:20px; color:#cbd5e0; font-size:13.5px;'>
+            <li>Please arrive 15 minutes early to coordinate with the support staff.</li>
+            <li>Wear closed-toe shoes and tie back long hair if operating physical tools or machinery.</li>
+            <li>If you need extra raw materials or setup files, verify them with the node beforehand.</li>
+        </ul>";
+
+        $asuntoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "✅ Inscripción Confirmada al Taller - FabCoins" : "✅ Tu Reserva ha sido Confirmada - FabCoins";
+        $asuntoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "✅ Workshop Registration Confirmed - FabCoins" : "✅ Your Reservation has been Confirmed - FabCoins";
+
+        return self::enviar($emailCreator, $asuntoEs, $asuntoEn, ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "✅ Registro Exitoso" : "✅ Reserva Confirmada", ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "✅ Registration Successful" : "✅ Booking Confirmed", $msgEs, $msgEn);
+    }
+
+    /**
+     * CORREO 4E: SOLICITUD DE CRÉDITO ISA / ALQUILER DE HARDWARE
+     */
+    public static function solicitudCreditoActivo($emailLab, $nombreLab, $nombreCreator, $nombreEquipo, $horas, $montoCredito, $tipoActivo = 'machine')
+    {
+        $linkAcceso = route('login');
+
+        $conceptoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "un taller / servicio" : (($tipoActivo === 'lab') ? "un espacio" : "un equipo");
+        $conceptoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "a workshop / service" : (($tipoActivo === 'lab') ? "a space" : "an equipment");
+        $unidadEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "Cupos requeridos" : "Tiempo estimado";
+        $unidadEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "Requested slots" : "Estimated time";
+
+        $msgEs = "
+        <p>Hola <strong>$nombreLab</strong>,</p>
+        <p>El creador <strong>$nombreCreator</strong> ha solicitado reservar <strong>$conceptoEs</strong> en tu sede utilizando un crédito debido a que no cuenta con saldo líquido suficiente.</p>
+        <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
+            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Detalles de la Solicitud:</p>
+            <p style='margin:0 0 4px 0;'><strong>Nombre:</strong> $nombreEquipo</p>
+            <p style='margin:0 0 4px 0;'><strong>$unidadEs:</strong> $horas</p>
+            <p style='margin:0; '><strong>Crédito solicitado:</strong> <span style='color:#f1c40f; font-weight:bold;'>" . number_format($montoCredito, 0) . " FC</span></p>
+        </div>
+        <p>Por favor, ingresa a tu panel de control para revisar esta propuesta de financiamiento, evaluar el perfil del alumno y decidir si apruebas la solicitud.</p>
+        <p style='text-align:center; margin:25px 0 10px 0;'>
+            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Revisar Solicitud en el Panel</a>
+        </p>";
+
+        $msgEn = "
+        <p>Hello <strong>$nombreLab</strong>,</p>
+        <p>The creator <strong>$nombreCreator</strong> has requested to reserve <strong>$conceptoEn</strong> at your lab using a credit because they do not have enough liquid balance.</p>
+        <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
+            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Request Details:</p>
+            <p style='margin:0 0 4px 0;'><strong>Name:</strong> $nombreEquipo</p>
+            <p style='margin:0 0 4px 0;'><strong>$unidadEn:</strong> $horas</p>
+            <p style='margin:0; '><strong>Requested Credit:</strong> <span style='color:#f1c40f; font-weight:bold;'>" . number_format($montoCredito, 0) . " FC</span></p>
+        </div>
+        <p>Please log into your dashboard to review this financing proposal, evaluate the creator's profile, and decide whether to approve the request.</p>
+        <p style='text-align:center; margin:25px 0 10px 0;'>
+            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Review Request in Dashboard</a>
+        </p>";
+
+        $asuntoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "📅 Solicitud de Taller con Crédito - FabCoins" : "📅 Nueva Solicitud de Alquiler con Crédito ISA - FabCoins";
+        $asuntoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "📅 Workshop Request with Credit - FabCoins" : "📅 New Rental Request with ISA Credit - FabCoins";
+
+        return self::enviar($emailLab, $asuntoEs, $asuntoEn, "📅 Solicitud de Financiamiento Recibida", "📅 Financing Request Received", $msgEs, $msgEn);
+    }
+
+    /**
+     * CORREO 4F: RESOLUCIÓN DE CRÉDITO ISA (AVISO PARA EL CREATOR)
+     */
+    public static function resolucionCreditoAlCreator($emailCreator, $nombreCreator, $nombreLab, $monto, $esAprobado, $tipoActivo = 'machine')
+    {
+        $asuntoEs = $esAprobado ? "✅ Crédito Aprobado - FabCoins" : "❌ Crédito Rechazado - FabCoins";
+        $asuntoEn = $esAprobado ? "✅ Credit Approved - FabCoins" : "❌ Credit Declined - FabCoins";
+        
+        $destinoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "tu inscripción al taller" : "tu reserva de tiempo";
+        $destinoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "your workshop registration" : "your time reservation";
+
+        $msgEs = $esAprobado 
+            ? "<p>¡Hola <strong>$nombreCreator</strong>!</p><p>El equipo de <strong>$nombreLab</strong> ha <strong>APROBADO</strong> tu solicitud de crédito por un valor de <strong>" . number_format($monto, 0) . " FC</strong>. Debido a esto, $destinoEs ya se encuentra activa y registrada.</p>"
+            : "<p>Hola <strong>$nombreCreator</strong>,</p><p>Te informamos que tu solicitud de crédito por un valor de <strong>" . number_format($monto, 0) . " FC</strong> fue rechazada por <strong>$nombreLab</strong>. El saldo parcial que se había retenido fue devuelto a tu billetera.</p>";
+
+        $msgEn = $esAprobado
+            ? "<p>Hello <strong>$nombreCreator</strong>!</p><p>The team at <strong>$nombreLab</strong> has <strong>APPROVED</strong> your credit request for <strong>" . number_format($monto, 0) . " FC</strong>. Therefore, $destinoEn is now active and secured.</p>"
+            : "<p>Hello <strong>$nombreCreator</strong>,</p><p>We inform you that your credit request for <strong>" . number_format($monto, 0) . " FC</strong> was declined by <strong>$nombreLab</strong>. Any held balance has been returned to your wallet balance.</p>";
+
+        return self::enviar($emailCreator, $asuntoEs, $asuntoEn, $esAprobado ? "✅ Crédito Autorizado" : "❌ Crédito No Aprobado", $esAprobado ? "✅ Credit Authorized" : "❌ Credit Declined", $msgEs, $msgEn);
+    }
+
+    /**
+     * CORREO 4G: RESERVA RECHAZADA (AVISO PARA EL CREATOR)
+     */
+    public static function reservaRechazadaAlCreator($emailCreator, $nombreCreator, $nombreLab, $nombreEquipo, $tipoActivo = 'machine')
+    {
+        $conceptoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "de inscripción para el taller" : "de reserva para el activo";
+        $conceptoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "registration request for the workshop" : "reservation request for the asset";
+
+        $msgEs = "
+        <p>Hola <strong>$nombreCreator</strong>,</p>
+        <p>Te informamos que tu solicitud $conceptoEs <strong>$nombreEquipo</strong> fue rechazada por el laboratorio <strong>$nombreLab</strong>.</p>
+        <p>Los fondos en garantía han sido devueltos por completo al saldo de tu billetera líquida.</p>";
+
+        $msgEn = "
+        <p>Hello <strong>$nombreCreator</strong>,</p>
+        <p>We inform you that your $conceptoEn <strong>$nombreEquipo</strong> was declined by the laboratory <strong>$nombreLab</strong>.</p>
+        <p>The escrowed funds have been fully refunded to your liquid wallet balance.</p>";
+
+        $asuntoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "❌ Inscripción Rechazada - FabCoins" : "❌ Reserva Rechazada - FabCoins";
+        $asuntoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "❌ Registration Declined - FabCoins" : "❌ Reservation Declined - FabCoins";
+
+        return self::enviar($emailCreator, $asuntoEs, $asuntoEn, "❌ Solicitud No Procesada", "❌ Request Not Processed", $msgEs, $msgEn);
+    }
+    
 }

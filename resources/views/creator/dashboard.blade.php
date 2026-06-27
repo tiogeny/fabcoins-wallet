@@ -110,10 +110,14 @@
                     <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
                         @php 
-                            // Matemática de Reservas: Custodia, Confirmadas y Consumidas
-                            $resCustodia = $misReservas->where('status', 'pending')->count();
-                            $resConfirmadas = $misReservas->where('status', 'approved')->count();
-                            $resConsumidas = $misReservas->where('status', 'completed')->count();
+                            // ⏳ EN ESPERA: Órdenes en estado pendiente o reprogramadas por el Lab
+                            $resCustodia = $misReservas->whereIn('status', ['pending', 'rescheduled'])->count();
+
+                            // 🔵 POR USAR: Órdenes aprobadas (completed) que el Creador aún no ha calificado
+                            $resConfirmadas = $misReservas->where('status', 'completed')->where('is_reviewed', 0)->count();
+
+                            // 🟢 COMPLETADOS: Órdenes aprobadas que ya cumplieron todo su ciclo y fueron calificadas
+                            $resConsumidas = $misReservas->where('status', 'completed')->where('is_reviewed', 1)->count();
                             
                             $totalRes = max(1, $resCustodia + $resConfirmadas + $resConsumidas);
                             
@@ -146,11 +150,33 @@
                     <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
                         @php 
-                            // Matemática de Billetera: Distribución de la riqueza histórica
+                            // ⚖️ SALDO LÍQUIDO: El dinero real que el creador tiene libre en su cuenta
                             $fcLíquidos  = max(0, $saldoTotal);
-                            $fcCustodia  = DB::table('transactions')->where('user_id', $creator->id)->where('type', 'escrow')->sum('amount');
-                            $fcGastados  = DB::table('transactions')->where('user_id', $creator->id)->where('type', 'expense')->sum('amount');
+
+                            // ⏳ EN ESPERA BRUTO: Suma total de las órdenes pendientes
+                            $fcCustodiaRaw = floatval(DB::table('orders')
+                                ->where('creator_id', $creator->id)
+                                ->whereIn('status', ['pending', 'rescheduled'])
+                                ->sum('total_fc'));
+
+                            // 🤝 CRÉDITOS NO APROBADOS: Buscamos promesas de financiamiento que aún están en "pending"
+                            $creditosPendientes = floatval(DB::table('financing_agreements')
+                                ->where('creator_id', $creator->id)
+                                ->where('status', 'pending')
+                                ->sum('amount_initial'));
+
+                            // ⏱️ CUSTODIA NETO: Restamos el crédito pendiente para que solo cuente el pago parcial real (los 75 FC)
+                            $fcCustodia = max(0, $fcCustodiaRaw - $creditosPendientes);
+
+                            // 💸 CONSUMIDOS REALES: Gastos totales ejecutados en transacciones menos la custodia neta retenida
+                            $totalGastosRaw = floatval(DB::table('transactions')
+                                ->where('user_id', $creator->id)
+                                ->where('type', 'expense')
+                                ->sum('amount'));
                             
+                            $fcGastados  = max(0, $totalGastosRaw - $fcCustodia);
+                            
+                            // Capital total para la estabilidad y proporciones del gráfico circular
                             $totalCapital = max(1, $fcLíquidos + $fcCustodia + $fcGastados);
                             
                             $pLiq = ($fcLíquidos / $totalCapital) * $circunferencia;
@@ -250,14 +276,69 @@ function regresarAlHubCentralPersistente(hubId) {
     if (homeHub) homeHub.style.display = 'grid';
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-    // Restauración de estado dinámico
-    const hubGuardado = sessionStorage.getItem('active_creator_hub');
-    if (hubGuardado) {
-        abrirHubPersistente(hubGuardado);
-    }
+/**
+ * 🚀 FUNCIÓN DEDICADA UNIFICADA: Enrutador de accesos desde el perfil público.
+ * Se ejecuta de forma aislada y segura una sola vez.
+ */
+function procesarEnrutamientoEcosistemaPublico() {
+    try {
+        // 🚀 LECTURA DE ALMACÉN GLOBAL (INMUNE A REGLAS DE PESTAÑAS)
+        const tieneLab = localStorage.getItem('auto_filtrar_lab');
+        const tieneMision = localStorage.getItem('auto_filtrar_mision');
 
+        console.log(" Harrison-Log -> Leyendo Memoria Temporal:", tieneLab, " | Misión =", tieneMision);
+
+        if (tieneLab) {
+            console.log(" Harrison-Log -> ¡Memoria detectada! Abriendo MERCADO...");
+            localStorage.removeItem('auto_filtrar_lab'); // 🧼 Limpieza para evitar bucles
+            abrirHubPersistente('hub-mercado');
+
+            // 🎯 SIMULACIÓN DEL MAPA: Ejecuta el filtro contable del laboratorio
+            setTimeout(() => {
+                if (typeof filtrarCatalogoMercadoVivo === 'function') {
+                    // Si tu función global del mapa se llama así, la ejecuta directamente
+                    filtrarCatalogoMercadoVivo(tieneLab);
+                } else {
+                    // Alternativa defensiva: busca el selector/input de la sub-view y fuerza su cambio
+                    const selectorCatalogo = document.getElementById('filter-cat') || document.getElementById('lab-selector');
+                    if (selectorCatalogo) {
+                        selectorCatalogo.value = tieneLab;
+                        selectorCatalogo.dispatchEvent(new Event('change'));
+                    }
+                }
+            }, 150); // ⏱️ Holgura de 150ms para que el HTML interno de la pestaña termine de despertar
+        } else if (tieneMision) {
+            console.log(" Harrison-Log -> ¡Memoria detectada! Abriendo MISIONES...");
+            localStorage.removeItem('auto_filtrar_mision'); // 🧼 Limpieza inmediata
+            abrirHubPersistente('hub-misiones');
+
+            // 🎯 DISPARADOR: Filtra la bolsa de misiones de forma asíncrona
+            setTimeout(() => {
+                // Buscamos el selector o buscador que uses en tu pestaña de misiones
+                const selectorMisiones = document.getElementById('filter-mission-lab') || document.getElementById('mission-lab-selector');
+                if (selectorMisiones) {
+                    selectorMisiones.value = tieneMision;
+                    selectorMisiones.dispatchEvent(new Event('change'));
+                }
+            }, 150); // ⏱️ Holgura milimétrica para el renderizado del DOM
+        } else {
+            const hubGuardado = sessionStorage.getItem('active_creator_hub');
+            if (hubGuardado) abrirHubPersistente(hubGuardado);
+        }
+    } catch (error) {
+        console.warn("Aviso en enrutador unificado:", error);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    
+    // Variable principal para la lectura de alertas y SweetAlerts
     const urlParams = new URLSearchParams(window.location.search);
+
+    // ⏱️ IMITACIÓN DE CAMPANITA: Espera 700ms a que la suite esté 100% dibujada para abrir el espacio inmersivo
+    setTimeout(procesarEnrutamientoEcosistemaPublico, 700);
+
+    // Procesamiento nativo de alertas informativas y errores de la plataforma
     const msg = urlParams.get('msg') || "{{ session('msg') }}";
     const error = "{{ session('error') ?? '' }}";
     
@@ -270,18 +351,21 @@ document.addEventListener("DOMContentLoaded", function() {
         customClass: { popup: 'premium-popup' }
     };
 
-    // 🌐 SCRIPTS CON SOPORTE MULTIDIOMA INTEGRADO
     const alertas = {
         'mission_applied_ok': { icon: 'success', title: '🚀 ' + "{{ __('messages.swal_success') ?? '¡Éxito!' }}", text: "{{ __('messages.swal_mission_applied_ok') }}" },
         'applied_ok': { icon: 'success', title: '🎯 ' + "{{ __('messages.swal_success') }}", text: "{{ __('messages.swal_applied_ok_desc') }}" },
-        'credit_accepted': { icon: 'success', title: '🎓 ' + "{{ __('messages.swal_success') }}", text: "{{ __('messages.swal_credit_accepted_desc') }}" },
         'p2p_ok': { icon: 'success', title: '💰 ' + "{{ __('messages.swal_success') }}", text: "{{ __('messages.swal_p2p_ok_desc') }}" },
         'profile_updated': { icon: 'success', title: '👤 ' + "{{ __('messages.swal_success') }}", text: "{{ __('messages.swal_profile_completed_desc') }}" },
         'pass_ok': { icon: 'success', title: '🔒 ' + "{{ __('messages.swal_success') }}", text: "{{ __('messages.swal_pass_ok_desc') }}" },
-        'rental_pending': { icon: 'warning', title: '⏳ ' + "{{ __('messages.status_enlisted') }}", text: "{{ __('messages.swal_rental_pending_desc') }}" },
+        'rental_pending': { icon: 'warning', title: '⏳ ' + "{{ __('messages.swal_rental_pending_title') }}", text: "{{ __('messages.swal_rental_pending_desc') }}" },
+        'credit_pending': { icon: 'warning', title: '⏳ ' + "{{ __('messages.swal_credit_pending_title') }}", text: "{{ __('messages.swal_credit_pending_desc') }}" },
+        'credit_accepted': { icon: 'success', title: '🎓 ' + "{{ __('messages.swal_success') }}", text: "{{ __('messages.swal_credit_accepted_desc') }}" },
         'date_accepted': { icon: 'success', title: '✅ ' + "{{ __('messages.swal_success') }}", text: "{{ __('messages.swal_date_accepted_desc') }}" },
         'date_rejected': { icon: 'error', title: '❌ ' + "{{ __('messages.swal_refunded_title') }}", text: "{{ __('messages.swal_date_rejected_desc') }}" },
         'review_ok': { icon: 'success', title: '⭐ ' + "{{ __('messages.swal_reviewed_title') }}", text: "{{ __('messages.swal_review_ok_desc') }}" },
+        'reservation_approved_ok': { icon: 'success', title: '✅ ' + "{{ __('messages.swal_success') }}", text: "{{ __('messages.msg_reservation_approved_ok') }}" },
+        'reservation_rejected_ok': { icon: 'error', title: '❌ ' + "{{ __('messages.swal_attention') }}", text: "{{ __('messages.msg_reservation_rejected_ok') }}" },
+        'reservation_rescheduled_ok': { icon: 'info', title: '🔄 ' + "{{ __('messages.swal_attention') }}", text: "{{ __('messages.msg_reservation_rescheduled_ok') }}" },
     };
 
     if (msg && alertas[msg]) {

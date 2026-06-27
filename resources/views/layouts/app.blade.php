@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     
     <link rel="icon" type="image/webp" href="{{ asset('images/logo-icon.webp') }}">
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v=5.6">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v=6.2">
     @stack('styles')
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />

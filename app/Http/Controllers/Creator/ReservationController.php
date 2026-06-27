@@ -36,8 +36,8 @@ class ReservationController extends Controller
 
         DB::transaction(function() use ($creator, $assetId, $horas, $fecha, $costoTotal, $asset, $saldoTotal, $isCreditRequest) {
             
-            // 1. Insertar siempre la Orden de Reserva
-            DB::table('orders')->insert([
+            // 1. Insertar siempre la Orden de Reserva capturando su ID autogenerado
+            $orderId = DB::table('orders')->insertGetId([
                 'creator_id'       => $creator->id, 
                 'asset_id'         => $assetId, 
                 'hours_requested'  => $horas, 
@@ -65,6 +65,7 @@ class ReservationController extends Controller
                 // Generamos la propuesta de financiamiento (ISA) para el Lab
                 DB::table('financing_agreements')->insert([
                     'creator_id' => $creator->id,
+                    'order_id' => $orderId,
                     'lab_id' => $asset->lab_id,
                     'amount_initial' => $diferencia,
                     'amount_remaining' => $diferencia,
@@ -110,14 +111,26 @@ class ReservationController extends Controller
             }
         });
 
-        // 📨 TRIGGER: Despacha correo bilingüe de alerta de reserva hacia el Laboratorio dueño del activo
+        // 📨 TRIGGER INTERACTIVO: Envía el correo correcto según el tipo de pago (Líquido o Crédito ISA)
         $lab = DB::table('users')->where('id', $asset->lab_id)->first();
         if ($lab) {
-            $parametroTexto = ($asset->asset_type === 'workshop') ? "$horas cupos solicitado(s)" : "$horas horas solicitadas";
-            MailService::reservaHardwareAlLab($lab->email, $lab->name, $creator->name, $asset->custom_name, $parametroTexto, $costoTotal, $fecha);
+            $parametroTexto = ($asset->asset_type === 'workshop') ? "$horas cupos" : "$horas horas";
+            
+            if ($isCreditRequest && $saldoTotal < $costoTotal) {
+                // Llama al correo de solicitud de financiamiento que armamos antes
+                MailService::solicitudCreditoActivo($lab->email, $lab->name, $creator->name, $asset->custom_name, $parametroTexto, $costoTotal, $asset->asset_type);
+            } else {
+                // 🎯 REPARADO: Pasamos la variable correcta ($costoTotal) para evitar el error de ejecucion
+                MailService::reservaActivoAlLab($lab->email, $lab->name, $creator->name, $asset->custom_name, $parametroTexto, $costoTotal, $fecha, $asset->asset_type);
+            }
         }
 
-        // Podemos usar el mismo mensaje de éxito por ahora
+        // 🎯 DETECTOR FINTECH: Si requirió crédito, despacha una alerta del ecosistema financiero
+        if ($isCreditRequest && $saldoTotal < $costoTotal) {
+            return redirect()->route('creator.dashboard')->with('msg', 'credit_pending');
+        }
+
+        // Flujo tradicional con saldo líquido ordinario
         return redirect()->route('creator.dashboard')->with('msg', 'rental_pending');
     }
 
@@ -134,22 +147,13 @@ class ReservationController extends Controller
 
         DB::transaction(function() use ($order, $asset) {
             DB::table('orders')->where('id', $order->id)->update(['status' => 'pending']);
-            
-            DB::table('notifications')->insert([
-                'user_id'    => $asset->lab_id, 
-                'message'    => __('messages.notif_date_accepted'), 
-                'type'       => 'success', 
-                'created_at' => now()
-            ]);
+            DB::table('notifications')->insert(['user_id' => $asset->lab_id, 'message' => __('messages.notif_date_accepted'), 'type' => 'success', 'created_at' => now()]);
         });
         
-        // 📨 TRIGGER: Notifica al Lab que el creador dio el visto bueno a la nueva fecha propuesta
+        // 📨 TRIGGER CLEAN: Remolca la plantilla bilingüe estructurada
         $lab = DB::table('users')->where('id', $asset->lab_id)->first();
-        $creator = auth()->user();
         if ($lab) {
-            $msgEs = "<p>Hola <strong>{$lab->name}</strong>,</p><p>El Creador <strong>{$creator->name}</strong> ha **ACEPTADO** tu propuesta de nueva fecha de calendario para usar el activo <strong>{$asset->custom_name}</strong>.</p><p>Por favor ingresa a tu panel para proceder con la aprobación de la reserva.</p>";
-            $msgEn = "<p>Hello <strong>{$lab->name}</strong>,</p><p>The Creator <strong>{$creator->name}</strong> has **ACCEPTED** your new calendar date proposal to use the asset <strong>{$asset->custom_name}</strong>.</p><p>Please log into your dashboard to proceed with the reservation approval.</p>";
-            MailService::enviar($lab->email, "📅 Fecha de Reprogramación Aceptada", "📅 Rescheduling Date Accepted", "📅 Calendario Confirmado", "📅 Schedule Confirmed", $msgEs, $msgEn);
+            MailService::respuestaReprogramacionAlLab($lab->email, $lab->name, auth()->user()->name, $asset->custom_name, true);
         }
 
         return redirect()->route('creator.dashboard')->with('msg', 'date_accepted');
@@ -167,31 +171,15 @@ class ReservationController extends Controller
         $asset = DB::table('lab_assets')->where('id', $order->asset_id)->first();
 
         DB::transaction(function() use ($order, $asset) {
-            DB::table('transactions')->insert([
-                'user_id'     => $order->creator_id, 
-                'description' => __('messages.tx_refund_desc', ['asset' => $asset->custom_name]), 
-                'amount'      => $order->total_fc, 
-                'type'        => 'income', 
-                'created_at'  => now()
-            ]);
-            
+            DB::table('transactions')->insert(['user_id' => $order->creator_id, 'description' => __('messages.tx_refund_desc', ['asset' => $asset->custom_name]), 'amount' => $order->total_fc, 'type' => 'income', 'created_at' => now()]);
             DB::table('orders')->where('id', $order->id)->update(['status' => 'rejected']);
-            
-            DB::table('notifications')->insert([
-                'user_id'    => $asset->lab_id, 
-                'message'    => __('messages.notif_date_rejected'), 
-                'type'       => 'danger', 
-                'created_at' => now()
-            ]);
+            DB::table('notifications')->insert(['user_id' => $asset->lab_id, 'message' => __('messages.notif_date_rejected'), 'type' => 'danger', 'created_at' => now()]);
         });
 
-        // 📨 TRIGGER: Alerta al Lab que la reserva fue cancelada y archivada por rechazo de fecha
+        // 📨 TRIGGER CLEAN: Alerta de rechazo al laboratorio
         $lab = DB::table('users')->where('id', $asset->lab_id)->first();
-        $creator = auth()->user();
         if ($lab) {
-            $msgEs = "<p>Hola <strong>{$lab->name}</strong>,</p><p>Te informamos que el Creador <strong>{$creator->name}</strong> ha declinado la nueva propuesta de calendario para el activo <strong>{$asset->custom_name}</strong>.</p><p>La orden ha sido archivada como cancelada y los FabCoins en garantía fueron reembolsados de inmediato al usuario.</p>";
-            $msgEn = "<p>Hello <strong>{$lab->name}</strong>,</p><p>We inform you that the Creator <strong>{$creator->name}</strong> has declined the new schedule proposal for the asset <strong>{$asset->custom_name}</strong>.</p><p>The order has been archived as canceled and the collateral FabCoins were instantly refunded to the user.</p>";
-            MailService::enviar($lab->email, "❌ Reserva Reclamada y Cancelada", "❌ Reservation Declined and Canceled", "❌ Cancelación de Calendario", "❌ Schedule Cancellation", $msgEs, $msgEn);
+            MailService::respuestaReprogramacionAlLab($lab->email, $lab->name, auth()->user()->name, $asset->custom_name, false);
         }
         
         return redirect()->route('creator.dashboard')->with('msg', 'date_rejected');
@@ -206,60 +194,46 @@ class ReservationController extends Controller
         $labId     = $request->input('lab_id');
         $rating    = intval($request->input('rating'));
         $comment   = trim($request->input('comment'));
-
-        // Interceptamos los dos posibles detonantes de contexto
         $missionId = $request->input('mission_id');
         $orderId   = $request->input('order_id');
 
+        // 🎯 OBTENER EL NOMBRE DEL ACTIVO/MISIÓN ANTES DE LA TRANSACCIÓN PARA EL CORREO
+        $tituloContexto = 'Infraestructura';
+        if (!empty($missionId)) {
+            $tituloContexto = DB::table('missions')->where('id', $missionId)->value('title') ?? 'Misión';
+        } else if (!empty($orderId)) {
+            $tituloContexto = DB::table('orders')->join('lab_assets', 'orders.asset_id', '=', 'lab_assets.id')->where('orders.id', $orderId)->value('lab_assets.custom_name') ?? 'Servicio';
+        }
+
         DB::transaction(function() use ($creatorId, $labId, $rating, $comment, $missionId, $orderId) {
-            
-            // 🎯 MOTOR DE DETECCIÓN DINÁMICA DE CONTEXTO
             if (!empty($missionId)) {
-                // 🔵 CONTEXTO: VIENE DEL HUB DE MISIONES COMPLETADAS
                 $contextType = 'mission';
                 $contextId   = $missionId;
             } else {
-                // 🟡 CONTEXTO: VIENE DEL MONITOR DEL MERCADO (ALQUILERES)
                 $contextType = 'market';
                 $contextId   = $orderId;
             }
 
-            // 1. Inserción blindada en la tabla única de reviews de la red
             DB::table('reviews')->insert([
-                'reviewer_id'  => $creatorId, 
-                'reviewee_id'  => $labId, 
-                'context_type' => $contextType, 
-                'context_id'   => $contextId, 
-                'rating'       => $rating, 
-                'comment'      => $comment, 
-                'created_at'   => now(), 
-                'updated_at'   => now()
+                'reviewer_id' => $creatorId, 'reviewee_id' => $labId, 'context_type' => $contextType, 'context_id' => $contextId, 'rating' => $rating, 'comment' => $comment, 'created_at' => now(), 'updated_at' => now()
             ]);
             
-            // 2. Marcado de bandera correspondiente para cerrar el ciclo de vida del botón
             if ($contextType === 'market') {
-                DB::table('orders')
-                    ->where('id', $orderId)
-                    ->update(['is_reviewed' => true]);
+                DB::table('orders')->where('id', $orderId)->update(['is_reviewed' => true]);
             }
             
-            // 3. Recalcular y actualizar la reputación promedio en tiempo real del laboratorio
             $avg = DB::table('reviews')->where('reviewee_id', $labId)->avg('rating');
             DB::table('users')->where('id', $labId)->update(['reputation_score' => round($avg, 1)]);
             
-            // 4. Despachar notificación de éxito al Laboratorio calificado
             DB::table('notifications')->insert([
-                'user_id'    => $labId, 
-                'message'    => __('messages.notif_new_rating', ['rating' => $rating]), 
-                'type'       => 'success', 
-                'created_at' => now()
+                'user_id' => $labId, 'message' => __('messages.notif_new_rating', ['rating' => $rating]), 'type' => 'success', 'created_at' => now()
             ]);
         });
 
-        // 📨 TRIGGER: Envía la alerta de estrellas y reseña ganada al correo oficial del Lab calificado
+        // 📨 TRIGGER CORREGIDO: Ahora sí viajan los 5 datos requeridos completos
         $lab = DB::table('users')->where('id', $labId)->first();
         if ($lab) {
-            MailService::notificarNuevaResenaAlLab($lab->email, $lab->name, auth()->user()->name, $rating);
+            MailService::notificarNuevaResenaAlLab($lab->email, $lab->name, auth()->user()->name, $tituloContexto, $rating);
         }
         
         return redirect()->route('creator.dashboard')->with('msg', 'review_ok');

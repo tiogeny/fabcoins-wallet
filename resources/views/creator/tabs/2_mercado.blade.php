@@ -36,7 +36,7 @@
                     <div>
                         <div class="creator-asset-header">
                             <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <a href="profile.php?u={{ $r->lab_slug ?? $r->lab_owner_id }}" target="_blank" class="asset-lab-badge" style="text-decoration: none; color: #3498db; font-weight: 700;">
+                                <a href="{{ route('public.profile', $r->lab_slug ?? $r->lab_owner_id) }}" target="_blank" class="asset-lab-badge" style="text-decoration: none; color: #3498db; font-weight: 700;">
                                     🏭 {{ $r->lab_name }} ↗️
                                 </a>
                                 @if(!empty($r->lab_address) || !empty($r->address))
@@ -46,37 +46,65 @@
                             <span class="price-tag td-amount-gold" data-unit-price="{{ $r->set_price_fc }}" style="color: #2ecc71;">{{ number_format($r->set_price_fc, 2) }} FC/h</span>
                         </div>
                         
-                        <h3 class="asset-display-title asset-title-large">{{ $r->custom_name }}</h3>
+                        <h3 class="asset-display-title asset-title-large" style="margin-bottom: 6px;">{{ $r->custom_name }}</h3>
                         
                         @php 
                             $bgBadge = '#7f8c8d';
-                            if($r->asset_type === 'machine') $bgBadge = '#1abc9c'; // Verde
-                            elseif($r->asset_type === 'service') $bgBadge = '#3498db'; // blue
-                            elseif(in_array($r->asset_type, ['lab', 'space', 'workshop'])) $bgBadge = '#9b59b6'; // Morado
+                            if($r->asset_type === 'machine') $bgBadge = '#1abc9c'; 
+                            elseif($r->asset_type === 'service') $bgBadge = '#3498db'; 
+                            elseif(in_array($r->asset_type, ['lab', 'space', 'workshop'])) $bgBadge = '#9b59b6'; 
                         @endphp
-                        <span class="asset-type-badge" style="background: {{ $bgBadge }}; color: white;">{{ $r->display_name }}</span>
-                        
-                        <div class="asset-capacity-wrap">
+                        <span class="asset-type-badge" style="background: {{ $bgBadge }}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; display: inline-block; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.3px;">
+                            {{ $r->display_name }}
+                        </span>
+
+                        <div class="asset-capacity-wrap" style="margin-top: 5px;">
                             <span class="asset-capacity-label">{{ __('messages.lbl_avail_capacity') }} {{ number_format($disp, 1) }}h</span>
                             <div class="asset-bar-bg">
                                 <div class="asset-bar-fill" style="width: {{ ($r->useful_life_hours > 0) ? ($disp / $r->useful_life_hours) * 100 : 0 }}%;"></div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <form action="{{ route('creator.book_asset') }}" method="POST" class="m-0">
+                        </div>
+
+                        <form action="{{ route('creator.book_asset') }}" method="POST" class="m-0">
                         @csrf 
                         <input type="hidden" name="asset_id" value="{{ $r->id }}">
-                        
-                        <div class="form-reserve-row">
-                            <div style="position: relative; width: 100%; height: 36px;">
-                                <span class="calendar-icon-overlay-sm" style="top: 10px;">📅</span>
-                                <input type="date" name="reservation_date" required min="{{ date('Y-m-d') }}" class="input-date-sm">
-                            </div>
-                            <input type="number" name="hours" step="0.5" min="0.5" max="{{ $disp }}" placeholder="Hrs" required class="input-hours-sm">
-                            <button type="submit" class="btn-premium btn-yellow-hub btn-reserve-sm" onclick="interceptarCalculoReserva(event, this)">{{ __('messages.btn_reserve') }}</button>
+
+                        {{-- 🎯 DETECCIÓN INTELIGENTE: Si el servicio se llama Taller, Academy, Curso o Diplomado, actúa por Cupos --}}
+                        @php 
+                            $nombreLimpio = strtolower($r->custom_name . ' ' . $r->display_name);
+                            $esCursoEDu = false;
+                            foreach(['academy', 'taller', 'curso', 'diplomado', 'clase', 'bootcamp'] as $palabra) {
+                                if (str_contains($nombreLimpio, $palabra)) {
+                                    $esCursoEDu = true;
+                                    break;
+                                }
+                            }
+                            $esTaller = ($r->asset_type === 'workshop') || ($r->asset_type === 'service' && $esCursoEDu);
+                        @endphp
+                        <div class="form-reserve-row" style="align-items: center; gap: 6px; grid-template-columns: {{ $esTaller ? '1.5fr 1fr' : '1.4fr 0.8fr 1fr' }};">
+                            @if(!$esTaller)
+                                <div style="position: relative; width: 100%; height: 36px;">
+                                    <span class="calendar-icon-overlay-sm" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; z-index: 5; font-size: 12px;">📅</span>
+                                    <input type="date" name="reservation_date" required min="{{ date('Y-m-d') }}" class="input-date-sm">
+                                </div>
+                            @else
+                                {{-- Si es taller la fecha ya viene en el título, inyectamos la de hoy oculta para no romper el 'required' del controlador --}}
+                                <input type="hidden" name="reservation_date" value="{{ date('Y-m-d') }}">
+                            @endif
+                            
+                            <input type="number" name="hours" 
+                                   step="{{ $esTaller ? '1' : '0.5' }}" 
+                                   min="{{ $esTaller ? '1' : '0.5' }}" 
+                                   max="{{ $disp }}" 
+                                   placeholder="{{ $esTaller ? (__('messages.ph_spots') ?? 'Cupos') : 'Hrs' }}" 
+                                   required class="input-hours-sm" style="padding: 0 4px;">
+                                   
+                            <button type="submit" class="btn-premium btn-yellow-hub btn-reserve-sm" onclick="interceptarCalculoReserva(event, this)">
+                                {{ $esTaller ? (__('messages.btn_register_workshop') ?? 'Inscribirse') : __('messages.btn_reserve') }}
+                            </button>
                         </div>
-                    </form>
+                        </form>
                 </div>
             @empty
                 <div class="empty-state-warning">
@@ -207,6 +235,14 @@ function filtrarCatalogoMercadoVivo(filtroLabId = null) {
 
     if (filtroLabId) {
         if(btnReset) btnReset.style.display = 'inline-flex';
+        
+        // 🚀 AUTO-SCROLL OPTIMIZADO: Apuntamos al selector de categorías y lo mandamos al inicio de la pantalla
+        setTimeout(() => {
+            const barraFiltros = document.getElementById('filter-cat');
+            if (barraFiltros) {
+                barraFiltros.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 200); // ⏱️ Tiempo calibrado para soltar el mapa de Leaflet
     }
 
     cards.forEach(card => {
@@ -215,7 +251,7 @@ function filtrarCatalogoMercadoVivo(filtroLabId = null) {
         const matchesLab = (!filtroLabId || parseInt(card.getAttribute('data-lab-id')) === parseInt(filtroLabId));
 
         if (matchesCat && matchesText && matchesLab) {
-            card.style.display = 'flex'; // Usando flex para mantener la estructura horizontal
+            card.style.display = 'flex'; 
         } else {
             card.style.display = 'none';
         }
@@ -381,7 +417,7 @@ document.addEventListener("DOMContentLoaded", function() {
         let popupContent = `<div style="color:#fff; font-family:'Inter', sans-serif; padding:5px; min-width:160px;">
             <strong class="leaflet-popup-lab-title">${lab.name}</strong>
             <span class="leaflet-popup-lab-addr">📍 ${lab.address}</span>
-            <button type="button" onclick="filtrarCatalogoMercadoVivo(${lab.id})" class="btn-popup-filter">⚙️ {{ __('messages.btn_filter_this_lab') }}</button>
+            <button type="button" onclick="filtrarCatalogoMercadoVivo(${lab.id})" class="btn-popup-filter">⚙️ {{ __('messages.btn_filter_activos_lab') }}</button>
         </div>`;
         
         marker.bindPopup(popupContent, { background: '#1c2230', className: 'premium-map-popup' });

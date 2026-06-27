@@ -124,17 +124,25 @@
                                     return $m->reward_fc * max(0, $m->spots_total - $reviewedSpots);
                                 }));
 
-                            // 3. En Circulación (Masa real liberada a creadores por cupos ya revisados y aprobados)
-                            $enCirculacion = floatval(DB::table('mission_applications')
+                            // 3. Financiamientos Otorgados: Egresos reales líquidos destinados a la red de creadores
+                            $totalCreditosOtorgados = floatval(DB::table('transactions')
+                                ->where('user_id', $labId)
+                                ->where('type', 'expense')
+                                ->sum('amount'));
+
+                            // 4. En Circulación Neto: Sumamos la masa liberada tradicional más los créditos activos otorgados
+                            $enCirculacionBase = floatval(DB::table('mission_applications')
                                 ->join('missions', 'mission_applications.mission_id', '=', 'missions.id')
                                 ->where('missions.lab_id', $labId)
                                 ->where('mission_applications.is_reviewed', 1)
                                 ->sum('missions.reward_fc'));
+                                
+                            $enCirculacion = $enCirculacionBase + $totalCreditosOtorgados;
 
-                            // 4. Tesorería Disponible (Lo que estrictamente le queda al Lab en caja)
+                            // 5. Tesorería Disponible: El dinero líquido restante neto restando escrow y circulación extendida
                             $realLiquid = max(0, $totalMinted - $congeladosReales - $enCirculacion);
 
-                            // 5. Contador Independiente: Servicios Liquidados / Deudas Quemadas
+                            // 6. Contador Estadístico Independiente: Servicios Liquidados / Deudas Quemadas
                             $realConsumed = DB::table('transactions')->where('user_id', $labId)->where('type', 'consumed')->sum('amount');
 
                             // 🛡️ REPLICA DE APAGADO SEGURO (Evita el colapso por división entre cero)
@@ -143,10 +151,7 @@
                                 $pFrz = ($congeladosReales / $totalMinted) * $circunferencia;
                                 $pCir = ($enCirculacion / $totalMinted) * $circunferencia;
                             } else {
-                                // Si el balance es 0, los perímetros se apagan por completo (igual que Activar)
-                                $pLiq = 0;
-                                $pFrz = 0;
-                                $pCir = 0;
+                                $pLiq = 0; $pFrz = 0; $pCir = 0;
                             }
                         @endphp
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#3498db" stroke-width="12" stroke-dasharray="{{ $pLiq }} 214"></circle>
@@ -364,8 +369,8 @@
         }
 
         // Si habla de reservas, maquinaria, financiamiento o créditos -> Hub Tokenizar
-        if (mensaje.includes('reserva') || mensaje.includes('crédito') || mensaje.includes('financiamiento') || mensaje.includes('máquina')) {
-            abrirHubPersistente('hub-tokenizar'); 
+        if (mensaje.includes('reserva') || mensaje.includes('crédito') || mensaje.includes('financiamiento') || mensaje.includes('máquina') || mensaje.includes('solicitó')) {
+            abrirHubPersistente('hub-tokenizar');
         } 
         // Si habla de misiones, trabajos, postulantes -> Hub Misiones
         else if (mensaje.includes('misión') || mensaje.includes('postul')) {

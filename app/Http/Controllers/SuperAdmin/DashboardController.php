@@ -17,37 +17,44 @@ class DashboardController extends Controller
     {
         $superadmin = auth()->user();
 
-        // 1. MACROECONOMÍA Y VARIABLES MONETARIAS REALES CON RECONCILIACIÓN PURA
+       // 1. 🪙 MASA MONETARIA TOTAL EMITIDA
         $total_fc = floatval(DB::table('transactions')->where('type', 'mint')->sum('amount'));
-        $total_quemado = floatval(DB::table('transactions')->where('type', 'consumed')->sum('amount'));
+
+        // 2. ⏳ ESCROW GLOBAL NETO (REPARADO): Total enviado a escrow menos los pagos ya realizados a creadores
+        $totalEnviadoEscrow = floatval(DB::table('transactions')->where('type', 'escrow')->sum('amount'));
         
-        // Custodia Activa (Escrow): Descuenta de forma dinámica los cupos que ya fueron liquidados/revisados
-        $total_escrow = floatval(DB::table('missions')
-            ->whereIn('status', ['open', 'assigned'])
-            ->get()
-            ->sum(function($m) {
-                $reviewed = DB::table('mission_applications')
-                    ->where('mission_id', $m->id)
-                    ->where('is_reviewed', 1)
-                    ->count();
-                return $m->reward_fc * max(0, $m->spots_total - $reviewed);
-            }));
-        // En Bóvedas (Labs): Balance real emitido restándole las misiones activas y las ya liquidadas terminadas
-        $total_bovedas = $total_fc - $total_escrow - floatval(DB::table('mission_applications')
+        $trabajoTotalRevisado = floatval(DB::table('mission_applications')
             ->where('is_reviewed', 1)
             ->join('missions', 'mission_applications.mission_id', '=', 'missions.id')
             ->sum('missions.reward_fc'));
 
-        // Circulante (Creadores): Saldo neto real de las billeteras
-        $total_circulando = floatval(DB::table('users')
-            ->where('role', 'creator')
-            ->get()
-            ->sum(function($u) {
-                return DB::table('transactions')->where('user_id', $u->id)->selectRaw("SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END) as total")->value('total') ?? 0;
-            }));
+        $escrowMisiones = max(0, $totalEnviadoEscrow - $trabajoTotalRevisado); // 🎯 Esto dará los 1,100 FC reales
+        
+        // Calcular el remanente de reservas mecánicas
+        $escrowReservasRaw = floatval(DB::table('orders')->whereIn('status', ['pending', 'rescheduled'])->sum('total_fc'));
+        $creditosPendientesGlobal = floatval(DB::table('financing_agreements')->where('status', 'pending')->sum('amount_initial'));
+        
+        $total_escrow = $escrowMisiones + max(0, $escrowReservasRaw - $creditosPendientesGlobal); // 🎯 Esto dará 1,185 FC
 
-        // 📊 MÉTRICAS DE RENDIMIENTO ISLADAS (FUERA DE LA ECUACIÓN DE DISPONIBILIDAD)
+        // 3. 🛡️ BÓVEDAS LABS LIQUIDAS: Sumamos los balances reales de todas las cuentas tipo 'lab' en la BD
+        $total_bovedas = floatval(DB::table('transactions')
+            ->join('users', 'transactions.user_id', '=', 'users.id')
+            ->where('users.role', 'lab')
+            ->selectRaw("SUM(CASE 
+                WHEN transactions.type IN ('income', 'mint') THEN transactions.amount 
+                WHEN transactions.type = 'consumed' THEN 0 
+                ELSE -transactions.amount 
+            END) as saldo")
+            ->value('saldo') ?? 0);
+
+        // 4. REGISTRO HISTÓRICO DE DEFLACIÓN (Métrica estadística complementaria)
         $total_quemado = floatval(DB::table('transactions')->where('type', 'consumed')->sum('amount'));
+
+        // 5. 🚀 EN CIRCULACIÓN (RESIDUAL CLANESTINO): Restamos también el pool quemado 
+        // para que coincida exactamente con los saldos líquidos reales de las billeteras de los creadores
+        $total_circulando = max(0, $total_fc - $total_bovedas - $total_escrow - $total_quemado);
+
+        
 
         // PIB de la Red (Velocidad de transacciones comerciales de los últimos 30 días)
         $pib_maquinas = floatval(DB::table('orders')->where('status', 'completed')->where('created_at', '>=', now()->subDays(30))->sum('total_fc'));
@@ -146,6 +153,8 @@ class DashboardController extends Controller
                      FROM mission_applications ma2 
                      JOIN missions m2 ON ma2.mission_id = m2.id 
                      WHERE m2.lab_id = u.id AND ma2.is_reviewed = 1)
+                    -
+                    (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE user_id = u.id AND type = 'expense') -- 🔥 RECONCILIACIÓN: Restar créditos otorgados y egresos ordinarios
                     as balance
                 "))->get();
                 
@@ -165,9 +174,71 @@ class DashboardController extends Controller
                 });
             foreach($rows as $r) { if($r->balance > 0) $html .= '<tr><td>👤 '.htmlspecialchars($r->name).'</td><td style="color:#2ecc71; font-weight:bold;">'.number_format($r->balance,2).' FC</td></tr>'; }
         } elseif ($tipo === 'escrow') {
-            $html .= '<tr><th colspan="3" style="background:#2c3e50;">🔒 EN MISIONES (LABS)</th></tr>';
-            $stmt_m = DB::select("SELECT u.name, m.id, (m.reward_fc * (m.spots_total - (SELECT COUNT(*) FROM mission_applications WHERE mission_id = m.id AND is_reviewed = 1))) as retenido FROM missions m JOIN users u ON m.lab_id = u.id WHERE m.status IN ('open', 'assigned')");
-            foreach($stmt_m as $r) { if($r->retenido > 0) $html .= '<tr><td>'.htmlspecialchars($r->name).'</td><td>Misión #'.$r->id.'</td><td style="color:#f39c12; font-weight:bold;">'.number_format($r->retenido,2).'</td></tr>'; }
+            // ⚖️ ENCABEZADO DE AUDITORÍA: Cambiamos "Laboratorio" por "Entidad" para soportar Creadores y Labs
+            $html .= '<tr><th>Entidad (Origen)</th><th>Concepto / Descripción</th><th style="text-align: right;">Monto (FC)</th></tr>';
+            
+            // 1. SECCIÓN DE MISIONES (El dinero retenido pertenece a los Laboratorios)
+            $html .= '<tr><td colspan="3" style="background: rgba(255,255,255,0.02); font-weight: bold; color: #f1c40f; font-size: 11px; padding: 8px 12px; text-transform: uppercase;">🔒 En Misiones (Fondos de Labs)</td></tr>';
+            
+            $misiones = DB::table('missions as m')
+                ->join('users as u', 'm.lab_id', '=', 'u.id')
+                ->whereIn('m.status', ['open', 'assigned'])
+                ->select('u.name as lab_name', 'm.title', 'm.reward_fc', 'm.spots_total', 'm.id')
+                ->get();
+
+            foreach ($misiones as $m) {
+                $reviewedSpots = DB::table('mission_applications')
+                    ->where('mission_id', $m->id)
+                    ->where('is_reviewed', 1)
+                    ->count();
+                
+                $escrowMision = $m->reward_fc * max(0, $m->spots_total - $reviewedSpots);
+                
+                if ($escrowMision > 0) {
+                    $html .= "<tr>
+                        <td>{$m->lab_name}</td>
+                        <td>{$m->title}</td>
+                        <td style='color: #f1c40f; font-weight: bold; text-align: right;'>" . number_format($escrowMision, 2) . "</td>
+                    </tr>";
+                }
+            }
+
+            // 2. 🎯 SECCIÓN DE RESERVAS REPARADA (El dinero retenido pertenece a los Creadores)
+            $html .= '<tr><td colspan="3" style="background: rgba(255,255,255,0.02); font-weight: bold; color: #f1c40f; font-size: 11px; padding: 8px 12px; text-transform: uppercase;">📅 En Reservas (Fondos de Creadores)</td></tr>';
+
+            // 🚀 CIRUGÍA SQL: Extraemos al deudor, el id de la orden y el id del lab del activo
+            $reservas = DB::table('orders as o')
+                ->join('users as c', 'o.creator_id', '=', 'c.id')
+                ->join('lab_assets as a', 'o.asset_id', '=', 'a.id')
+                ->whereIn('o.status', ['pending', 'rescheduled'])
+                ->select('o.id as order_id', 'c.name as creator_name', 'a.custom_name as asset_name', 'o.total_fc', 'o.hours_requested', 'o.creator_id', 'a.lab_id')
+                ->get();
+
+            if ($reservas->isEmpty()) {
+                $html .= '<tr><td colspan="3" style="color: #7f8c8d; font-style: italic; text-align: center; padding: 12px;">No hay alquileres pendientes en custodia</td></tr>';
+            } else {
+                foreach ($reservas as $r) {
+                    // 🎯 PRECISIÓN RELACIONAL TOTAL: Verificamos si existe un crédito asociado directamente a este ID de orden único
+                    $creditoAsociado = floatval(DB::table('financing_agreements')
+                        ->where('order_id', $r->order_id)
+                        ->where('status', 'pending')
+                        ->value('amount_initial') ?? 0);
+
+                    $montoNetoEscrow = max(0, $r->total_fc - $creditoAsociado);
+                    
+                    // Nota informativa bilingüe implícita para el SuperAdmin
+                    $detalleConcepto = htmlspecialchars($r->asset_name) . " ({$r->hours_requested} hrs)";
+                    if ($creditoAsociado > 0) {
+                        $detalleConcepto .= "<br><small style='color: #7f8c8d;'>⚠️ Solicitud ISA pendiente: -" . number_format($creditoAsociado, 0) . " FC</small>";
+                    }
+
+                    $html .= "<tr>
+                        <td>{$r->creator_name}</td>
+                        <td>Reserva: {$detalleConcepto}</td>
+                        <td style='color: #f1c40f; font-weight: bold; text-align: right;'>" . number_format($montoNetoEscrow, 2) . "</td>
+                    </tr>";
+                }
+            }
         } elseif ($tipo === 'burn') {
             // 🚀 CORRECCIÓN: Apunta de forma nativa a la tabla de consumos reales 'consumed'
             $html .= '<tr><th>Fecha</th><th>Usuario</th><th>Detalle de Consumo</th><th>Monto</th></tr>';

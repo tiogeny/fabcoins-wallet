@@ -12,7 +12,13 @@ class OrderController extends Controller
     public function approve(Request $request)
     {
         $orderId = $request->input('order_id');
-        $order = DB::table('orders')->where('id', $orderId)->first();
+        
+        // 🎯 CIRUGÍA DE CONTROL: Unimos la tabla con lab_assets para recuperar el nombre real y su tipo
+        $order = DB::table('orders')
+            ->join('lab_assets', 'orders.asset_id', '=', 'lab_assets.id')
+            ->where('orders.id', $orderId)
+            ->select('orders.*', 'lab_assets.custom_name', 'lab_assets.asset_type')
+            ->first();
 
         if (!$order || $order->status !== 'pending') {
             return redirect()->back()->with('error', 'La orden no existe o ya fue procesada.');
@@ -45,13 +51,13 @@ class OrderController extends Controller
             ]);
         });
 
-        // 🚀 TRIGGER ASENTADO: Alerta al creador que su máquina/espacio/taller está listo
+        // 🚀 TRIGGER CLEAN: Alerta al creador que su reserva de activo está confirmada y asegurada
         $creatorUser = DB::table('users')->where('id', $order->creator_id)->first();
         if ($creatorUser) {
-            MailService::reservaAprobadaAlCreator($creatorUser->email, $creatorUser->name, auth()->user()->name, $order->custom_name ?? 'Activo', $order->reservation_date ?? now());
+            MailService::confirmacionReservaActivo($creatorUser->email, $creatorUser->name, auth()->user()->name, $order->custom_name, $order->reservation_date, $order->hours_requested, $order->asset_type);
         }
 
-        return redirect()->back()->with('msg', 'applied_ok');
+        return redirect()->back()->with('msg', 'reservation_approved_ok');
     }
 
     public function reject(Request $request)
@@ -91,23 +97,15 @@ class OrderController extends Controller
                     'type'       => 'danger',
                     'created_at' => now()
                 ]);
-            ]);
+            });
 
-            // 5. 📨 TRIGGER DE CORREO (BILINGÜE AUTOMÁTICO):
+            // 5. 📨 TRIGGER CLEAN: Despacha la plantilla limpia y ordenada del Bloque 4
             $creator = DB::table('users')->where('id', $order->creator_id)->first();
             if ($creator) {
-                MailService::enviar(
-                    $creator->email, 
-                    "❌ Reserva Rechazada - FabCoins", 
-                    "❌ Reservation Declined - FabCoins", 
-                    "❌ Solicitud no procesada", 
-                    "❌ Request not processed", 
-                    "<p>Hola <strong>" . htmlspecialchars($creator->name) . "</strong>,</p><p>Te informamos que tu solicitud de reserva para el activo <strong>" . htmlspecialchars($assetName) . "</strong> fue rechazada por el laboratorio. Los fondos han sido devueltos íntegramente a tu saldo circulante.</p>", 
-                    "<p>Hello <strong>" . htmlspecialchars($creator->name) . "</strong>,</p><p>We inform you that your reservation request for the asset <strong>" . htmlspecialchars($assetName) . "</strong> was declined by the laboratory. The funds have been fully refunded to your circulating balance.</p>"
-                );
+                MailService::reservaRechazadaAlCreator($creator->email, $creator->name, auth()->user()->name, $assetName, $asset->asset_type ?? 'machine');
             }
 
-            return redirect()->back()->with('msg', 'applied_ok');
+            return redirect()->back()->with('msg', 'reservation_rejected_ok');
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error en el Ledger: ' . $e->getMessage());
@@ -152,24 +150,15 @@ class OrderController extends Controller
                     'type' => 'warning',
                     'created_at' => now()
                 ]);
-            ]);
+            });
 
-            // 📨 TRIGGER (BILINGÜE): Despacha el aviso con la nueva fecha y abre los botones de acción del Creator
+            // 📨 TRIGGER CLEAN: Despacha la plantilla de reprogramación oficial del Bloque 4
             $creator = DB::table('users')->where('id', $order->creator_id)->first();
             if ($creator) {
-                $fechaFormateada = date('d/m/Y', strtotime($nuevaFecha));
-                MailService::enviar(
-                    $creator->email,
-                    "🔄 Propuesta de Cambio de Fecha - FabCoins",
-                    "🔄 Reservation Reschedule Proposed - FabCoins",
-                    "🔄 Actualización de Calendario",
-                    "🔄 Schedule Update",
-                    "<p>Hola <strong>" . htmlspecialchars($creator->name) . "</strong>,</p><p>El laboratorio no cuenta con disponibilidad inmediata en la fecha original. Han propuesto mover tu reserva de <strong>" . htmlspecialchars($assetName) . "</strong> para el día: <strong>$fechaFormateada</strong>.</p><p>Ingresa a tu panel donde podrás **Aceptar** este nuevo día o **Cancelar** la reserva para recibir un reembolso automático.</p>",
-                    "<p>Hello <strong>" . htmlspecialchars($creator->name) . "</strong>,</p><p>The laboratory does not have immediate availability on your original date. They have proposed to reschedule your reservation for <strong>" . htmlspecialchars($assetName) . "</strong> to: <strong>$fechaFormateada</strong>.</p><p>Log into your dashboard where you can **Accept** this new date or **Cancel** the reservation to get an automatic refund.</p>"
-                );
+                MailService::propuestaReprogramacionActivo($creator->email, $creator->name, auth()->user()->name, $assetName, $nuevaFecha, $asset->asset_type ?? 'machine');
             }
 
-            return redirect()->back()->with('msg', 'applied_ok');
+            return redirect()->back()->with('msg', 'reservation_rescheduled_ok');
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error en el sistema de asignación: ' . $e->getMessage());
