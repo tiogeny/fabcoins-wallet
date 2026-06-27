@@ -263,6 +263,32 @@ function abrirHubPersistente(hubId) {
     }
 }
 
+// 🔥 MOTOR UX: Abre el espacio inmersivo y viaja milimétricamente a la sección indicada
+function abrirHubYEnfocarTarjeta(hubId, tarjetaId) {
+    // 1. Despertamos el contenedor macro (Hub) usando tu lógica existente
+    abrirHubPersistente(hubId);
+
+    // 2. ⏱️ HOLGURA DE RENDER: Esperamos 150ms a que el navegador termine de pintar el display:block
+    setTimeout(() => {
+        const tarjetaTarget = document.getElementById(tarjetaId);
+        if (tarjetaTarget) {
+            // Viaje suave y centrado en la pantalla
+            tarjetaTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // 🎨 EFECTO PREMIUM: Le metemos un destello de enfoque dorado efímero
+            tarjetaTarget.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
+            tarjetaTarget.style.boxShadow = '0 0 25px rgba(241, 196, 15, 0.25)';
+            tarjetaTarget.style.borderColor = '#f1c40f';
+
+            // Apagamos el destello en 2 segundos para regresar a la normalidad del Dark Mode
+            setTimeout(() => {
+                tarjetaTarget.style.boxShadow = 'none';
+                tarjetaTarget.style.borderColor = 'rgba(255,255,255,0.05)'; // Tu borde original
+            }, 2000);
+        }
+    }, 150);
+}
+
 function regresarAlHubCentralPersistente(hubId) {
     sessionStorage.removeItem('active_creator_hub');
     
@@ -400,30 +426,32 @@ function confirmarAccion(event, mensaje, icono = 'warning', colorBoton = '#3498d
 }
 
 function enrutarNotificacionInteligenteCreator(mensaje) {
-    // 🎯 REGLA DE REPUTACIÓN: Si la alerta es sobre su evaluación, lo redirigimos a su perfil público en la misma pestaña
+    // 🎯 REGLA DE REPUTACIÓN: Si la alerta es sobre su calificación, lo redirigimos a su perfil público
     if (mensaje.includes('calificación') || mensaje.includes('estrellas') || mensaje.includes('reseña') || mensaje.includes('rating')) {
         window.location.href = "{{ route('public.profile', auth()->user()->slug ?? auth()->id()) }}";
         return;
     }
 
-    // 1. Excepción específica: Si la reserva YA fue aprobada, debe ir a Mercado (Monitor de alquileres)
-    if (mensaje.includes('reserva ha sido aprobada')) {
-        abrirHubPersistente('hub-mercado');
+    // 🎯 CASO A: Propuestas de reprogramación o avisos de reservas aprobadas -> Va a Mis Alquileres
+    if (mensaje.includes('propuesto') || mensaje.includes('fecha') || mensaje.includes('reprogramar') || mensaje.includes('reserva ha sido aprobada')) {
+        abrirHubYEnfocarTarjeta('hub-mercado', 'tarjeta-mis-reservas');
     } 
-    // 2. Todo lo demás que sea financiero, a Billetera
-    else if (mensaje.includes('crédito') || mensaje.includes('financiamiento') || mensaje.includes('reserva') || mensaje.includes('saldo')) {
+    // 🎯 CASO B: Resoluciones de Créditos Educativos / ISA (Aprobados o Cancelados) -> Va a Contrato ISA
+    else if (mensaje.includes('crédito') || mensaje.includes('financiamiento')) {
+        abrirHubYEnfocarTarjeta('hub-billetera', 'tarjeta-mis-financiamientos');
+    } 
+    // 🎯 CASO C: Asignaciones de misiones, invitaciones o cierres de labor -> Va a Mis Postulaciones
+    else if (mensaje.includes('misión') || mensaje.includes('postulación') || mensaje.includes('trabajo') || mensaje.includes('asignada') || mensaje.includes('completada')) {
+        abrirHubYEnfocarTarjeta('hub-misiones', 'tarjeta-mis-misiones');
+    } 
+    // 🎯 CASO D: Alertas genéricas financieras residuales (Reembolsos, P2P) -> Va al Hub Billetera normal
+    else if (mensaje.includes('reserva') || mensaje.includes('billetera') || mensaje.includes('reembolso') || mensaje.includes('saldo')) {
         abrirHubPersistente('hub-billetera');
     } 
-    // 3. Misiones y postulaciones, a Misiones
-    else if (mensaje.includes('misión') || mensaje.includes('postulación') || mensaje.includes('trabajo')) {
-        abrirHubPersistente('hub-misiones');
-    } 
-    // 4. Por defecto
     else {
         abrirHubPersistente('hub-mercado');
     }
     
-    // Cerramos el dropdown visualmente tras hacer clic
     const dropdown = document.querySelector('.notif-dropdown');
     if(dropdown) dropdown.style.display = 'none';
 }
@@ -463,21 +491,23 @@ if (inputEmailP2P && feedbackP2P) {
 }
 
 function interceptarCampanaYLimpiarContador(btn) {
-        // 1. MANTENER TU LOGICA ORIGINAL: Abre y cierra el menú exactamente igual que antes
-        const dd = btn.nextElementSibling;
-        dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex';
-        
-        // 2. DISPARADOR ASÍNCRONO: Si el menú se está abriendo, limpiamos los datos
-        if (dd.style.display === 'flex') {
-            const badge = document.getElementById('badge-notif-dinamico');
-            if (badge) {
-                badge.remove(); // 🧼 Desaparece el número rojo de la pantalla al instante
-                
-                // Realiza la petición silenciosa al backend usando tu ruta nativa de Laravel
-                fetch('{{ route("lab.read_notifs") }}')
-                    .catch(error => console.error('Aviso de lectura no procesado:', error));
-            }
+    // 1. MANTENER TU LOGICA ORIGINAL: Abre y cierra el menú exactamente igual que antes
+    const dd = btn.nextElementSibling;
+    dd.style.display = dd.style.display === 'flex' ? 'none' : 'flex';
+    
+    // 2. DISPARADOR ASÍNCRONO: Si el menú se está abriendo, limpiamos los datos
+    if (dd.style.display === 'flex') {
+        const badge = document.getElementById('badge-notif-dinamico');
+        if (badge) {
+            badge.remove(); // 🧼 Desaparece el número rojo de la pantalla al instante
+            
+            // 🎯 REPARACIÓN DE RUTA: Apuntamos al endpoint correcto del Creator
+            fetch('{{ route("creator.read_notifs") }}')
+                .catch(error => console.error('Aviso de lectura no procesado:', error));
         }
     }
+}
+
+
 </script>
 @endpush

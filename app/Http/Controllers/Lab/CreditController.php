@@ -41,11 +41,18 @@ class CreditController extends Controller
                 'updated_at' => now()
             ]);
 
+            // 🔥 NUEVO BINDING DE GOBERNANZA: Sincronizar el perfil del creador como deudor oficial del Lab
+            DB::table('users')->where('id', $credit->creator_id)->update([
+                'deuda_lab_id' => $labId,
+                'deuda_fc'     => DB::raw("deuda_fc + " . $credit->amount_initial),
+                'updated_at'   => now()
+            ]);
+
             if ($order) {
                 // 3. CONTABILIDAD CREADOR: Inyectar el préstamo en su cuenta (Ingreso por Crédito)
                 DB::table('transactions')->insert([
                     'user_id'     => $credit->creator_id,
-                    'description' => __('messages.tx_credit_disbursed', ['asset' => $order->custom_name]) ?? 'Desembolso de crédito educativo para: ' . $order->custom_name,
+                    'description' => __('messages.tx_credit_disbursed', ['asset' => $order->custom_name]),
                     'amount'      => $credit->amount_initial,
                     'type'        => 'income',
                     'created_at'  => now()
@@ -54,7 +61,7 @@ class CreditController extends Controller
                 // 4. CONTABILIDAD CREADOR: Transferir el saldo restante del taller (Gasto Liquidado)
                 DB::table('transactions')->insert([
                     'user_id'     => $credit->creator_id,
-                    'description' => __('messages.tx_reserve_desc', ['asset' => $order->custom_name]) ?? 'Reserva de infraestructura: ' . $order->custom_name,
+                    'description' => __('messages.tx_reserve_desc', ['asset' => $order->custom_name]),
                     'amount'      => $credit->amount_initial,
                     'type'        => 'expense',
                     'created_at'  => now()
@@ -66,7 +73,10 @@ class CreditController extends Controller
                 // 6A. 📉 SALIDA DE TESORERÍA DEL LAB: Resta el dinero líquido de su bóveda corriente
                 DB::table('transactions')->insert([
                     'user_id'     => $labId,
-                    'description' => 'Financiamiento otorgado (Crédito ISA) a ' . ($cUser->name ?? 'Creador') . ' para: ' . $order->custom_name,
+                    'description' => __('messages.tx_lab_credit_granted', [
+                        'creator' => $cUser->name ?? __('messages.lbl_creator_fallback'),
+                        'asset'   => $order->custom_name
+                    ]),
                     'amount'      => $credit->amount_initial,
                     'type'        => 'expense', 
                     'created_at'  => now()
@@ -75,7 +85,10 @@ class CreditController extends Controller
                 // 6B. 📊 REALIZACIÓN DE CAPACIDAD (QUEMADO): Registra la quema oficial del servicio para los KPIs
                 DB::table('transactions')->insert([
                     'user_id'     => $labId,
-                    'description' => 'Capacidad realizada / consumida por ' . ($cUser->name ?? 'Creador') . ': ' . $order->custom_name,
+                    'description' => __('messages.tx_lab_capacity_consumed', [
+                        'creator' => $cUser->name ?? __('messages.lbl_creator_fallback'),
+                        'asset'   => $order->custom_name
+                    ]),
                     'amount'      => $order->total_fc, 
                     'type'        => 'consumed', // 🔥 ¡ESTA ES LA LLAVE QUE AJUSTA TU GRÁFICO!
                     'created_at'  => now()
@@ -90,7 +103,7 @@ class CreditController extends Controller
                 // Campanita de confirmación automática de inscripción
                 DB::table('notifications')->insert([
                     'user_id'    => $credit->creator_id,
-                    'message'    => "✅ ¡Tu inscripción a '" . $order->custom_name . "' ha sido confirmada automáticamente!",
+                    'message'    => __('messages.notif_auto_inscription_confirmed', ['asset' => $order->custom_name]),
                     'type'       => 'success',
                     'created_at' => now()
                 ]);
@@ -99,7 +112,7 @@ class CreditController extends Controller
             // Notificación base del crédito aprobado
             DB::table('notifications')->insert([
                 'user_id' => $credit->creator_id, 
-                'message' => __('messages.notif_credit_approved') ?? '✅ Tu financiamiento ha sido aprobado.',
+                'message'    => __('messages.notif_credit_approved'),
                 'type' => 'success',
                 'created_at' => now()
             ]);
@@ -130,7 +143,7 @@ class CreditController extends Controller
             // 🌐 MULTIDIOMA: Campanita traducida
             DB::table('notifications')->insert([
                 'user_id' => $credit->creator_id,
-                'message' => __('messages.notif_credit_rejected') ?? '❌ Tu solicitud de crédito fue rechazada.',
+                'message'    => __('messages.notif_credit_rejected'),
                 'type' => 'error',
                 'created_at' => now()
             ]);

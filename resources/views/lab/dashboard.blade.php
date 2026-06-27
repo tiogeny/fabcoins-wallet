@@ -102,51 +102,9 @@
                     <svg class="donut-svg-canvas" width="95" height="95" viewBox="0 0 90 90">
                         <circle cx="45" cy="45" r="34" fill="transparent" stroke="#2c3e50" stroke-width="12"></circle>
                         @php 
-                            $labId = auth()->id();
                             $circunferencia = 213.6;
-
-                            // 1. Emisión Base (Masa Monetaria Inalterable)
-                            $totalMinted = DB::table('transactions')
-                                ->where('user_id', $labId)
-                                ->where('type', 'mint')
-                                ->sum('amount') ?: 0;
-
-                            // 2. Fondos en Custodia (Misiones con cupos pendientes de liquidar de forma individual)
-                            $congeladosReales = floatval(DB::table('missions')
-                                ->where('lab_id', $labId)
-                                ->whereIn('status', ['open', 'assigned'])
-                                ->get()
-                                ->sum(function($m) {
-                                    $reviewedSpots = DB::table('mission_applications')
-                                        ->where('mission_id', $m->id)
-                                        ->where('is_reviewed', 1)
-                                        ->count();
-                                    return $m->reward_fc * max(0, $m->spots_total - $reviewedSpots);
-                                }));
-
-                            // 3. Financiamientos Otorgados: Egresos reales líquidos destinados a la red de creadores
-                            $totalCreditosOtorgados = floatval(DB::table('transactions')
-                                ->where('user_id', $labId)
-                                ->where('type', 'expense')
-                                ->sum('amount'));
-
-                            // 4. En Circulación Neto: Sumamos la masa liberada tradicional más los créditos activos otorgados
-                            $enCirculacionBase = floatval(DB::table('mission_applications')
-                                ->join('missions', 'mission_applications.mission_id', '=', 'missions.id')
-                                ->where('missions.lab_id', $labId)
-                                ->where('mission_applications.is_reviewed', 1)
-                                ->sum('missions.reward_fc'));
-                                
-                            $enCirculacion = $enCirculacionBase + $totalCreditosOtorgados;
-
-                            // 5. Tesorería Disponible: El dinero líquido restante neto restando escrow y circulación extendida
-                            $realLiquid = max(0, $totalMinted - $congeladosReales - $enCirculacion);
-
-                            // 6. Contador Estadístico Independiente: Servicios Liquidados / Deudas Quemadas
-                            $realConsumed = DB::table('transactions')->where('user_id', $labId)->where('type', 'consumed')->sum('amount');
-
-                            // 🛡️ REPLICA DE APAGADO SEGURO (Evita el colapso por división entre cero)
-                            if ($totalMinted > 0) {
+                            // 🛡️ CONTROLADOR INTEGRAL: Mapeo directo de longitudes SVG desde el Backend
+                            if (($totalMinted ?? 0) > 0) {
                                 $pLiq = ($realLiquid / $totalMinted) * $circunferencia;
                                 $pFrz = ($congeladosReales / $totalMinted) * $circunferencia;
                                 $pCir = ($enCirculacion / $totalMinted) * $circunferencia;
@@ -362,29 +320,30 @@
     }
 
     function enrutarNotificacionInteligenteLab(mensaje) {
-        // 🎯 REDIRECCIÓN DE REPUTACIÓN: Si la alerta contiene palabras clave de evaluación, viaja al perfil público
-        if (mensaje.includes('calificación') || mensaje.includes('estrellas') || mensaje.includes('reseña') || mensaje.includes('rating')) {
-            window.location.href = "{{ route('public.profile', auth()->user()->slug ?? auth()->id()) }}";
-            return;
-        }
-
-        // Si habla de reservas, maquinaria, financiamiento o créditos -> Hub Tokenizar
-        if (mensaje.includes('reserva') || mensaje.includes('crédito') || mensaje.includes('financiamiento') || mensaje.includes('máquina') || mensaje.includes('solicitó')) {
-            abrirHubPersistente('hub-tokenizar');
-        } 
-        // Si habla de misiones, trabajos, postulantes -> Hub Misiones
-        else if (mensaje.includes('misión') || mensaje.includes('postul')) {
-            abrirHubPersistente('hub-publicar'); 
-        } 
-        // Por defecto -> Hub Catálogo
-        else {
-            abrirHubPersistente('hub-activar'); 
-        }
-        
-        // Cierra el dropdown
-        const dropdown = document.querySelector('.notif-dropdown');
-        if(dropdown) dropdown.style.display = 'none';
+    if (mensaje.includes('calificación') || mensaje.includes('estrellas') || mensaje.includes('reseña') || mensaje.includes('rating')) {
+        window.location.href = "{{ route('public.profile', auth()->user()->slug ?? auth()->id()) }}";
+        return;
     }
+
+    // 🎯 CASO A: Alertas de solicitudes de crédito ISA -> Va a Cartera de Financiamientos
+    if (mensaje.includes('crédito') || mensaje.includes('financiamiento') || mensaje.includes('solicitó')) {
+        abrirHubYEnfocarTarjeta('hub-tokenizar', 'tarjeta-financiamientos');
+    } 
+    // 🎯 CASO B: Alertas de alquileres líquidos o aceptaciones de fechas -> Va a la Tabla de Reservas
+    else if (mensaje.includes('reserva') || mensaje.includes('máquina') || mensaje.includes('aceptó') || mensaje.includes('fecha')) {
+        abrirHubYEnfocarTarjeta('hub-tokenizar', 'tarjeta-reservas');
+    }
+    // 🎯 CASO C: Alertas de postulaciones a misiones por creadores -> Va a la Lista de Postulantes
+    else if (mensaje.includes('misión') || mensaje.includes('postul')) {
+        abrirHubYEnfocarTarjeta('hub-publicar', 'tarjeta-misiones'); 
+    } 
+    else {
+        abrirHubPersistente('hub-activar'); 
+    }
+    
+    const dropdown = document.querySelector('.notif-dropdown');
+    if(dropdown) dropdown.style.display = 'none';
+}
 
     function interceptarCampanaYLimpiarContador(btn) {
         // 1. MANTENER TU LOGICA ORIGINAL: Abre y cierra el menú exactamente igual que antes
@@ -402,6 +361,32 @@
                     .catch(error => console.error('Aviso de lectura no procesado:', error));
             }
         }
+    }
+
+    // 🔥 MOTOR UX: Abre el espacio inmersivo y viaja milimétricamente a la sección indicada
+    function abrirHubYEnfocarTarjeta(hubId, tarjetaId) {
+        // 1. Despertamos el contenedor macro (Hub) usando tu lógica existente
+        abrirHubPersistente(hubId);
+
+        // 2. ⏱️ HOLGURA DE RENDER: Esperamos 150ms a que el navegador termine de pintar el display:block
+        setTimeout(() => {
+            const tarjetaTarget = document.getElementById(tarjetaId);
+            if (tarjetaTarget) {
+                // Viaje suave y centrado en la pantalla
+                tarjetaTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // 🎨 EFECTO PREMIUM: Le metemos un destello de enfoque dorado efímero
+                tarjetaTarget.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
+                tarjetaTarget.style.boxShadow = '0 0 25px rgba(241, 196, 15, 0.25)';
+                tarjetaTarget.style.borderColor = '#f1c40f';
+
+                // Apagamos el destello en 2 segundos para regresar a la normalidad del Dark Mode
+                setTimeout(() => {
+                    tarjetaTarget.style.boxShadow = 'none';
+                    tarjetaTarget.style.borderColor = 'rgba(255,255,255,0.05)'; // Tu borde original
+                }, 2000);
+            }
+        }, 150);
     }
     </script>
 @endpush

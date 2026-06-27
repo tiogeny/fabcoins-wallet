@@ -439,6 +439,28 @@ button:hover, .btn-apply:hover { filter: brightness(0.9); }
 .text-uppercase { text-transform: uppercase; }
 
 .font-rajdhani-15 { font-family: 'Rajdhani', sans-serif !important; font-size: 15px !important; }
+/* 🎯 TRUCO DE ALTA ESCUELA: Ocultamos el ícono nativo y expandimos su hitbox al 100% */
+.font-rajdhani-15::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: auto;
+    color: transparent;
+    background: transparent;
+    cursor: pointer;
+    z-index: 3; /* Se coloca por encima de todo para capturar el click */
+}
+
+/* Evita que se vea el recuadro blanco nativo en algunos navegadores */
+.font-rajdhani-15::-webkit-inner-spin-button,
+.font-rajdhani-15::-webkit-clear-button {
+    display: none;
+    -webkit-appearance: none;
+}
+
 .block-16 { display: block !important; font-size: 16px !important; }
 
 .flex-between { display: flex; justify-content: space-between; align-items: center; }

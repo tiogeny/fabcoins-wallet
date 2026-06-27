@@ -114,7 +114,7 @@ class DashboardController extends Controller
 
         // Notificaciones
         $notificaciones = DB::table('notifications')->where('user_id', $creator->id)->latest()->limit(10)->get();
-        $unreadCount = $notificaciones->where('is_read', false)->count();
+        $unread_count = $notificaciones->where('is_read', false)->count(); 
 
         // 🚀 CORRECCIÓN MAESTRA: Carga de Habilidades con Soporte Bilingüe Real de la tabla 'skills'
         $userLang = $creator->preferred_lang ?? 'es';
@@ -138,7 +138,7 @@ class DashboardController extends Controller
         return view('creator.dashboard', compact(
             'creator', 'saldoTotal', 'misionesCompletadasKpi', 'misionesAbiertas', 'misPostulaciones',
             'misReservas', 'recursosMercado', 'misTransacciones', 'creditoActual', 'historialAbonos',
-            'labsMapaJson', 'notificaciones', 'unreadCount', 'catalogoSkills', 'misSkillsIds', 'totalFCGenerados'
+            'labsMapaJson', 'notificaciones', 'unread_count', 'catalogoSkills', 'misSkillsIds', 'totalFCGenerados'
         ));
     }
 

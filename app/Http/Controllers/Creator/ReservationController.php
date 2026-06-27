@@ -135,7 +135,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * Aceptación de reprogramación de calendario
+     * Aceptación de reprogramación de calendario con Cierre Contable Automático (Camino B)
      */
     public function acceptDate(Request $request)
     {
@@ -144,16 +144,45 @@ class ReservationController extends Controller
         if (!$order) return redirect()->route('creator.dashboard');
         
         $asset = DB::table('lab_assets')->where('id', $order->asset_id)->first();
+        $lab = DB::table('users')->where('id', $asset->lab_id)->first();
+        $creator = auth()->user();
 
+        // 🎯 LEDGER INTELLIGENT: El Creador acepta la fecha propuesta y el trato se cierra automáticamente
         DB::transaction(function() use ($order, $asset) {
-            DB::table('orders')->where('id', $order->id)->update(['status' => 'pending']);
-            DB::table('notifications')->insert(['user_id' => $asset->lab_id, 'message' => __('messages.notif_date_accepted'), 'type' => 'success', 'created_at' => now()]);
+            // 1. Mutar la orden directamente al estado final de completada
+            DB::table('orders')->where('id', $order->id)->update([
+                'status'     => 'completed',
+                'updated_at' => now()
+            ]);
+
+            // 2. Descontar las horas/cupos del inventario real del laboratorio
+            DB::table('lab_assets')->where('id', $order->asset_id)->increment('consumed_hours', $order->hours_requested);
+
+            // 3. Registrar el consumo definitivo en el Libro Contable para los KPI globales
+            DB::table('transactions')->insert([
+                'user_id'     => $asset->lab_id,
+                'description' => 'Servicio consumido via Reprogramación: Orden #' . $order->id,
+                'amount'      => $order->total_fc,
+                'type'        => 'consumed',
+                'created_at'  => now()
+            ]);
+            
+            // Alerta interna en la campanita del Administrador del Lab
+            DB::table('notifications')->insert([
+                'user_id'    => $asset->lab_id,
+                'message'    => '📅 ' . auth()->user()->name . ' aceptó tu propuesta de fecha. Cupo asegurado y liquidado.',
+                'type'       => 'success',
+                'created_at' => now()
+            ]);
         });
         
-        // 📨 TRIGGER CLEAN: Remolca la plantilla bilingüe estructurada
-        $lab = DB::table('users')->where('id', $asset->lab_id)->first();
+        // 📨 TRIGGERS EMISORES DE COHESIÓN DIGITAL
         if ($lab) {
-            MailService::respuestaReprogramacionAlLab($lab->email, $lab->name, auth()->user()->name, $asset->custom_name, true);
+            // Notificar al correo institucional del Lab la confirmación del alumno
+            MailService::respuestaReprogramacionAlLab($lab->email, $lab->name, $creator->name, $asset->custom_name, true);
+            
+            // Enviar al buzón del Creador su pase de entrada definitivo con normativas de seguridad bilingües
+            MailService::confirmacionReservaActivo($creator->email, $creator->name, $lab->name, $asset->custom_name, $order->reservation_date, $order->hours_requested, $asset->asset_type ?? 'machine');
         }
 
         return redirect()->route('creator.dashboard')->with('msg', 'date_accepted');

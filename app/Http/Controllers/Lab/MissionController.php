@@ -33,7 +33,8 @@ class MissionController extends Controller
         // ... Todo el inicio de tu método store() se queda exactamente igual
         try {
             DB::transaction(function () use ($labId, $request, $rewardUnit, $targetCreatorId, $spots, $totalEscrowRequired) {
-                DB::table('missions')->insert([
+                // 🎯 CAPTURA DE ID: Cambiamos insert por insertGetId para conocer el ID de la misión creada
+                $missionId = DB::table('missions')->insertGetId([
                     'lab_id'            => $labId,
                     'title'             => trim($request->input('title')),
                     'description'       => trim($request->input('description')),
@@ -51,13 +52,23 @@ class MissionController extends Controller
                 DB::table('transactions')->insert([
                     'user_id'     => $labId,
                     'description' => "Reserva en Custodia: " . trim($request->input('title')) . " ($spots cupos)",
-                    'amount'  => $totalEscrowRequired,
+                    'amount'      => $totalEscrowRequired,
                     'type'        => 'escrow',
                     'created_at'  => now(),
                     'updated_at'  => now()
                 ]);
 
+                // 🔥 ENLACE DE INVITACIÓN DIRECTA: Si es dirigida, inyectamos la postulación en estado 'invited'
                 if ($targetCreatorId) {
+                    DB::table('mission_applications')->insert([
+                        'mission_id'  => $missionId,
+                        'creator_id'  => $targetCreatorId,
+                        'status'      => 'invited', // Viaja directo al estado de espera del creador
+                        'is_reviewed' => false,
+                        'created_at'  => now(),
+                        'updated_at'  => now()
+                    ]);
+
                     DB::table('notifications')->insert([
                         'user_id'    => $targetCreatorId,
                         'message'    => __('messages.notif_exclusive_mission'),
@@ -67,11 +78,11 @@ class MissionController extends Controller
                 }
             });
 
-            // 🚀 REPARACIÓN AQUÍ: Solo dispara el correo si la misión fue DIRIGIDA a alguien específico
+            // 🚀 TRIGGER FINTECH: Si la misión es dirigida, despacha el correo de aviso de amortización ISA
             if ($targetCreatorId) {
                 $cUser = DB::table('users')->where('id', $targetCreatorId)->first();
                 if ($cUser) { 
-                    MailService::misionAsignadaAlCreator(
+                    MailService::misionDirigidaAmortizacionCreada(
                         $cUser->email, 
                         $cUser->name, 
                         auth()->user()->name, 
@@ -256,9 +267,24 @@ class MissionController extends Controller
                     'created_at' => now()
                 ]);
 
-                // 🚀 TRIGGER: Envío de comprobante de pago bilingüe con las estrellas ganadas
+                // 🚀 TRIGGER BILINGÜE INTELIGENTE: Despacho unificado según la naturaleza del cobro (Smart Email)
                 $cUser = DB::table('users')->where('id', $creatorId)->first();
-                if ($cUser) { MailService::liquidacionMisionAlCreator($cUser->email, $cUser->name, $mission->title, $mission->reward_fc, $rating, ($retornoEjecutado > 0)); }
+                if ($cUser) {
+                    if ($retornoEjecutado > 0) {
+                        // Envía el Smart Email inyectando la deuda_fc remanente (amortización parcial o total)
+                        MailService::misionDirigidaAmortizacionCulminada(
+                            $cUser->email, 
+                            $cUser->name, 
+                            $mission->title, 
+                            $retornoEjecutado, 
+                            $rating, 
+                            $cUser->deuda_fc
+                        );
+                    } else {
+                        // Flujo regular para makers sin deudas
+                        MailService::liquidacionMisionAlCreator($cUser->email, $cUser->name, $mission->title, $mission->reward_fc, $rating, false);
+                    }
+                }
 
                 $pendientesDeEvaluacion = DB::table('mission_applications')->where('mission_id', $missionId)->where('status', 'accepted')->where('is_reviewed', false)->count();
                 if ($pendientesDeEvaluacion == 0 && $mission->spots_filled >= $mission->spots_total) {

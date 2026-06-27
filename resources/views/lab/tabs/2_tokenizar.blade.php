@@ -103,7 +103,7 @@
         @endif
     </div>
 
-    <div class="premium-glass-card">
+    <div class="premium-glass-card" id="tarjeta-reservas">
         <div class="premium-glass-card-header">
             <h3 class="premium-glass-card-title">⚙️ {{ __('messages.title_reservations') }}</h3>
         </div>
@@ -186,7 +186,7 @@
         </div>
     </div>
 
-    <div class="premium-glass-card">
+    <div class="premium-glass-card" id="tarjeta-financiamientos">
         <div class="premium-glass-card-header">
             <h3 class="premium-glass-card-title">🎓 {{ __('messages.title_isa_portfolio') }}</h3>
         </div>
@@ -382,7 +382,7 @@ function abrirModalReprogramar(boton, orderId, fechaActual) {
         <form id="form-reprogramar-${orderId}" action="{{ route('lab.order.reschedule') }}" method="POST">
             @csrf
             <input type="hidden" name="order_id" value="${orderId}">
-            <input type="date" name="new_date" value="${fechaActual}" min="${new Date().toISOString().split('T')[0]}" class="premium-input" style="color-scheme: dark; margin-top: 15px;" required>
+            <input type="date" name="nueva_fecha" value="${fechaActual}" min="${new Date().toISOString().split('T')[0]}" class="premium-input m-0 text-center-wrapper font-rajdhani-15" style="color-scheme: dark;" required>
         </form>
     `;
 
@@ -398,7 +398,8 @@ function abrirModalReprogramar(boton, orderId, fechaActual) {
         confirmButtonText: '{{ __('messages.btn_send_proposal') }}',
         cancelButtonText: '{{ __('messages.swal_cancel') }}',
         preConfirm: () => {
-            const dateInput = document.querySelector(`#form-reprogramar-${orderId} input[name="new_date"]`).value;
+            // 🎯 CORRECCIÓN: Ajustamos el selector para capturar el valor del nuevo campo "nueva_fecha"
+            const dateInput = document.querySelector(`#form-reprogramar-${orderId} input[name="nueva_fecha"]`).value;
             if (!dateInput) { Swal.showValidationMessage('Debes seleccionar una fecha'); return false; }
             return true;
         }

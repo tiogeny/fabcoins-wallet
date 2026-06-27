@@ -134,7 +134,7 @@ class JobController extends Controller
     }
 
     /**
-     * El Creador ACEPTA una invitación directa
+     * El Creador ACEPTA una invitación directa con Alerta Contable al Lab
      */
     public function acceptInvite(Request $request)
     {
@@ -153,6 +153,29 @@ class JobController extends Controller
                 ->where('id', $missionId)
                 ->increment('spots_filled');
         });
+
+        // 🚀 TRIGGER DE COMPROMISO: Alerta al laboratorio que el alumno aceptó trabajar en la misión dirigida
+        $mission = DB::table('missions')->where('id', $missionId)->first();
+        $labUser = DB::table('users')->where('id', $mission->lab_id ?? null)->first();
+
+        if ($mission && $mission->target_creator_id == $creator->id && $labUser) {
+            
+            // 🔔 INYECCIÓN EN BASE DE DATOS PARA LA CAMPANITA DEL LAB
+            DB::table('notifications')->insert([
+                'user_id'    => $mission->lab_id,
+                'message'    => "🤝 " . $creator->name . " ha aceptado tu Misión de Honor dirigida: '" . $mission->title . "'",
+                'type'       => 'info',
+                'created_at' => now()
+            ]);
+
+            MailService::misionDirigidaAceptadaAlLab(
+                $labUser->email, 
+                $labUser->name, 
+                $creator->name, 
+                $mission->title, 
+                $mission->reward_fc
+            );
+        }
 
         return redirect()->back()->with('msg', 'invite_accepted_ok');
     }

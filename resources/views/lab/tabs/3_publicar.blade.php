@@ -64,7 +64,7 @@
                         <label class="premium-label">{{ __('messages.th_limit') }}</label>
                         <div class="relative-flex-w100">
                             <span class="calendar-icon-overlay">📅</span>
-                            <input type="date" name="deadline" value="{{ date('Y-m-d', strtotime('+7 days')) }}" class="premium-input m-0 text-center-wrapper font-rajdhani-15" required>
+                            <input type="date" name="deadline" value="{{ date('Y-m-d', strtotime('+7 days')) }}" class="premium-input m-0 text-center-wrapper font-rajdhani-15" style="color-scheme: dark;" required>
                         </div>
                     </div>
                     <!-- 🎯 CORRECCIÓN: Quitamos el 'pt-24' que descuadraba el botón y forzamos su altura exacta -->
@@ -78,7 +78,7 @@
         </form>
     </div>
 
-    <div class="premium-glass-card mb-0">
+    <div class="premium-glass-card mb-0" id="tarjeta-misiones">
         <div class="premium-glass-card-header">
             <h3 class="premium-glass-card-title">📋 {{ __('messages.miss_list_title') }}</h3>
         </div>

@@ -38,7 +38,7 @@
     </div> 
 
     {{-- 2. TABLA DE CRÉDITO ISA ACTIVO O PENDIENTE --}}
-    <div class="premium-glass-card">
+    <div class="premium-glass-card" id="tarjeta-mis-financiamientos">
         <div class="premium-glass-card-header">
             <h3 class="premium-glass-card-title m-0">🎓 {{ __('messages.title_isa_portfolio_creator') ?? 'Estado de Financiamiento ISA' }}</h3>
         </div>

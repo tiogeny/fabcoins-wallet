@@ -125,7 +125,7 @@ return [
     'status_approved_consumed' => 'Aprobado y Consumido',
     'status_waiting_creator'   => 'Esperando al Creador',
     'status_rejected'          => 'Cancelado',
-    'status_rescheduled'       => 'Reprogramación Ofertada',
+    'status_rescheduled'       => 'Reprogramación recibida',
     'status_pending'           => 'En espera',
     'status_completed'         => 'Completados',
 
@@ -227,10 +227,21 @@ return [
     'msg_applied_ok'           => '¡Postulación enviada con éxito!',
     'msg_credit_accepted'      => 'Crédito aprobado.',
 
+    
+    'tx_lab_credit_granted'            => 'Financiamiento otorgado a :creator para: :asset',
+    'tx_lab_capacity_consumed'          => 'Capacidad consumida por :creator: :asset',
+    
+    // --- Notificaciones Inmersivas ---
+    'notif_auto_inscription_confirmed' => "¡Tu inscripción a ':asset' ha sido confirmada!",
+    
+    
+    // --- Fallbacks Genéricos ---
+    'lbl_creator_fallback'             => 'Creador',
+
     // --- ALERTAS DEL BLOQUE 4 PERSONALIZADAS ---
     'msg_reservation_approved_ok'    => '¡Reserva de infraestructura aprobada con éxito!',
     'msg_reservation_rejected_ok'    => 'Reserva rechazada. Los FabCoins han sido devueltos al Creador.',
-    'msg_reservation_rescheduled_ok' => 'Propuesta de reprogramación enviada al Creador con éxito.',
+    'msg_reservation_rescheduled_ok' => 'Propuesta de reprogramación enviada.',
 
     // HUB 3: Publicar & Misiones
     'miss_create_title'        => 'Crear Nueva Misión en la Red',
@@ -243,7 +254,7 @@ return [
     'ph_ref_link'              => 'Enlace a planos, repositorio o documentación (Opcional)',
     'lbl_spots'                => 'Cupos (Creadores)',
     'lbl_reward_per_creator'   => 'Pago por Creador',
-    'btn_publish_miss'         => 'Publicar msión y congelar',
+    'btn_publish_miss'         => 'Publicar msión',
     'miss_list_title'          => 'Mis Misiones Publicadas',
     'th_miss_details'          => 'Misión y Detalles',
     'th_reward'                => 'Recompensa',
@@ -343,7 +354,8 @@ return [
     'lbl_progress'             => 'Progreso de Amortización:',
     'lbl_debt'                 => 'Deuda Restante:',
     'isa_payment_history'      => 'Historial de Abonos Recientes',
-    'notif_credit_approved'      => 'Crédito aprobado',
+    'notif_credit_approved'    => 'Crédito aprobado',
+    'notif_credit_rejected'    => 'Tu solicitud de crédito fue rechazada.',
 
 
     // HUB 1: Misiones Creator
@@ -410,7 +422,7 @@ return [
     
     // Textos para la Base de Datos (Controlador)
     'tx_reserve_partial'     => 'Reserva parcial en custodia: :asset',
-    'isa_desc_auto'          => 'Financiamiento automático para uso de :asset por :hours horas.',
+    'isa_desc_auto'          => 'Financiamiento para uso de :asset por :hours horas.',
     'notif_reserve_credit'   => ':creator ha solicitado reservar :asset pero necesita un crédito de :credit FC. Revisa las propuestas de financiamiento.',
     'th_progress' => 'Progreso / Estado',
 
@@ -492,13 +504,13 @@ return [
     'swal_price_title'             => 'Tarifa Actualizada',
     'swal_price_desc'              => 'Ahora los creadores sabrán de tu precio actualizado.',
     'swal_mission_published'       => 'Convocatoria Abierta',
-    'swal_mission_published_desc'  => 'La misión se ha publicado con éxito y los fondos han sido aislados en custodia.',
+    'swal_mission_published_desc'  => 'La misión se ha publicado con éxito.',
     'swal_mission_assigned'        => 'Misión asignada',
     'swal_mission_assigned_desc'   => 'El/la Creador/a ha sido notificad@.',
     'swal_mission_completed'       => 'Fondos Liberados',
     'swal_mission_completed_desc'  => 'Se ha enviado el pago de forma líquida al monedero del Creador.',
     'swal_amortize_completed'      => 'Deuda Amortizada',
-    'swal_amortize_completed_desc' => 'El pago se ha retenido con éxito y se aplicó como abono directo a tu favor en el contrato educativo.',
+    'swal_amortize_completed_desc' => 'Los FC han sido regresados ti',
     'swal_no_assets_selected'      => 'Ningún activo seleccionado',
     'swal_no_assets_selected_desc' => 'Debes marcar al menos una casilla de verificación para poder transformar infraestructura en FabCoins.',
     'swal_confirm_tokenise'        => 'Los activos seleccionados se tonekinarán y estarán a disposición de los creadores para reservarlos.',
@@ -515,8 +527,8 @@ return [
     'swal_rental_pending_desc'     => 'El pedido de reserva se ha enviado. Esperando aprobación del Lab.',
     'swal_credit_pending_title'    => '¡Financiamiento solicitado!',
     'swal_credit_pending_desc'     => 'El pedido de crédito se ha enviado. Esperando aprobación del Lab.',
-    'tx_credit_disbursed '         => 'Crédito desembolsado',
-    'swal_date_accepted_desc'      => 'Has aceptado los nuevos términos de calendario propuestos.',
+    'tx_credit_disbursed'         => 'Crédito desembolsado',
+    'swal_date_accepted_desc'      => 'Has aceptado la nueva fecha propuesta por el Lab.',
     'swal_refunded_title'          => 'Reembolsado',
     'swal_date_rejected_desc'      => 'Reserva cancelada. El colateral en custodia ha sido devuelto a tu balance.',
     'swal_reviewed_title'          => 'Calificado',
@@ -531,7 +543,7 @@ return [
     // =========================================================
     // 10. TEXTOS DINÁMICOS DE BACKEND (Tx y Notificaciones)
     // =========================================================
-    'tx_reserve_desc'              => 'Reserva de infraestructura: :asset',
+    'tx_reserve_desc'              => 'Reserva de Activo: :asset',
     'notif_reserve_req'            => ':creator solicitó :asset (:hours h) para el :date',
     'notif_date_accepted'          => 'El Creator aceptó la nueva fecha de reprogramación.',
     'tx_refund_desc'               => 'Reembolso por reserva cancelada (Incompatibilidad): :asset',
@@ -580,7 +592,7 @@ return [
 
     // Alertas de la Vitrina Pública
     'msg_invite_sent'                 => '¡Invitación enviada con éxito al Creador!',
-    'msg_invite_accepted_ok' => '¡Invitación aceptada! La misión es tuya.',
+    'msg_invite_accepted_ok' => '¡Misión aceptada!',
     'err_already_invited_or_applied'  => 'Este Creador ya tiene una invitación o postulación activa en esa misión.',
 
     'role_lab' => 'Laboratorio',

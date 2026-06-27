@@ -58,7 +58,9 @@
 
             <div class="form-actions-row">
                 <button type="button" onclick="agregarFilaEnlistar()" class="btn-back-minimal">+ {{ __('messages.btn_add_more') }}</button>
-                <button type="submit" class="btn-premium btn-green-hub">💾 {{ __('messages.btn_save_inventory') }}</button>
+                <button type="submit" class="btn-premium btn-green-hub" style="width: max-content !important; margin-left: auto;"">
+                    💾 {{ __('messages.btn_save_inventory') }}
+                </button>
             </div>
         </form>
     </div>
@@ -161,7 +163,7 @@
             @csrf
             <div class="premium-glass-card-header">
                 <h2 class="premium-glass-card-title">👤 {{ __('messages.title_bio_links') }}</h2>
-                <button type="submit" class="btn-premium btn-green-hub">💾 {{ __('messages.btn_save_profile') }}</button>
+                <button type="submit" class="btn-premium btn-green-hub" style="width: max-content !important;">💾 {{ __('messages.btn_save_profile') }}</button>
             </div>
 
             <div class="profile-panoramic-grid">
@@ -209,7 +211,7 @@
                     <label class="premium-label">{{ __('messages.lbl_city_country') }}</label>
                     <div class="address-input-wrapper">
                         <input type="text" name="address" id="address-input" value="{{ $lab->address }}" placeholder="{{ __('messages.ph_map_search') }}" class="premium-input" required>
-                        <button type="button" id="btn-search-map" class="btn-premium btn-green-hub">🔍 {{ __('messages.btn_search_map') }}</button>
+                        <button type="button" id="btn-search-map" class="btn-premium btn-green-hub" style="width: max-content !important;">🔍 {{ __('messages.btn_search_map') }}</button>
                     </div>
                 </div>
                 <input type="hidden" name="latitude" id="lat-input" value="{{ $lab->latitude }}">

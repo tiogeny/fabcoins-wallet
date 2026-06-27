@@ -694,5 +694,122 @@ class MailService
 
         return self::enviar($emailCreator, $asuntoEs, $asuntoEn, "❌ Solicitud No Procesada", "❌ Request Not Processed", $msgEs, $msgEn);
     }
+
+    /**
+     * ==========================================================================
+     * 🤝 EXTENSIÓN FINTECH: MISIONES EXCLUSIVAS DE RETORNO / AMORTIZACIÓN ISA
+     * ==========================================================================
+     */
+
+    /**
+     * CORREO 4H: NOTIFICACIÓN DE MISIÓN DIRIGIDA PARA AMORTIZACIÓN (CREACIÓN)
+     * Disparado desde MissionController@store cuando la misión tiene un target_creator_id
+     */
+    public static function misionDirigidaAmortizacionCreada($emailCreator, $nombreCreator, $nombreLab, $tituloMision, $recompensa)
+    {
+        $linkAcceso = route('login');
+
+        // Cuerpo en Español
+        $msgEs = "
+        <p>¡Hola <strong>$nombreCreator</strong>!</p>
+        <p>El lab<strong>$nombreLab</strong> ha publicado una <strong>Misión Exclusiva</strong> dirigida especialmente a ti.</p>
+        <div style='background:rgba(241,196,15,0.04); border:1px dashed #f1c40f; padding:15px; border-radius:8px; text-align:center; margin:20px 0;'>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px;'>Monto de Cobertura en Escrow:</span>
+            <span style='font-size:22px; font-weight:800; color:#f1c40f;'>" . number_format($recompensa, 0) . " FC</span>
+        </div>
+        <p><strong>🚨 Nota:</strong> Al tratarse de una misión de retorno vinculada a tu línea de financiamiento activa, el valor de la recompensa se aplicará de forma directa para reducir o liquidar tu saldo deudor con este lab.</p>
+        <p>Es una oportunidad perfecta para saldar tu compromiso utilizando tus habilidades técnicas. ¡Revisa los detalles y ponte en marcha!</p>
+        <p style='text-align:center; margin:25px 0 10px 0;'>
+            <a href='$linkAcceso' style='background-color:#f1c40f; color:#0b0c10; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Ver Detalles de la Misión</a>
+        </p>";
+
+        // Cuerpo en Inglés
+        $msgEn = "
+        <p>Hello <strong>$nombreCreator</strong>!</p>
+        <p>The lab<strong>$nombreLab</strong> has published an <strong>Exclusive Mission</strong> tailored specifically for you.</p>
+        <div style='background:rgba(241,196,15,0.04); border:1px dashed #f1c40f; padding:15px; border-radius:8px; text-align:center; margin:20px 0;'>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px;'>Escrow Coverage Amount:</span>
+            <span style='font-size:22px; font-weight:800; color:#f1c40f;'>" . number_format($recompensa, 0) . " FC</span>
+        </div>
+        <p><strong>🚨 Note:</strong> As an exclusive payback mission linked to your active financing agreement, the reward value will be directly applied to reduce or settle your outstanding debt with this lab.</p>
+        <p>It is the perfect opportunity to fulfill your commitment using your technical talent. Check the requirements and get started!</p>
+        <p style='text-align:center; margin:25px 0 10px 0;'>
+            <a href='$linkAcceso' style='background-color:#f1c40f; color:#0b0c10; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>View Mission Details</a>
+        </p>";
+
+        return self::enviar($emailCreator, "🎯 Misión Exclusiva de Amortización - FabCoins", "🎯 Exclusive Amortization Mission - FabCoins", "🎯 Misión de Honor Asignada", "🎯 Honor Mission Assigned", $msgEs, $msgEn);
+    }
+
+    /**
+     * CORREO 4I: EL CREADOR ACEPTÓ LA MISIÓN DE HONOR (AVISO PARA EL LAB)
+     * Se dispara desde el controlador del Creator cuando Henry acepta la invitación
+     */
+    public static function misionDirigidaAceptadaAlLab($emailLab, $nombreLab, $nombreCreator, $tituloMision, $recompensa)
+    {
+        $linkAcceso = route('login');
+
+        $msgEs = "
+        <p>Hola <strong>$nombreLab</strong>,</p>
+        <p>Te informamos que el creador <strong>$nombreCreator</strong> ha <strong>ACEPTADO</strong> formalmente la Misión que le dirigiste: <strong>\"$tituloMision\"</strong>.</p>
+        <p>El acuerdo de amortización por un valor de <strong>" . number_format($recompensa, 0) . " FC</strong> ha entrado en fase de ejecución activa. El creador ya se encuentra habilitado para desarrollar las tareas técnicas encomendadas.</p>
+        <p>Una vez que el trabajo sea entregado en tu sede, recuerda ingresar al panel de control para auditar las habilidades del creador y liberar el colateral para reducir su deuda.</p>
+        <p style='text-align:center; margin:25px 0 10px 0;'>
+            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Monitorear Misiones en Panel</a>
+        </p>";
+
+        $msgEn = "
+        <p>Hello <strong>$nombreLab</strong>,</p>
+        <p>We are writing to inform you that the creator <strong>$nombreCreator</strong> has formally <strong>ACCEPTED</strong> the Mission you directed to them: <strong>\"$tituloMision\"</strong>.</p>
+        <p>The amortization agreement for <strong>" . number_format($recompensa, 0) . " FC</strong> is now in active execution. The creator is now authorized to perform the technical tasks specified.</p>
+        <p>Once the work is delivered to your workshop, remember to log into your dashboard to evaluate the creator's skills and release the escrowed tokens to reduce their debt.</p>
+        <p style='text-align:center; margin:25px 0 10px 0;'>
+            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Monitor Missions in Dashboard</a>
+        </p>";
+
+        return self::enviar($emailLab, "🤝 Misión de Honor Aceptada - FabCoins", "🤝 Honor Mission Accepted - FabCoins", "🤝 Compromiso de Amortización Activo", "🤝 Payback Commitment Active", $msgEs, $msgEn);
+    }
+
+    /**
+     * CORREO 4J: COMPROBANTE DE CRÉDITO AMORTIZADO (CULMINACIÓN)
+     * Disparado desde MissionController@completeMission cuando la labor de retorno se aprueba
+     */
+    public static function misionDirigidaAmortizacionCulminada($emailCreator, $nombreCreator, $tituloMision, $montoAmortizado, $estrellas, $deudaRestante)
+    {
+        $estrellasHtml = str_repeat('⭐', $estrellas);
+
+        $saldoDeudaTextoEs = ($deudaRestante > 0) 
+            ? "Tu saldo deudor remanente con el lab es de <strong>" . number_format($deudaRestante, 0) . " FC</strong>."
+            : "<strong>🎉 ¡Felicidades! Tu contrato de financiamiento con este lab ha sido saldado al 100%.</strong>";
+
+        $saldoDeudaTextoEn = ($deudaRestante > 0) 
+            ? "Your remaining outstanding balance with the lab is <strong>" . number_format($deudaRestante, 0) . " FC</strong>."
+            : "<strong>🎉 Congratulations! Your financing agreement with this lab has been 100% settled.</strong>";
+
+        // Cuerpo en Español
+        $msgEs = "
+        <p>Hola <strong>$nombreCreator</strong>,</p>
+        <p>El lab ha auditado tu entrega final para la misión <em>\"$tituloMision\"</em> y la ha aprobado satisfactoriamente.</p>
+        <div style='background:#131722; padding:20px; border-radius:8px; text-align:center; margin:20px 0; border:1px solid rgba(255,255,255,0.02);'>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;'>Monto Amortizado a tu Deuda:</span>
+            <span style='color:#f1c40f; margin:0; font-size:26px; font-weight:800;'>-" . number_format($montoAmortizado, 0) . " FC</span>
+            <p style='margin:10px 0 0 0; font-size:14px; color:#ffffff;'>Evaluación del Lab: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
+        </div>
+        <p>Los fondos en custodia han sido liberados y transferidos directamente a la tesorería del lab para amortizar tu crédito. $saldoDeudaTextoEs</p>
+        <p style='margin-top:15px;'>Tus habilidades validadas y tu puntuación de reputación pública han sido actualizadas en la red. ¡Gracias por tu compromiso!</p>";
+
+        // Cuerpo en Inglés
+        $msgEn = "
+        <p>Hello <strong>$nombreCreator</strong>,</p>
+        <p>The lab has audited your final delivery for the mission <em>\"$tituloMision\"</em> and has successfully approved it.</p>
+        <div style='background:#131722; padding:20px; border-radius:8px; text-align:center; margin:20px 0; border:1px solid rgba(255,255,255,0.02);'>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;'>Amount Amortized to Your Debt:</span>
+            <span style='color:#f1c40f; margin:0; font-size:26px; font-weight:800;'>-" . number_format($montoAmortizado, 0) . " FC</span>
+            <p style='margin:10px 0 0 0; font-size:14px; color:#ffffff;'>Lab Evaluation: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
+        </div>
+        <p>The escrowed tokens have been released and transferred directly to the lab's vault to amortize your credit line. $saldoDeudaTextoEn</p>
+        <p style='margin-top:15px;'>Your validated skills and public reputation score have been successfully updated in the network. Thank you for your commitment!</p>";
+
+        return self::enviar($emailCreator, "🪙 Comprobante de Amortización - FabCoins", "🪙 Amortization Receipt - FabCoins", "🪙 Crédito Amortizado", "🪙 Credit Amortized", $msgEs, $msgEn);
+    }
     
 }

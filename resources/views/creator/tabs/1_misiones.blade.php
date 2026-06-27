@@ -72,7 +72,7 @@
     </div>
 
     {{-- 2. TABLA: MIS POSTULACIONES Y TRABAJOS --}}
-    <div class="premium-glass-card">
+    <div class="premium-glass-card" id="tarjeta-mis-misiones">
         <div class="premium-glass-card-header">
             <h3 class="premium-glass-card-title m-0">📋 {{ __('messages.title_my_apps_status') }}</h3>
         </div>

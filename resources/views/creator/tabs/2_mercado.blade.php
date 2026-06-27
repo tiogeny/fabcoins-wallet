@@ -84,9 +84,9 @@
                         @endphp
                         <div class="form-reserve-row" style="align-items: center; gap: 6px; grid-template-columns: {{ $esTaller ? '1.5fr 1fr' : '1.4fr 0.8fr 1fr' }};">
                             @if(!$esTaller)
-                                <div style="position: relative; width: 100%; height: 36px;">
-                                    <span class="calendar-icon-overlay-sm" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; z-index: 5; font-size: 12px;">📅</span>
-                                    <input type="date" name="reservation_date" required min="{{ date('Y-m-d') }}" class="input-date-sm">
+                                <div class="relative-flex-w100">
+                                    <span class="calendar-icon-overlay">📅</span>
+                                    <input type="date" name="reservation_date" min="{{ date('Y-m-d') }}" class="premium-input m-0 text-center-wrapper font-rajdhani-15" style="color-scheme: dark;" required>
                                 </div>
                             @else
                                 {{-- Si es taller la fecha ya viene en el título, inyectamos la de hoy oculta para no romper el 'required' del controlador --}}
@@ -114,7 +114,7 @@
         </div>
     </div>
 
-    <div class="premium-glass-card">
+    <div class="premium-glass-card" id="tarjeta-mis-reservas">
         <h2 class="premium-glass-card-title">📋 {{ __('messages.monitor_title') }}</h2>
         <p class="premium-glass-card-subtitle">{{ __('messages.monitor_desc') }}</p>
 
