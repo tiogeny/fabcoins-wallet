@@ -90,39 +90,61 @@ class JobController extends Controller
     }
 
     public function transferP2P(Request $request)
-    {
-        $creator = auth()->user();
-        $emailDestino = trim($request->input('dest_email'));
-        $monto = floatval($request->input('monto_p2p'));
-        $motivo = $request->input('mensaje_p2p') ? trim($request->input('mensaje_p2p')) : 'Transferencia directa P2P';
+{
+    $creator = auth()->user();
+    $emailDestino = trim($request->input('dest_email'));
+    $monto = floatval($request->input('monto_p2p'));
+    $motivo = $request->input('mensaje_p2p') ? trim($request->input('mensaje_p2p')) : 'Transferencia directa P2P';
 
-        $receptor = DB::table('users')->where('email', $emailDestino)->where('role', 'creator')->first();
+    // 🛡️ CONTROL ADICIONAL (Mitiga VULN-09): Evitar montos negativos o cero
+    if ($monto <= 0) {
+        return redirect()->route('creator.dashboard')->with('error', "El monto de la transferencia debe ser mayor a cero.");
+    }
 
-        if (!$receptor) return redirect()->route('creator.dashboard')->with('error', "Usuario destinatario no encontrado en la red.");
-        if ($receptor->id === $creator->id) return redirect()->route('creator.dashboard')->with('error', "Operación inválida: No puedes enviarte fondos a ti mismo.");
+    $receptor = DB::table('users')->where('email', $emailDestino)->where('role', 'creator')->first();
 
-        // Validar Disponibilidad líquida en cuenta
-        $querySaldo = DB::select("SELECT SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END) as saldo FROM transactions WHERE user_id = ?", [$creator->id]);
-        if (($querySaldo[0]->saldo ?? 0) < $monto) return redirect()->route('creator.dashboard')->with('error', "Fondos insuficientes en billetera.");
+    if (!$receptor) return redirect()->route('creator.dashboard')->with('error', "Usuario destinatario no encontrado en la red.");
+    if ($receptor->id === $creator->id) return redirect()->route('creator.dashboard')->with('error', "Operación inválida: No puedes enviarte fondos a ti mismo.");
 
+    try {
+        // 🔒 CIRUGÍA DE SEGURIDAD (VULN-03): Todo el proceso ocurre congelado en la base de datos
         DB::transaction(function() use ($creator, $receptor, $monto) {
+            
+            // Bloqueamos temporalmente los registros de este creador para evitar doble gasto en milisegundos concurrentes
+            $saldo = DB::table('transactions')
+                ->where('user_id', $creator->id)
+                ->lockForUpdate()
+                ->selectRaw("SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END) as saldo")
+                ->value('saldo') ?? 0;
+
+            // La validación se ejecuta AQUÍ ADENTRO con la seguridad de que el saldo no cambiará
+            if ($saldo < $monto) {
+                throw new \Exception("Fondos insuficientes en billetera.");
+            }
+
+            // Si pasa la prueba, insertamos de inmediato de forma atómica
             DB::table('transactions')->insert(['user_id' => $creator->id, 'description' => "Envío P2P a " . $receptor->name, 'amount' => $monto, 'type' => 'expense', 'created_at' => now()]);
             DB::table('transactions')->insert(['user_id' => $receptor->id, 'description' => "Recibido P2P de " . $creator->name, 'amount' => $monto, 'type' => 'income', 'created_at' => now()]);
             DB::table('notifications')->insert(['user_id' => $receptor->id, 'message' => "💰 Has recibido $monto FC de " . $creator->name, 'type' => 'success', 'created_at' => now()]);
         });
 
-        // 📨 TRIGGER RECEPTOR: Alerta de abono inmediato en su cuenta
-        $msgRecEs = "<p>Hola <strong>{$receptor->name}</strong>,</p><p>Has recibido una transferencia digital directa de <strong>{$creator->name}</strong> por un valor de:</p><h3 style='color:#2ecc71; text-align:center; font-size:24px;'>+" . number_format($monto, 0) . " FC</h3><p>Concepto adjunto: <em>\"$motivo\"</em></p>";
-        $msgRecEn = "<p>Hello <strong>{$receptor->name}</strong>,</p><p>You have received a direct digital transfer from <strong>{$creator->name}</strong> for a value of:</p><h3 style='color:#2ecc71; text-align:center; font-size:24px;'>+" . number_format($monto, 0) . " FC</h3><p>Concept attached: <em>\"$motivo\"</em></p>";
-        MailService::enviar($receptor->email, "💰 Has recibido FabCoins P2P", "💰 You received FabCoins P2P", "💰 Saldo Acreditado", "💰 Balance Credited", $msgRecEs, $msgRecEn);
-
-        // 📨 TRIGGER EMISOR: Comprobante digital de débito de remesa
-        $msgEmiEs = "<p>Hola <strong>{$creator->name}</strong>,</p><p>Tu transferencia P2P hacia <strong>{$receptor->name}</strong> por un valor de <strong>" . number_format($monto, 0) . " FC</strong> ha sido procesada y debitada con éxito de tu libro contable.</p>";
-        $msgEmiEn = "<p>Hello <strong>{$creator->name}</strong>,</p><p>Your P2P transfer to <strong>{$receptor->name}</strong> for an amount of <strong>" . number_format($monto, 0) . " FC</strong> has been successfully processed and debited from your ledger.</p>";
-        MailService::enviar($creator->email, "💸 Comprobante de Envío P2P", "💸 P2P Transfer Receipt", "💸 Remesa Despachada", "💸 Remittance Dispatched", $msgEmiEs, $msgEmiEn);
-
-        return redirect()->route('creator.dashboard')->with('msg', 'p2p_ok');
+    } catch (\Exception $e) {
+        // Si hay doble gasto o falta de saldo, la base de datos cancela todo (Rollback) y avisa al usuario
+        return redirect()->route('creator.dashboard')->with('error', $e->getMessage());
     }
+
+    // 📨 TRIGGER RECEPTOR: Alerta de abono inmediato en su cuenta
+    $msgRecEs = "<p>Hola <strong>{$receptor->name}</strong>,</p><p>Has recibido una transferencia digital directa de <strong>{$creator->name}</strong> por un valor de:</p><h3 style='color:#2ecc71; text-align:center; font-size:24px;'>+" . number_format($monto, 0) . " FC</h3><p>Concepto adjunto: <em>\"$motivo\"</em></p>";
+    $msgRecEn = "<p>Hello <strong>{$receptor->name}</strong>,</p><p>You have received a direct digital transfer from <strong>{$creator->name}</strong> for a value of:</p><h3 style='color:#2ecc71; text-align:center; font-size:24px;'>+" . number_format($monto, 0) . " FC</h3><p>Concept attached: <em>\"$motivo\"</em></p>";
+    MailService::enviar($receptor->email, "💰 Has recibido FabCoins P2P", "💰 You received FabCoins P2P", "💰 Saldo Acreditado", "💰 Balance Credited", $msgRecEs, $msgRecEn);
+
+    // 📨 TRIGGER EMISOR: Comprobante digital de débito de remesa
+    $msgEmiEs = "<p>Hola <strong>{$creator->name}</strong>,</p><p>Tu transferencia P2P hacia <strong>{$receptor->name}</strong> por un valor de <strong>" . number_format($monto, 0) . " FC</strong> ha sido procesada y debitada con éxito de tu libro contable.</p>";
+    $msgEmiEn = "<p>Hello <strong>{$creator->name}</strong>,</p><p>Your P2P transfer to <strong>{$receptor->name}</strong> for an amount of <strong>" . number_format($monto, 0) . " FC</strong> has been successfully processed and debited from your ledger.</p>";
+    MailService::enviar($creator->email, "💸 Comprobante de Envío P2P", "💸 P2P Transfer Receipt", "💸 Remesa Despachada", "💸 Remittance Dispatched", $msgEmiEs, $msgEmiEn);
+
+    return redirect()->route('creator.dashboard')->with('msg', 'p2p_ok');
+}
 
     /**
      * API de validación en vivo para el buscador dinámico de remesas

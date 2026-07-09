@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\URL;
 
 class SystemController extends Controller
 {
@@ -42,8 +43,15 @@ class SystemController extends Controller
             'force_password_change' => 1, 'preferred_lang' => $lab_lang, 'created_at' => now()
         ]);
 
+        // Genera un enlace firmado único para este usuario que expira en 1 día
+        $urlOnboarding = URL::temporarySignedRoute(
+            'onboarding.complete', 
+            now()->addDays(1), 
+            ['user' => $newLab->id]
+        );
+
         // 📨 TRIGGER: Despacha la plantilla de bienvenida oficial bilingüe
-        MailService::bienvenidaLab($email, $name, $password);
+        MailService::bienvenidaLab($email, $name, $urlOnboarding);
 
         return redirect()->route('superadmin.dashboard')->with('msg', 'lab_ok');
     }
