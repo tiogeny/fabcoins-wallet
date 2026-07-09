@@ -5,6 +5,19 @@
 {{-- Inyectamos la hoja de estilos aislada del Landing --}}
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/landing.css') }}?v=1.1">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://fabcoins.co">
+    <meta property="og:title" content="FabCoins | La Economía Circular para la Fabricación Digital">
+    <meta property="og:description" content="Tokeniza tu capacidad instalada, acuña monedas de respaldo contable y únete a la red global de creadores tecnológicos.">
+    <meta property="og:image" content="{{ asset('images/og-share.png') }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="FabCoins | La Economía Circular para la Fabricación Digital">
+    <meta name="twitter:description" content="Tokeniza tu capacidad instalada, acuña monedas de respaldo contable y únete a la red global de creadores tecnológicos.">
+    <meta name="twitter:image" content="{{ asset('images/og-share.png') }}">
 @endpush
 
 @section('content')

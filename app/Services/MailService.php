@@ -31,10 +31,12 @@ class MailService
             <div style='max-width: 600px; margin: 0 auto; background-color: #1c2230; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 15px 35px rgba(0,0,0,0.5);'>
                 
                 <div style='background-color: #16181f; padding: 25px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.04);'>
-                    <div style='display: inline-block; vertical-align: middle;'>
-                        <img src='" . asset('images/logo-icon.webp') . "' alt='FabCoins Isotype' style='height: 32px; width: auto; vertical-align: middle; margin-right: 6px;'>
-                        <span style='font-family: \"Segoe UI\", Roboto, sans-serif; font-size: 26px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px; vertical-align: middle;'>Fab<span style='color: #3498db;'>Coins</span></span>
-                    </div>
+                    <a href='" . url('/') . "' target='_blank' style='text-decoration: none; display: inline-block;'>
+                        <img src='" . asset('images/logo-full-mail.png') . "' 
+                             alt='FabCoins Global' 
+                             height='35' 
+                             style='height: 35px; width: auto; display: block; margin: 0 auto; border: 0;'>
+                    </a>
                 </div>
 
                 <div style='padding: 35px; color: #ecf0f1; font-size: 14.5px; line-height: 1.6;'>

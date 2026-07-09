@@ -31,6 +31,7 @@ CREATE TABLE `financing_agreements` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `lab_id` bigint unsigned NOT NULL,
   `creator_id` bigint unsigned NOT NULL,
+  `order_id` int DEFAULT NULL,
   `amount_initial` decimal(10,2) NOT NULL,
   `amount_remaining` decimal(10,2) NOT NULL,
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
@@ -92,16 +93,6 @@ CREATE TABLE `lab_assets` (
   KEY `lab_assets_catalog_id_foreign` (`catalog_id`),
   CONSTRAINT `lab_assets_catalog_id_foreign` FOREIGN KEY (`catalog_id`) REFERENCES `global_catalog` (`id`) ON DELETE CASCADE,
   CONSTRAINT `lab_assets_lab_id_foreign` FOREIGN KEY (`lab_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `migrations`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `migrations` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `migration` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `batch` int NOT NULL,
-  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `mission_applications`;
@@ -205,6 +196,7 @@ CREATE TABLE `reviews` (
   `context_id` int NOT NULL,
   `rating` int NOT NULL,
   `comment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `endorsed_skills` text COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -229,13 +221,14 @@ CREATE TABLE `sessions` (
   KEY `sessions_last_activity_index` (`last_activity`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `skills_catalog`;
+DROP TABLE IF EXISTS `skills`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `skills_catalog` (
+CREATE TABLE `skills` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hard',
+  `name_es` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name_en` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` enum('hard','soft') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'hard',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -292,9 +285,6 @@ CREATE TABLE `users` (
   `reputation_score` decimal(3,2) NOT NULL DEFAULT '0.00',
   `location` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `profile_pic` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'default_avatar.png',
-  `portfolio_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `github_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `linkedin_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `user_tagline` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `social_linkedin` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -324,9 +314,3 @@ CREATE TABLE `users` (
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1,'0001_01_01_000000_create_users_table',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (2,'2026_06_01_000001_create_fabcoins_ecosystem_tables',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (3,'2026_06_15_233940_add_reservation_date_to_orders_table',2);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (4,'2026_06_15_234508_add_description_to_financing_agreements_table',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (5,'2026_06_17_000305_add_profile_fields_to_users_table',4);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (6,'2026_06_18_204531_create_catalogs_and_skills_tables',5);
