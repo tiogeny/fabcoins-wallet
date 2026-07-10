@@ -1,6 +1,7 @@
 <div class="focus-glow-blue">
 
     {{-- 1. MOTOR DE TRANSFERENCIAS P2P --}}
+    <!--
     <div class="premium-glass-card">
         <div class="premium-glass-card-header">
             <h3 class="premium-glass-card-title m-0">💸 {{ __('messages.title_send_fc') }}</h3>
@@ -35,7 +36,8 @@
                 </div>
             </div>
         </form>
-    </div> 
+    </div>
+    -->
 
     {{-- 2. TABLA DE CRÉDITO ISA ACTIVO O PENDIENTE --}}
     <div class="premium-glass-card" id="tarjeta-mis-financiamientos">
