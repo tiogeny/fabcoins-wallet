@@ -25,12 +25,13 @@ return [
     'th_amount'                => 'Monto (FC)',
     'th_description'           => 'Concepto / Descripción',
     'ph_search_district'       => 'Buscar distrito, ciudad o región...',
+    'view_public_profile'      => 'Ver Perfil Público',
 
     // =========================================================
     // 2. AUTENTICACIÓN, REGISTRO Y ONBOARDING
     // =========================================================
     'tab_login'                => 'Ingresar',
-    'tab_register'             => 'Crear Billetera',
+    'tab_register'             => 'Crear Cuenta',
     'ph_email'                 => 'Correo electrónico',
     'ph_password'              => 'Contraseña',
     'ph_password_confirm'      => 'Confirmar contraseña',
@@ -41,18 +42,24 @@ return [
     'reg_desc'                 => 'Únete como Creador y accede a la red de Labs.',
     'reg_note'                 => 'Los Labs son invitados por el Super Admin.',
     'onb_title'                => '¡Te damos la bienvenida!',
-    'onb_desc'                 => 'Por seguridad, debes cambiar la contraseña temporal.',
-    'onb_lbl_pass'             => 'Nueva Contraseña Segura',
+    'onb_desc'                 => 'Crea tu contraseña segura.',
+    'onb_lbl_pass'             => 'Nueva contraseña segura',
     'onb_ph_pass'              => 'Ingresa tu nueva clave',
-    'onb_lbl_loc'              => 'Ubicación Física',
+    'onb_lbl_loc'              => 'Ubicación física',
     'onb_ph_loc'               => 'Ej: Lima, Perú',
-    'onb_lbl_bio'              => 'Biografía Corta',
+    'onb_lbl_bio'              => 'Biografía corta',
     'onb_ph_bio'               => 'Cuéntanos a qué te dedicas...',
     'onb_btn'                  => 'Guardar y Entrar',
     'h1_forgot'                => 'Recuperar Acceso',
     'desc_forgot'              => 'Ingresa tu correo electrónico para recibir un enlace seguro de recuperación.',
     'btn_send_link'            => 'Enviar Enlace',
     'validation_password_mismatch' => 'La contraseña actual ingresada no coincide con nuestros registros.',
+    'reset_title'            => 'Nueva Contraseña',
+    'reset_descr'            => 'Por favor define tu nueva contraseña.',
+    'reset_confirm'            => 'Confirmar nueva contraseña',
+    'btn_reset_up'            => 'Actualizar contraseña',
+    'error_password_min' => 'La contraseña debe tener al menos 8 caracteres.',
+    'error_password_required' => 'Es obligatorio ingresar una contraseña.',
 
     // =========================================================
     // 3. LANDING PAGE & MARKETING
@@ -63,7 +70,7 @@ return [
     'nav_enter'                => 'Entrar',
     'hero_title'               => 'La Economía Circular para la Fabricación Digital.',
     'hero_subtitle'            => 'Conecta tu talento con la maquinaria de los mejores Labs. Trabaja, gana FabCoins y alquila capacidad industrial sin gastar dinero fiat.',
-    'btn_creador_hero'         => 'Soy Creador: Crear Billetera Gratis',
+    'btn_creador_hero'         => 'Soy Creador: Crear cuenta gratis',
     'btn_lab_hero'             => 'Soy Lab: Unir mi Taller a la Red',
     'prob_title'               => 'Tus máquinas apagadas, su talento desperdiciado.',
     'prob_desc'                => 'Las impresoras 3D y láser de los laboratorios pasan hasta el 70% del tiempo apagadas. Mientras tanto, miles de Creadores tienen grandes ideas pero no pueden costear el acceso a maquinaria industrial.',

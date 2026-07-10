@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Services\MailService; // 🚀 IMPORTAMOS NUESTRO MOTOR DE CORREOS
 
 class User extends Authenticatable
 {
@@ -81,5 +82,21 @@ class User extends Authenticatable
         $egresos  = $this->transacciones()->whereIn('type', ['expense', 'escrow', 'burn'])->sum('amount');
 
         return $ingresos - $egresos;
+    }
+
+    /**
+     * 🔒 OVERRIDE: Intercepta el correo de recuperar contraseña nativo de Laravel
+     * y lo redirige a nuestro MailService Premium Industrial.
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        // Construye la URL segura que Laravel espera para procesar el cambio de clave
+        $urlSecure = url(route('password.reset', [
+            'token' => $token,
+            'email' => $this->email,
+        ], false));
+
+        // Despacha nuestra plantilla con el diseño Dark de FabCoins
+        MailService::recuperarPassword($this->email, $urlSecure);
     }
 }

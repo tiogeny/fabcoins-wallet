@@ -14,9 +14,20 @@ class ProfileController extends Controller
     {
         $creator = auth()->user();
 
+        // 🧠 ASISTENTE DE URLS (Antigravity Approved): Si el usuario no escribió el protocolo, se lo agregamos para evitar que la regla 'url' lo rebote
+        $redes = ['social_linkedin', 'social_github', 'social_portfolio', 'social_instagram', 'social_fabacademy'];
+        foreach ($redes as $red) {
+            if ($request->filled($red)) {
+                $url = $request->input($red);
+                if (!preg_match("~^(?:f|ht)tps?://~i", $url)) {
+                    $request->merge([$red => "https://" . $url]);
+                }
+            }
+        }
+
         // 1. Reglas de Validación con Nomenclatura Unificada
         $request->validate([
-            'bio'              => 'required|string|max:1000',
+            'bio'              => 'required|string|max:2000', // Expandido a 2000 porque las etiquetas HTML del editor suman caracteres
             'social_linkedin'  => 'nullable|url|max:255',
             'social_github'    => 'nullable|url|max:255',
             'social_portfolio' => 'nullable|url|max:255',

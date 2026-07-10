@@ -7,8 +7,8 @@
     
     <header class="lab-header-v2">
        <button type="button" class="lab-profile-trigger" 
-        onclick="abrirHubPersistente('hub-billetera'); setTimeout(() => { document.getElementById('seccion-perfil-habilidades').scrollIntoView({ behavior: 'smooth' }); }, 250);" 
-        title="{{ __('messages.edit_profile') }}">
+        onclick="window.open('{{ route('public.profile', auth()->user()->slug ?? auth()->id()) }}', '_blank')" 
+        title="👁️ {{ __('messages.view_public_profile') }}">
             <div class="lab-avatar-wrapper status-active hub-border-blue">
                 <img src="{{ $creator->avatar_url ?: 'https://ui-avatars.com/api/?name='.urlencode($creator->name).'&background=3498db&color=fff' }}" alt="{{ $creator->name }}">
             </div>

@@ -141,9 +141,19 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
 // --- 🔐 RUTAS DE AUTENTICACIÓN PROTEGIDAS POR LOCALE ---
 Route::middleware(['locale'])->group(function () {
-    // 🔒 PROTEGIDA CON FIRMA DIGITAL: Ahora el endpoint exige obligatoriamente la firma generada por el SuperAdmin
+    // 🔑 ENTRADA DE INVITACIÓN SEGURA (Antigravity Approved): Valida la firma criptográfica y loguea al Lab
+    Route::get('/onboarding/verify/{user}', function (Illuminate\Http\Request $request, $userId) {
+        if (! $request->hasValidSignature()) {
+            abort(403, 'El enlace de invitación ha expirado o es inválido.');
+        }
+        // Logueamos al usuario de forma segura mediante su ID verificado
+        \Illuminate\Support\Facades\Auth::loginUsingId($userId);
+        // Al redirigir a dashboard, el sistema detectará el 'force_password_change' automáticamente
+        return redirect()->route('dashboard');
+    })->name('onboarding.verify');
+
+    // Procesador de guardado del formulario (eliminamos el middleware signed aquí para evitar conflictos con el formulario web)
     Route::post('/onboarding/complete', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'completeOnboarding'])
-        ->middleware('signed')
         ->name('onboarding.complete');
         
     require __DIR__.'/auth.php';

@@ -21,6 +21,27 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- 🌐 MOTOR SEO & COMPARTICIÓN GLOBAL (Antigravity Approved) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    
+    <!-- Título Dinámico: Si la página interna define uno lo usa, si no, jala el global -->
+    <meta property="og:title" content="@yield('og_title', 'FabCoins | La Economía Circular para la Fabricación Digital')">
+    
+    <!-- Descripción Dinámica -->
+    <meta property="og:description" content="@yield('og_description', 'Tokeniza tu capacidad instalada, acuña monedas de respaldo contable y únete a la red global de creadores tecnológicos.')">
+    
+    <!-- Imagen Dinámica: Jala por defecto tu og-share.png, pero permite cambiarla en los perfiles -->
+    <meta property="og:image" content="@yield('og_image', asset('images/og-share.png'))">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('og_title', 'FabCoins | La Economía Circular para la Fabricación Digital')">
+    <meta name="twitter:description" content="@yield('og_description', 'Tokeniza tu capacidad instalada, acuña monedas de respaldo contable y únete a la red global de creadores tecnológicos.')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/og-share.png'))">
 </head>
 <body class="@yield('body-class')">
 

@@ -11,8 +11,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
+use Illuminate\Support\Facades\Auth; // 🚀 IMPORTAMOS EL MOTOR DE SESIONES
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use App\Services\MailService; // 📩 Importamos tu suite de correos
 
 class NewPasswordController extends Controller
 {
@@ -37,9 +39,6 @@ class NewPasswordController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user) use ($request) {
@@ -49,14 +48,19 @@ class NewPasswordController extends Controller
                 ])->save();
 
                 event(new PasswordReset($user));
+
+                // 🔒 ENVIAR CORREO DE CONFIRMACIÓN AUTOMÁTICO
+                MailService::notificarCambioPassword($user->email, $user->name);
+
+                // 🔒 INYECTAMOS AUTO-LOGIN: Firma digitalmente la sesión del usuario de inmediato
+                Auth::login($user);
             }
         );
 
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
+        // 🎯 REDIRECCIÓN INTELIGENTE: Si todo sale bien, lo mandamos al orquestador de /dashboard
+        // para que detecte su rol (Lab, Creator o Admin) y lo lleve a su panel directo sin escalas.
         return $status == Password::PASSWORD_RESET
-                    ? redirect()->route('login')->with('status', __($status))
+                    ? redirect()->route('dashboard')->with('msg', 'password_reset_ok')
                     : back()->withInput($request->only('email'))
                         ->withErrors(['email' => __($status)]);
     }

@@ -72,41 +72,39 @@ class MailService
      * CORREO 1A: INVITACIÓN Y ACTIVACIÓN DE CUENTA PARA LABS
      * Disparado exclusivamente por el SuperAdmin desde SystemController@createLab
      */
-    public static function bienvenidaLab($emailLab, $nombreLab, $passwordTemporal)
+    public static function bienvenidaLab($emailLab, $nombreLab, $urlAccesoSeguro)
     {
-        $linkAcceso = route('login');
-
-        // Cuerpo en Español
+        // Cuerpo en Español (Activación Fintech Limpia)
         $msgEs = "
-        <p>Hola <strong>$nombreLab</strong>,</p>
-        <p>Has sido invitado formalmente para unirte a la red global de infraestructura de <strong>FabCoins</strong>.</p>
-        <p>Tu nodo de administración ha sido creado exitosamente. A partir de este momento, puedes ingresar al portal para activar tus activos físicos, tokenizar tu capacidad instalada anual y acuñar tus primeras monedas de respaldo contable.</p>
+        <p>¡Te damos la más cordial bienvenida, <strong>$nombreLab</strong>!</p>
+        <p>Nos alegra mucho contarte que tu espacio dentro de la comunidad de <strong>FabCoins</strong> ya está listo para ti.</p>
+        <p>A partir de ahora, tienes acceso a tu propio panel de control, donde podrás publicar tus equipos disponibles, coordinar talleres interactivos y conectar de forma directa con los creadores de nuestra red para dar vida a proyectos increíbles.</p>
         <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
-            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Credenciales de Acceso:</p>
-            <p style='margin:0 0 4px 0;'><strong>Usuario / Email:</strong> <span style='color:#3498db;'>$emailLab</span></p>
-            <p style='margin:0;'><strong>Clave Temporal:</strong> <span style='color:#2ecc71; font-family:monospace;'>$passwordTemporal</span></p>
+            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Tus datos de acceso institucional:</p>
+            <p style='margin:0;'><strong>Usuario / Correo:</strong> <span style='color:#3498db;'>$emailLab</span></p>
         </div>
+        <p>Para activar tu cuenta en la red de forma segura y establecer tu contraseña personal por primera vez, por favor haz clic en el siguiente botón:</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
-            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block; box-shadow:0 4px 12px rgba(52,152,219,0.2);'>Ingresar al Portal del Lab</a>
+            <a href='$urlAccesoSeguro' style='background-color:#2ecc71; color:#0b0c10; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block; box-shadow:0 4px 12px rgba(46,204,113,0.2);'>Activar mi Cuenta y Panel</a>
         </p>
-        <p style='font-size:12px; color:#cbd5e0; font-style:italic; margin-top:15px;'>* Por motivos de seguridad, el sistema te obligará a cambiar esta contraseña en tu primer inicio de sesión.</p>";
+        <p style='font-size:12px; color:#cbd5e0; font-style:italic; margin-top:15px;'>* Este enlace de acceso es de un solo uso y se encuentra cifrado digitalmente para tu seguridad.</p>";
 
         // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello <strong>$nombreLab</strong>,</p>
-        <p>You have been formally invited to join the <strong>FabCoins</strong> global infrastructure network.</p>
-        <p>Your administration node has been successfully deployed. From this moment on, you can access the suite to activate your physical assets, tokenize your annual capacity, and mint your first backup tokens.</p>
+        <p>A very warm welcome, <strong>$nombreLab</strong>!</p>
+        <p>We are thrilled to let you know that your space within the <strong>FabCoins</strong> community is ready for you.</p>
+        <p>From now on, you have access to your personal dashboard where you can easily share your available equipment, host interactive workshops, and connect directly with creators in our network to bring amazing projects to life.</p>
         <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
-            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Access Credentials:</p>
-            <p style='margin:0 0 4px 0;'><strong>Username / Email:</strong> <span style='color:#3498db;'>$emailLab</span></p>
-            <p style='margin:0;'><strong>Temporary Password:</strong> <span style='color:#2ecc71; font-family:monospace;'>$passwordTemporal</span></p>
+            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Your institutional access details:</p>
+            <p style='margin:0;'><strong>Username / Email:</strong> <span style='color:#3498db;'>$emailLab</span></p>
         </div>
+        <p>To securely activate your network account and configure your unique personal password, please click the button below:</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
-            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block; box-shadow:0 4px 12px rgba(52,152,219,0.2);'>Login to Lab Portal</a>
+            <a href='$urlAccesoSeguro' style='background-color:#2ecc71; color:#0b0c10; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block; box-shadow:0 4px 12px rgba(46,204,113,0.2);'>Activate My Account</a>
         </p>
-        <p style='font-size:12px; color:#cbd5e0; font-style:italic; margin-top:15px;'>* For security reasons, the system will require you to change this password upon your first login.</p>";
+        <p style='font-size:12px; color:#cbd5e0; font-style:italic; margin-top:15px;'>* This invitation token is for single-use only and is cryptographically secured.</p>";
 
-        return self::enviar($emailLab, "🏢 Invitación de Nodo de Red - FabCoins", "🏢 Network Node Invitation - FabCoins", "🏢 Activación de Cuenta Corporativa", "🏢 Corporate Node Activation", $msgEs, $msgEn);
+        return self::enviar($emailLab, "🏢 ¡Te damos la bienvenida a FabCoins!", "🏢 Welcome to FabCoins!", "🏢 Activación de Cuenta", "🏢 Account Activation", $msgEs, $msgEn);
     }
 
     /**
@@ -119,25 +117,25 @@ class MailService
 
         // Cuerpo en Español
         $msgEs = "
-        <p>¡Hola <strong>$nombreCreator</strong>!</p>
-        <p>Te damos una bienvenida oficial a la Red Global de Creadores de <strong>FabCoins</strong>.</p>
-        <p>Tu cuenta como <strong>Creator</strong> ha sido validada. A partir de este momento, tienes el poder de explorar el mercado global de misiones, postular a desafíos tecnológicos financiados por laboratorios y reservar horas de uso en maquinaria industrial de alta resolución utilizando tus saldos líquidos.</p>
-        <p>La fabricación digital descentralizada acaba de comenzar para ti. ¡Comienza a acumular reputación y pon tus habilidades en marcha!</p>
+        <p>¡Hola, <strong>$nombreCreator</strong>!</p>
+        <p>Qué alegría que te unas a la Red Global de Creadores de <strong>FabCoins</strong>. ¡Tu cuenta ya está activa y lista para usar!</p>
+        <p>A partir de este momento, puedes explorar diversas misiones de innovación abiertas, postular a desafíos tecnológicos impulsados por labs y reservar horas de uso en las mejores máquinas para fabricar tus propias ideas.</p>
+        <p>El viaje del diseño y la fabricación digital descentralizada acaba de comenzar para ti. ¡Es hora de poner tus habilidades en marcha y sumar tus primeros puntos!</p>
         <p style='text-align:center; margin:30px 0 10px 0;'>
-            <a href='$linkAcceso' style='background-color:#2ecc71; color:#0b0c10; padding:12px 35px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block; box-shadow:0 4px 12px rgba(46,204,113,0.2);'>Explorar el Mercado de Misiones</a>
+            <a href='$linkAcceso' style='background-color:#2ecc71; color:#0b0c10; padding:12px 35px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block; box-shadow:0 4px 12px rgba(46,204,113,0.2);'>Explorar Misiones Disponibles</a>
         </p>";
 
         // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello <strong>$nombreCreator</strong>!</p>
-        <p>Welcome to the <strong>FabCoins</strong> Global Creators Network.</p>
-        <p>Your account as a <strong>Creator</strong> has been verified. From this moment on, you are empowered to explore the global mission marketplace, apply for high-tech challenges funded by official laboratories, and reserve manufacturing hours on high-resolution industrial machinery using your token balance.</p>
-        <p>Decentralized digital fabrication has just begun for you. Start building your reputational score and put your skills to work!</p>
+        <p>Hi <strong>$nombreCreator</strong>!</p>
+        <p>We're so excited to welcome you to the <strong>FabCoins</strong> Global Creators Network. Your account is active and ready to go!</p>
+        <p>From this moment on, you are fully empowered to explore open innovation missions, apply for exciting tech challenges funded by official labs, and book time slots on high-end machinery to turn your ideas into reality.</p>
+        <p>Your digital fabrication journey has just started. It's time to put your talents to work and build up your creator score!</p>
         <p style='text-align:center; margin:30px 0 10px 0;'>
-            <a href='$linkAcceso' style='background-color:#2ecc71; color:#0b0c10; padding:12px 35px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block; box-shadow:0 4px 12px rgba(46,204,113,0.2);'>Explore Mission Marketplace</a>
+            <a href='$linkAcceso' style='background-color:#2ecc71; color:#0b0c10; padding:12px 35px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block; box-shadow:0 4px 12px rgba(46,204,113,0.2);'>Explore Open Missions</a>
         </p>";
 
-        return self::enviar($emailCreator, "🚀 ¡Bienvenido a la Red Global! - FabCoins", "🚀 Welcome to the Global Network! - FabCoins", "🚀 Cuenta de Creator Activada", "🚀 Creator Account Activated", $msgEs, $msgEn);
+        return self::enviar($emailCreator, "🚀 ¡Te damos la bienvenida a la comunidad! - FabCoins", "🚀 Welcome to the Community! - FabCoins", "🚀 Tu cuenta de Creator está lista", "🚀 Creator Account Ready", $msgEs, $msgEn);
     }
 
     /**
@@ -149,28 +147,28 @@ class MailService
         // Cuerpo en Español
         $msgEs = "
         <p>Hola,</p>
-        <p>Estás recibiendo este correo porque hemos recibido una solicitud de restauración de contraseña para tu cuenta vinculada a la red FabCoins.</p>
-        <p>Si tú ejecutaste esta solicitud, puedes restablecer tus llaves de seguridad presionando el siguiente botón de auditoría:</p>
+        <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en la red de FabCoins.</p>
+        <p>No te preocupes, puedes elegir una nueva clave de forma segura haciendo clic en el siguiente botón:</p>
         <p style='text-align:center; margin:30px 0 20px 0;'>
-            <a href='$tokenSecureUrl' style='background-color:#e74c3c; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block; box-shadow:0 4px 12px rgba(231,76,60,0.2);'>Restablecer Contraseña</a>
+            <a href='$tokenSecureUrl' style='background-color:#e74c3c; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block; box-shadow:0 4px 12px rgba(231,76,60,0.2);'>Crear Nueva Contraseña</a>
         </p>
-        <p style='font-size:12.5px; color:#bdc3c7;'>* Este enlace de recuperación expirará automáticamente en 60 minutos por motivos de seguridad criptográfica.</p>
+        <p style='font-size:12.5px; color:#bdc3c7;'>* Por razones de seguridad, este enlace estará activo únicamente durante los próximos 60 minutos.</p>
         <hr style='border:0; border-top:1px solid rgba(255,255,255,0.05); margin:20px 0;'>
-        <p style='font-size:11.5px; color:#7f8c8d; margin:0;'>Si tú no solicitaste este cambio, puedes ignorar este mensaje de forma segura; tu frase semilla y llaves de acceso siguen estando totalmente a salvo.</p>";
+        <p style='font-size:11.5px; color:#7f8c8d; margin:0;'>Si tú no solicitaste este cambio, no te preocupes; puedes ignorar este correo tranquilamente. Tus datos de acceso siguen estando completamente protegidos y a salvo.</p>";
 
         // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello,</p>
-        <p>You are receiving this email because we received a password reset request for your account linked to the FabCoins network.</p>
-        <p>If you made this request, you can restore your security keys by clicking the following auditing button:</p>
+        <p>Hello there,</p>
+        <p>We received a request to reset the password for your FabCoins network account.</p>
+        <p>Don't worry, you can easily set a new password by clicking the button below:</p>
         <p style='text-align:center; margin:30px 0 20px 0;'>
-            <a href='$tokenSecureUrl' style='background-color:#e74c3c; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block; box-shadow:0 4px 12px rgba(231,76,60,0.2);'>Reset Password</a>
+            <a href='$tokenSecureUrl' style='background-color:#e74c3c; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block; box-shadow:0 4px 12px rgba(231,76,60,0.2);'>Set New Password</a>
         </p>
-        <p style='font-size:12.5px; color:#bdc3c7;'>* This recovery link will automatically expire in 60 minutes for cryptographic security reasons.</p>
+        <p style='font-size:12.5px; color:#bdc3c7;'>* For your security, this reset link will only be valid for the next 60 minutes.</p>
         <hr style='border:0; border-top:1px solid rgba(255,255,255,0.05); margin:20px 0;'>
-        <p style='font-size:11.5px; color:#7f8c8d; margin:0;'>If you did not request a password reset, no further action is required; your seed phrase and access credentials remain completely safe.</p>";
+        <p style='font-size:11.5px; color:#7f8c8d; margin:0;'>If you didn't make this request, you can safely ignore this email. Your current login credentials remain perfectly secure.</p>";
 
-        return self::enviar($emailDestino, "🔒 Restablecer Contraseña - FabCoins", "🔒 Reset Password - FabCoins", "🔒 Pasaporte de Recuperación Activo", "🔒 Security Recovery Passport", $msgEs, $msgEn);
+        return self::enviar($emailDestino, "🔒 Restablecer Contraseña - FabCoins", "🔒 Reset Password - FabCoins", "🔒 Recuperación de Contraseña", "🔒 Password Recovery", $msgEs, $msgEn);
     }
 
     /**
@@ -179,19 +177,21 @@ class MailService
      */
     public static function notificarActualizacionPerfil($emailDestino, $nombreUsuario)
     {
+        // Cuerpo en Español
         $msgEs = "
-        <p>Hola <strong>$nombreUsuario</strong>,</p>
-        <p>Te informamos que la información pública de tu perfil (dirección, enlaces o biografía) ha sido actualizada correctamente en la plataforma.</p>
-        <p style='color:#e74c3c; font-weight:bold;'>⚠️ ¿No fuiste tú?</p>
-        <p>Si no has realizado ninguna modificación en tu panel de control, por favor ingresa de inmediato a la sección de seguridad para cambiar tus claves de acceso o comunícate con el equipo de soporte central.</p>";
+        <p>Hola, <strong>$nombreUsuario</strong>:</p>
+        <p>Te escribimos para avisarte que los datos de tu perfil (como tu biografía, dirección o enlaces de redes) se actualizaron correctamente desde tu panel de control.</p>
+        <p style='color:#e74c3c; font-weight:bold;'>⚠️ ¿No realizaste este cambio?</p>
+        <p>Si no has modificado tu perfil recientemente, por favor ingresa de inmediato a la sección de seguridad de tu cuenta para cambiar tu contraseña, o ponte en contacto con nuestro equipo de soporte para ayudarte a proteger tu espacio.</p>";
 
+        // Cuerpo en Inglés
         $msgEn = "
         <p>Hello <strong>$nombreUsuario</strong>,</p>
-        <p>We are writing to inform you that your public profile information (address, social links, or bio) has been successfully updated.</p>
-        <p style='color:#e74c3c; font-weight:bold;'>⚠️ Wasn't it you?</p>
-        <p>If you did not execute these changes, please log into your dashboard immediately to reset your password or contact the support team.</p>";
+        <p>We are writing to let you know that your profile details (such as your bio, address, or social links) were just successfully updated from your dashboard.</p>
+        <p style='color:#e74c3c; font-weight:bold;'>⚠️ Wasn't this you?</p>
+        <p>If you haven't made any changes lately, please log into your account settings right away to update your password, or reach out to our support team so we can help you keep your account safe.</p>";
 
-        return self::enviar($emailDestino, "Perfil Actualizado", "Profile Updated", "🔒 Modificación de Perfil Confirmada", "🔒 Profile Modification Confirmed", $msgEs, $msgEn);
+        return self::enviar($emailDestino, "Perfil Actualizado", "Profile Updated", "🔒 Confirmación de cambios en tu perfil", "🔒 Profile Updates Confirmed", $msgEs, $msgEn);
     }
 
     /**
@@ -209,10 +209,10 @@ class MailService
         // Detectamos el idioma del usuario para las etiquetas fijas de la tabla
         $userLang = DB::table('users')->where('email', $emailLab)->value('preferred_lang') ?? 'es';
 
-        $thActivo = ($userLang === 'en') ? 'Asset' : 'Activo';
-        $thTokenizado = ($userLang === 'en') ? 'Tokenized' : 'Tokenizado';
-        $thPrecio = ($userLang === 'en') ? 'Unit Price' : 'Precio Unitario';
-        $thTotal = ($userLang === 'en') ? 'FC Minted' : 'FC Emitidos';
+        $thActivo = ($userLang === 'en') ? 'Asset / Service' : 'Equipo o Taller';
+        $thTokenizado = ($userLang === 'en') ? 'Available' : 'Disponible';
+        $thPrecio = ($userLang === 'en') ? 'Value' : 'Valor Unitario';
+        $thTotal = ($userLang === 'en') ? 'Total FC' : 'Total en FC';
 
         $tablaHtml = '';
         if (!empty($detallesLote) && is_array($detallesLote)) {
@@ -229,13 +229,11 @@ class MailService
                 <tbody>";
                 
             foreach ($detallesLote as $item) {
-                // 🎨 Asignación de color idéntico al CSS de la plataforma
-                $colorBadge = '#7f8c8d'; // Gris por defecto
+                $colorBadge = '#7f8c8d';
                 if ($item['tipo'] === 'machine') { $colorBadge = '#1abc9c'; }
                 elseif ($item['tipo'] === 'service') { $colorBadge = '#3498db'; }
                 elseif ($item['tipo'] === 'lab') { $colorBadge = '#9b59b6'; }
 
-                // 🎯 Selección dinámica de la unidad de medida según categoría e idioma
                 $unidad = 'hrs';
                 if ($item['tipo'] === 'service' && $item['subcategory'] === 'workshop') {
                     $unidad = ($userLang === 'en') ? 'slots' : 'cupos';
@@ -263,33 +261,35 @@ class MailService
             $tablaHtml .= "</tbody></table>";
         }
 
+        // Cuerpo en Español (Adiós términos fríos, hola valor real)
         $msgEs = "
-        <p>Hola <strong>$nombreLab</strong>,</p>
-        <p>Has completado con éxito el proceso de respaldo de fondos en base a tu infraestructura y servicios disponibles.</p>
+        <p>¡Hola, <strong>$nombreLab</strong>!</p>
+        <p>Queremos confirmarte que tus nuevos equipos y servicios ya se registraron y habilitaron correctamente en el sistema.</p>
         <div style='background:rgba(46,204,113,0.04); border:1px dashed #2ecc71; padding:18px; border-radius:8px; text-align:center; margin:20px 0;'>
-            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;'>Total Depositado en tu Bóveda:</span>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;'>Capacidad total respaldada en tu cuenta:</span>
             <span style='font-size:26px; font-weight:800; color:#2ecc71;'>+" . number_format($totalFc, 0) . " FC</span>
         </div>
         
-        <p style='margin-bottom:8px; font-weight:700; color:#ffffff; font-size:13.5px;'>📋 Resumen del lote procesado:</p>
+        <p style='margin-bottom:8px; font-weight:700; color:#ffffff; font-size:13.5px;'>📋 Este es el resumen de lo que acabas de habilitar:</p>
         $tablaHtml
 
-        <p style='margin-top:20px;'>Estos fondos ya se encuentran líquidos en tu Bóveda y listos para ser invertidos en el desarrollo de proyectos dentro de la plataforma.</p>";
+        <p style='margin-top:20px;'>Este balance ya figura disponible en tu cuenta. A partir de ahora, la comunidad podrá ver tus recursos y usarlos para colaborar en los diferentes proyectos y misiones de la plataforma.</p>";
 
+        // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello <strong>$nombreLab</strong>,</p>
-        <p>You have successfully completed the backing process based on your available infrastructure and services.</p>
+        <p>Hi <strong>$nombreLab</strong>!</p>
+        <p>We are happy to confirm that your new equipment and services are now fully registered and live in the system.</p>
         <div style='background:rgba(46,204,113,0.04); border:1px dashed #2ecc71; padding:18px; border-radius:8px; text-align:center; margin:20px 0;'>
-            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;'>Total Deposited in Your Vault:</span>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px;'>Total capacity backed in your account:</span>
             <span style='font-size:26px; font-weight:800; color:#2ecc71;'>+" . number_format($totalFc, 0) . " FC</span>
         </div>
         
-        <p style='margin-bottom:8px; font-weight:700; color:#ffffff; font-size:13.5px;'>📋 Summary of the processed batch:</p>
+        <p style='margin-bottom:8px; font-weight:700; color:#ffffff; font-size:13.5px;'>📋 Here is the summary of what you just enabled:</p>
         $tablaHtml
 
-        <p style='margin-top:20px;'>These funds are now fully liquid in your Vault and ready to be used for projects and community requests within the platform.</p>";
+        <p style='margin-top:20px;'>This balance is now updated in your account. From this moment on, the community can find your resources and book them to collaborate on open projects and missions.</p>";
 
-        return self::enviar($emailLab, "🪙 Emisión de FabCoins Procesada con Éxito", "🪙 FabCoins Minting Processed Successfully", "🪙 Reporte de Emisión e Infraestructura", "🪙 Infrastructure Backup Report", $msgEs, $msgEn);
+        return self::enviar($emailLab, "🪙 Tus equipos y servicios ya están listos en la red", "🪙 Your equipment and services are now live", "🪙 Reporte de recursos habilitados", "🪙 Enabled Resources Report", $msgEs, $msgEn);
     }
 
     /**
@@ -306,18 +306,20 @@ class MailService
     {
         $linkAcceso = route('login');
 
+        // Cuerpo en Español
         $msgEs = "
-        <p>Hola <strong>$nombreLab</strong>,</p>
-        <p>Te informamos que el creador <strong>$nombreCreator</strong> se ha postulado para desarrollar tu misión activa: <em>\"$tituloMision\"</em>.</p>
-        <p>Puedes ingresar de inmediato a tu panel de control para auditar su perfil de trabajo, revisar sus habilidades validadas por la red y decidir si apruebas su postulación para comenzar con el desarrollo.</p>
+        <p>¡Hola, <strong>$nombreLab</strong>!</p>
+        <p>Te contamos que el creador <strong>$nombreCreator</strong> tiene mucho interés en ayudarte y se ha postulado para tu misión activa: <em>\"$tituloMision\"</em>.</p>
+        <p>Date una vuelta por tu panel de control cuando quieras para conocer su perfil, ver en qué proyectos ha participado y decidir si hacen equipo para empezar a trabajar juntos.</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
-            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Revisar Postulantes en el Panel</a>
+            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Ver Candidatos en mi Panel</a>
         </p>";
 
+        // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello <strong>$nombreLab</strong>,</p>
-        <p>We are writing to inform you that the creator <strong>$nombreCreator</strong> has applied to your active mission: <em>\"$tituloMision\"</em>.</p>
-        <p>You can log into your dashboard immediately to review their work profile, verify their validated skills, and decide whether to approve their application to start the development process.</p>
+        <p>Hi <strong>$nombreLab</strong>!</p>
+        <p>We wanted to let you know that the creator <strong>$nombreCreator</strong> is excited to help and has applied to your active mission: <em>\"$tituloMision\"</em>.</p>
+        <p>Drop by your dashboard whenever you can to check out their profile, see their past projects, and decide if you want to team up to start creating together.</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
             <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Review Applicants in Dashboard</a>
         </p>";
@@ -333,26 +335,28 @@ class MailService
     {
         $linkAcceso = route('login');
 
+        // Cuerpo en Español
         $msgEs = "
-        <p>¡Hola <strong>$nombreCreator</strong>!</p>
-        <p>Te traemos excelentes noticias. El lab <strong>$nombreLab</strong> ha revisado tu perfil y te ha seleccionado para encargarte de la misión: <strong>\"$tituloMision\"</strong>.</p>
+        <p>¡Hola, <strong>$nombreCreator</strong>!</p>
+        <p>Te traemos una gran noticia: el equipo de <strong>$nombreLab</strong> revisó tu postulación y te ha seleccionado para hacerte cargo de la misión: <strong>\"$tituloMision\"</strong>.</p>
         <div style='background:rgba(52,152,219,0.04); border:1px dashed #3498db; padding:15px; border-radius:8px; text-align:center; margin:20px 0;'>
-            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px;'>Fondos Asegurados en Garantía:</span>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px;'>Recompensa asegurada en la plataforma:</span>
             <span style='font-size:22px; font-weight:800; color:#3498db;'>" . number_format($recompensa, 0) . " FC</span>
         </div>
-        <p><strong>¡Ya puedes empezar a trabajar!</strong> Los fondos de la recompensa ya han sido retirados de la cuenta del lab y se encuentran retenidos de forma segura. El pago está 100% garantizado y se liberará en tu billetera en cuanto entregues el trabajo terminado.</p>
+        <p><strong>¡Ya tienes luz verde para empezar!</strong> Queremos contarte que los FabCoins de la recompensa ya están separados y guardados de forma segura en la plataforma. Tu pago está totalmente garantizado y se sumará a tu cuenta automáticamente apenas entregues el trabajo terminado.</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
             <a href='$linkAcceso' style='background-color:#2ecc71; color:#0b0c10; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Ver Detalles de la Misión</a>
         </p>";
 
+        // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello <strong>$nombreCreator</strong>!</p>
-        <p>We have great news for you. The lab <strong>$nombreLab</strong> has reviewed your application and selected you for the mission: <strong>\"$tituloMision\"</strong>.</p>
+        <p>Hi <strong>$nombreCreator</strong>!</p>
+        <p>We have wonderful news: the team at <strong>$nombreLab</strong> reviewed your application and selected you to take on the mission: <strong>\"$tituloMision\"</strong>.</p>
         <div style='background:rgba(52,152,219,0.04); border:1px dashed #3498db; padding:15px; border-radius:8px; text-align:center; margin:20px 0;'>
-            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px;'>Funds Secured in Escrow:</span>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px;'>Reward secured on the platform:</span>
             <span style='font-size:22px; font-weight:800; color:#3498db;'>" . number_format($recompensa, 0) . " FC</span>
         </div>
-        <p><strong>You are clear to start working!</strong> The reward tokens have been successfully moved from the lab's balance into a secure escrow. Payment is 100% guaranteed and will be released to your wallet as soon as the completed work is delivered.</p>
+        <p><strong>You are all set to start working!</strong> The FabCoins for the reward are already set aside and safely held by the platform. Your payment is fully guaranteed and will be automatically added to your balance as soon as you deliver the completed work.</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
             <a href='$linkAcceso' style='background-color:#2ecc71; color:#0b0c10; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>View Mission Details</a>
         </p>";
@@ -366,39 +370,40 @@ class MailService
      */
     public static function liquidacionMisionAlCreator($emailCreator, $nombreCreator, $tituloMision, $fc, $estrellas, $isCredit)
     {
-        // Generamos el bloque visual de las estrellas otorgadas por el laboratorio
         $estrellasHtml = str_repeat('⭐', $estrellas);
         
-        // Explicación sencilla de la naturaleza del pago (Amortización o Billetera Líquida)
+        // Explicación sencilla de la naturaleza del pago
         $detalleContableEs = $isCredit 
-            ? "aplicado automáticamente como un abono directo para reducir el saldo pendiente de tu Crédito."
-            : "depositado de forma directa y se encuentra 100% disponible en tu billetera líquida.";
+            ? "aplicado automáticamente como un abono directo para reducir el saldo pendiente de tu crédito con el laboratorio."
+            : "añadido directamente a tu saldo y ya lo tienes 100% disponible en tu cuenta para lo que necesites.";
 
         $detalleContableEn = $isCredit 
-            ? "automatically applied as a direct payment to reduce your outstanding Credit balance."
-            : "transferred directly into your liquid wallet balance and is 100% available.";
+            ? "automatically applied to reduce your outstanding credit balance with the laboratory."
+            : "transferred directly into your account and is 100% available for you to use.";
 
+        // Cuerpo en Español
         $msgEs = "
-        <p>Hola <strong>$nombreCreator</strong>,</p>
-        <p>El lab ha revisado tu entrega para la misión <em>\"$tituloMision\"</em> y la ha marcado como completada con éxito.</p>
+        <p>¡Hola, <strong>$nombreCreator</strong>!</p>
+        <p>Te contamos que el laboratorio revisó tu entrega para la misión <em>\"$tituloMision\"</em> y todo quedó excelente. ¡Muchísimas gracias por tu gran trabajo técnico!</p>
         <div style='background:#131722; padding:20px; border-radius:8px; text-align:center; margin:20px 0; border:1px solid rgba(255,255,255,0.02);'>
-            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;'>Pago Liberado:</span>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;'>Monto Liberado:</span>
             <span style='color:#2ecc71; margin:0; font-size:26px; font-weight:800;'>+" . number_format($fc, 0) . " FC</span>
-            <p style='margin:10px 0 0 0; font-size:14px; color:#ffffff;'>Calificación del Lab: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
+            <p style='margin:10px 0 0 0; font-size:14px; color:#ffffff;'>Calificación recibida: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
         </div>
-        <p>Siguiendo las reglas de la operación, el monto ha sido $detalleContableEs</p>
-        <p style='margin-top:15px;'>Tu puntaje de reputación pública ha sido actualizado en el mapa del mercado. ¡Gracias por tu gran trabajo técnico!</p>";
+        <p>Siguiendo las reglas acordadas, el monto ha sido $detalleContableEs</p>
+        <p style='margin-top:15px;'>Tu puntuación de estrella de la comunidad ya se actualizó en tu perfil público. ¡A por el siguiente desafío!</p>";
 
+        // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello <strong>$nombreCreator</strong>,</p>
-        <p>The laboratory has reviewed your delivery for the mission <em>\"$tituloMision\"</em> and has marked it as successfully completed.</p>
+        <p>Hi <strong>$nombreCreator</strong>,</p>
+        <p>The laboratory has reviewed your delivery for the mission <em>\"$tituloMision\"</em> and everything looks amazing. Thank you for your excellent technical work!</p>
         <div style='background:#131722; padding:20px; border-radius:8px; text-align:center; margin:20px 0; border:1px solid rgba(255,255,255,0.02);'>
-            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;'>Payment Released:</span>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px;'>Released Amount:</span>
             <span style='color:#2ecc71; margin:0; font-size:26px; font-weight:800;'>+" . number_format($fc, 0) . " FC</span>
-            <p style='margin:10px 0 0 0; font-size:14px; color:#ffffff;'>Lab Evaluation: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
+            <p style='margin:10px 0 0 0; font-size:14px; color:#ffffff;'>Evaluation: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
         </div>
-        <p>Following the operation rules, the amount has been $detalleContableEn</p>
-        <p style='margin-top:15px;'>Your public reputation score has been updated in the global network ranking. Thank you for your excellent technical work!</p>";
+        <p>Following the rules, the amount has been $detalleContableEn</p>
+        <p style='margin-top:15px;'>Your community score has been successfully updated on your public profile. Let's find the next challenge!</p>";
 
         return self::enviar($emailCreator, "💰 Pago Recibido - Misión Completada", "💰 Payment Received - Mission Completed", "💰 Comprobante de Pago y Calificación", "💰 Payment Settlement and Review", $msgEs, $msgEn);
     }
@@ -411,21 +416,23 @@ class MailService
     {
         $estrellasHtml = str_repeat('⭐', $rating);
 
+        // Cuerpo en Español
         $msgEs = "
-        <p>Hola <strong>$nombreLab</strong>,</p>
-        <p>El creador <strong>$nombreCreator</strong> ha registrado una nueva calificación sobre tu soporte en la misión/servicio: <strong>\"$tituloContexto\"</strong>.</p>
+        <p>¡Hola, <strong>$nombreLab</strong>!</p>
+        <p>Te contamos que el creador <strong>$nombreCreator</strong> te ha dejado una nueva valoración y unas palabras sobre el apoyo que le diste en: <strong>\"$tituloContexto\"</strong>.</p>
         <div style='background:#131722; padding:15px; border-radius:8px; text-align:center; margin:20px 0; border:1px solid rgba(255,255,255,0.02);'>
-            <p style='margin:0; font-size:14px; color:#ffffff;'>Puntuación Otorgada: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
+            <p style='margin:0; font-size:14px; color:#ffffff;'>Puntuación otorgada: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
         </div>
-        <p>Ingresa a tu perfil público o panel para revisar la bitácora de comentarios y seguir optimizando tu reputación de red.</p>";
+        <p>Date una vuelta por tu panel cuando tengas un momento para leer sus comentarios. ¡Estas opiniones ayudan un montón a que tu espacio siga destacando y creciendo en la comunidad!</p>";
 
+        // Cuerpo en Inglés
         $msgEn = "
         <p>Hello <strong>$nombreLab</strong>,</p>
-        <p>The creator <strong>$nombreCreator</strong> has left a new review regarding your support on the mission/service: <strong>\"$tituloContexto\"</strong>.</p>
+        <p>The creator <strong>$nombreCreator</strong> has left a new review regarding your support on: <strong>\"$tituloContexto\"</strong>.</p>
         <div style='background:#131722; padding:15px; border-radius:8px; text-align:center; margin:20px 0; border:1px solid rgba(255,255,255,0.02);'>
             <p style='margin:0; font-size:14px; color:#ffffff;'>Rating Given: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
         </div>
-        <p>Log into your public profile or dashboard to check the comment logs and keep optimizing your network reputation score.</p>";
+        <p>Log into your dashboard whenever you can to check out their feedback. These reviews are amazing to help your space stand out and keep growing within the community!</p>";
 
         return self::enviar($emailLab, "⭐ Nueva Calificación Recibida - FabCoins", "⭐ New Review Received - FabCoins", "⭐ Evaluación de Reputación", "⭐ Reputation Evaluation", $msgEs, $msgEn);
     }
@@ -441,8 +448,8 @@ class MailService
      */
     public static function reservaActivoAlLab($emailLab, $nombreLab, $nombreCreator, $nombreEquipo, $parametroTexto, $totalFc, $fecha, $tipoActivo = 'machine')
     {
-        // 🎯 DETECTOR DE PALABRAS SEGÚN NATURALEZA
-        $conceptoEs = "un activo"; $unidadEs = "Cantidad";
+        // Detector dinámico de palabras según la naturaleza del recurso
+        $conceptoEs = "un equipo"; $unidadEs = "Cantidad";
         $conceptoEn = "an asset";  $unidadEn = "Requested usage";
 
         if ($tipoActivo === 'workshop' || $tipoActivo === 'service') {
@@ -452,38 +459,40 @@ class MailService
             $conceptoEs = "un espacio de trabajo"; $unidadEs = "Horas reservadas";
             $conceptoEn = "a workspace";           $unidadEn = "Reserved hours";
         } elseif ($tipoActivo === 'machine') {
-            $conceptoEs = "una maquinaria";        $unidadEs = "Horas reservadas";
-            $conceptoEn = "a machinery asset";     $unidadEn = "Reserved hours";
+            $conceptoEs = "una máquina";           $unidadEs = "Horas reservadas";
+            $conceptoEn = "a machine";             $unidadEn = "Reserved hours";
         }
 
+        // Cuerpo en Español
         $msgEs = "
-        <p>Hola <strong>$nombreLab</strong>,</p>
-        <p>El creador <strong>$nombreCreator</strong> ha realizado la reserva de <strong>$conceptoEs</strong> en tu inventario utilizando sus FabCoins líquidos.</p>
+        <p>¡Hola, <strong>$nombreLab</strong>!</p>
+        <p>Te avisamos que el creador <strong>$nombreCreator</strong> acaba de reservar <strong>$conceptoEs</strong> en tu sede usando sus FabCoins disponibles.</p>
         <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
-            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Resumen de la Orden:</p>
-            <p style='margin:0 0 4px 0;'><strong>Nombre:</strong> $nombreEquipo</p>
+            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Resumen de la reserva:</p>
+            <p style='margin:0 0 4px 0;'><strong>Recurso:</strong> $nombreEquipo</p>
             <p style='margin:0 0 4px 0;'><strong>$unidadEs:</strong> $parametroTexto</p>
-            <p style='margin:0 0 4px 0;'><strong>Fecha de la cita:</strong> " . date('d/m/Y', strtotime($fecha)) . "</p>
-            <p style='margin:0;'><strong>Total transferido:</strong> <span style='color:#2ecc71; font-weight:bold;'>" . number_format($totalFc, 0) . " FC</span></p>
+            <p style='margin:0 0 4px 0;'><strong>Fecha agendada:</strong> " . date('d/m/Y', strtotime($fecha)) . "</p>
+            <p style='margin:0;'><strong>Total recibido:</strong> <span style='color:#2ecc71; font-weight:bold;'>" . number_format($totalFc, 0) . " FC</span></p>
         </div>
-        <p>Ingresa a tu panel de control para revisar el calendario y coordinar la entrega del servicio o la preparación del recurso.</p>";
+        <p>Date una vuelta por tu panel para revisar tu calendario de asistencia y tener todo listo para recibirlo el día de su visita.</p>";
 
+        // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello <strong>$nombreLab</strong>,</p>
-        <p>The creator <strong>$nombreCreator</strong> has successfully booked <strong>$conceptoEn</strong> from your inventory using liquid FabCoins.</p>
+        <p>Hi <strong>$nombreLab</strong>!</p>
+        <p>We wanted to let you know that the creator <strong>$nombreCreator</strong> has successfully booked <strong>$conceptoEn</strong> at your lab using their available FabCoins.</p>
         <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
-            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Order Summary:</p>
-            <p style='margin:0 0 4px 0;'><strong>Name:</strong> $nombreEquipo</p>
+            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Booking Summary:</p>
+            <p style='margin:0 0 4px 0;'><strong>Resource:</strong> $nombreEquipo</p>
             <p style='margin:0 0 4px 0;'><strong>$unidadEn:</strong> $parametroTexto</p>
             <p style='margin:0 0 4px 0;'><strong>Scheduled date:</strong> " . date('d/m/Y', strtotime($fecha)) . "</p>
             <p style='margin:0;'><strong>Total transferred:</strong> <span style='color:#2ecc71; font-weight:bold;'>" . number_format($totalFc, 0) . " FC</span></p>
         </div>
-        <p>Log into your dashboard to check the schedule logs and prepare the resource for the user.</p>";
+        <p>Check your dashboard calendar to review the schedule and have everything ready to welcome them on their visit.</p>";
 
-        $asuntoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "📅 Nueva Inscripción a Taller - FabCoins" : "📅 Nueva Reserva de Infraestructura - FabCoins";
+        $asuntoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "📅 Nueva inscripción a taller - FabCoins" : "📅 Nueva reserva de espacio/equipo - FabCoins";
         $asuntoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "📅 New Workshop Registration - FabCoins" : "📅 New Infrastructure Booking - FabCoins";
 
-        return self::enviar($emailLab, $asuntoEs, $asuntoEn, "📅 Reserva Líquida Recibida", "📅 Liquid Booking Received", $msgEs, $msgEn);
+        return self::enviar($emailLab, $asuntoEs, $asuntoEn, "📅 Nueva reserva recibida", "📅 New Booking Received", $msgEs, $msgEn);
     }
 
     /**
@@ -496,33 +505,35 @@ class MailService
         $recursoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "del taller" : (($tipoActivo === 'lab') ? "del espacio" : "del equipo");
         $recursoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "of the workshop" : (($tipoActivo === 'lab') ? "of the space" : "of the equipment");
 
+        // Cuerpo en Español
         $msgEs = "
-        <p>Hola <strong>$nombreCreator</strong>,</p>
-        <p>El equipo técnico de <strong>$nombreLab</strong> nos informa que debido a problemas de agenda o mantenimiento físico, se debe cambiar la fecha de tu reserva $recursoEs <strong>$nombreEquipo</strong>.</p>
-        <p>El laboratorio te propone el siguiente día alternativo:</p>
+        <p>¡Hola, <strong>$nombreCreator</strong>!</p>
+        <p>El equipo de <strong>$nombreLab</strong> nos avisa que, por temas de mantenimiento o cruce de horarios en su sede, necesitan mover la fecha de tu reserva de tu turno $recursoEs <strong>$nombreEquipo</strong>.</p>
+        <p>Te proponen el siguiente día alternativo para asistirte de la mejor manera:</p>
         <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; text-align:center; margin: 20px 0;'>
-            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase;'>Nueva Fecha Propuesta:</span>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase;'>Nueva Fecha Sugerida:</span>
             <span style='font-size:18px; font-weight:800; color:#f1c40f;'>" . date('d M Y', strtotime($nuevaFecha)) . "</span>
         </div>
-        <p>Por favor, ingresa a tu cuenta para <strong>Aceptar</strong> o <strong>Rechazar</strong> este cambio. Si decides rechazarlo, tus FabCoins en garantía serán devueltos de inmediato a tu billetera.</p>
+        <p>Por favor, ingresa a tu cuenta para <strong>Aceptar</strong> o <strong>Rechazar</strong> este cambio. Si prefieres no tomar esta nueva fecha, no te preocupes: tus FabCoins regresarán de inmediato a tu saldo para que reserves en otro momento.</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
             <a href='$linkAcceso' style='background-color:#f39c12; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Responder Reprogramación</a>
         </p>";
 
+        // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello <strong>$nombreCreator</strong>,</p>
-        <p>The technical support team at <strong>$nombreLab</strong> has informed us that due to calendar constraints or maintenance, they need to update your booking date $recursoEn <strong>$nombreEquipo</strong>.</p>
-        <p>The laboratory proposes the following alternative date:</p>
+        <p>Hi <strong>$nombreCreator</strong>,</p>
+        <p>The team at <strong>$nombreLab</strong> reached out to let us know that due to maintenance or scheduling updates at their space, they need to propose a new date for your booking $recursoEn <strong>$nombreEquipo</strong>.</p>
+        <p>They kindly suggest the following alternative day to give you the best support:</p>
         <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; text-align:center; margin: 20px 0;'>
             <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase;'>New Proposed Date:</span>
             <span style='font-size:18px; font-weight:800; color:#f1c40f;'>" . date('d M Y', strtotime($nuevaFecha)) . "</span>
         </div>
-        <p>Please log into your dashboard to either <strong>Accept</strong> or <strong>Reject</strong> this change. If you decline, your escrowed tokens will be immediately returned to your wallet balance.</p>
+        <p>Please log into your dashboard to either <strong>Accept</strong> or <strong>Reject</strong> this change. If you choose to decline, don't worry: your FabCoins will be instantly returned to your balance so you can rebook whenever you want.</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
             <a href='$linkAcceso' style='background-color:#f39c12; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Respond to Reschedule</a>
         </p>";
 
-        return self::enviar($emailCreator, "⏳ Propuesta de Cambio de Fecha - FabCoins", "⏳ Date Change Proposal - FabCoins", "⏳ Reprogramación de Calendario", "⏳ Schedule Reschedule Proposal", $msgEs, $msgEn);
+        return self::enviar($emailCreator, "⏳ Propuesta de cambio de fecha - FabCoins", "⏳ Date Change Proposal - FabCoins", "⏳ Reprogramación de Calendario", "⏳ Schedule Reschedule Proposal", $msgEs, $msgEn);
     }
 
     /**
@@ -554,53 +565,54 @@ class MailService
      */
     public static function confirmacionReservaActivo($emailCreator, $nombreCreator, $nombreLab, $nombreEquipo, $fecha, $horas, $tipoActivo = 'machine')
     {
-        // 🎯 ETIQUETAS DINÁMICAS DE UNIDAD Y TÍTULOS
-        $tituloEs = "Tu turno de uso ha sido asegurado en la agenda del laboratorio.";
-        $tituloEn = "Your time slot is now secured in the laboratory logbook.";
-        $unidadEs = "Horas reservadas"; $unidadEn = "Reserved hours";
+        $tituloEs = "Tu turno ya quedó agendado y separado en el laboratorio.";
+        $tituloEn = "Your time slot is now secured in the laboratory schedule.";
+        $unidadEs = "Horas aseguradas"; $unidadEn = "Secured hours";
         $cantTexto = "$horas horas";
 
         if ($tipoActivo === 'workshop' || $tipoActivo === 'service') {
-            $tituloEs = "Tu inscripción ha sido confirmada en la lista de asistencia.";
-            $tituloEn = "Your registration has been confirmed in the attendance logs.";
-            $unidadEs = "Cupos asegurados"; $unidadEn = "Secured slots";
+            $tituloEs = "Tu lugar ya está asegurado en la lista de asistencia del taller.";
+            $tituloEn = "Your spot is now confirmed in the workshop attendance logs.";
+            $unidadEs = "Cupos reservados"; $unidadEn = "Secured slots";
             $cantTexto = "$horas cupos";
         }
 
+        // Cuerpo en Español
         $msgEs = "
-        <p>¡Hola <strong>$nombreCreator</strong>!</p>
-        <p>Tu solicitud ha sido aprobada por el equipo de <strong>$nombreLab</strong>. $tituloEs</p>
+        <p>¡Hola, <strong>$nombreCreator</strong>!</p>
+        <p>Tu solicitud fue aprobada con gusto por el equipo de <strong>$nombreLab</strong>. $tituloEs</p>
         <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
-            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Datos Confirmados:</p>
-            <p style='margin:0 0 4px 0;'><strong>Nombre:</strong> $nombreEquipo</p>
-            <p style='margin:0 0 4px 0;'><strong>Fecha programada:</strong> " . date('d M Y', strtotime($fecha)) . "</p>
+            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Tus datos confirmados:</p>
+            <p style='margin:0 0 4px 0;'><strong>Recurso / Taller:</strong> $nombreEquipo</p>
+            <p style='margin:0 0 4px 0;'><strong>Fecha de la visita:</strong> " . date('d M Y', strtotime($fecha)) . "</p>
             <p style='margin:0;'><strong>$unidadEs:</strong> $cantTexto</p>
         </div>
-        <p style='margin-bottom:6px; font-weight:bold; color:#ffffff;'>⚠️ Normativas de Asistencia y Seguridad:</p>
+        <p style='margin-bottom:6px; font-weight:bold; color:#ffffff;'>⚠️ Recomendaciones amigables para tu visita:</p>
         <ul style='margin-top:0; padding-left:20px; color:#cbd5e0; font-size:13.5px;'>
-            <li>Llega con 15 minutes de anticipación para coordinar con los encargados de soporte.</li>
-            <li>Usa calzado cerrado y cabello recogido si vas a operar herramientas o maquinaria física.</li>
-            <li>Si requieres materiales adicionales o archivos de preparación previa, revísalos antes con el nodo.</li>
+            <li>Intenta llegar unos 15 minutos antes para que los encargados te den la bienvenida y te ubiquen con comodidad.</li>
+            <li>Recuerda usar calzado cerrado y llevar el cabello recogido si vas a operar herramientas o maquinaria física en el taller.</li>
+            <li>Si necesitas traer algún material extra o llevar archivos listos, coordínalo previamente con el nodo desde la plataforma.</li>
         </ul>";
 
+        // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello <strong>$nombreCreator</strong>!</p>
-        <p>Your request has been officially approved by the team at <strong>$nombreLab</strong>. $tituloEn</p>
+        <p>Hi <strong>$nombreCreator</strong>!</p>
+        <p>Your request has been warmly approved by the team at <strong>$nombreLab</strong>. $tituloEn</p>
         <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
-            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Confirmed Data:</p>
-            <p style='margin:0 0 4px 0;'><strong>Name:</strong> $nombreEquipo</p>
+            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Your confirmed details:</p>
+            <p style='margin:0 0 4px 0;'><strong>Resource / Workshop:</strong> $nombreEquipo</p>
             <p style='margin:0 0 4px 0;'><strong>Scheduled Date:</strong> " . date('d M Y', strtotime($fecha)) . "</p>
             <p style='margin:0;'><strong>$unidadEn:</strong> $cantTexto</p>
         </div>
-        <p style='margin-bottom:6px; font-weight:bold; color:#ffffff;'>⚠️ Attendance & Safety Regulations:</p>
+        <p style='margin-bottom:6px; font-weight:bold; color:#ffffff;'>⚠️ Friendly recommendations for your visit:</p>
         <ul style='margin-top:0; padding-left:20px; color:#cbd5e0; font-size:13.5px;'>
-            <li>Please arrive 15 minutes early to coordinate with the support staff.</li>
-            <li>Wear closed-toe shoes and tie back long hair if operating physical tools or machinery.</li>
-            <li>If you need extra raw materials or setup files, verify them with the node beforehand.</li>
+            <li>Please try to arrive 15 minutes early so the staff can welcome you and set you up comfortably.</li>
+            <li>Remember to wear closed-toe shoes and tie back long hair if you are operating physical tools or machinery.</li>
+            <li>If you need to bring extra raw materials or have setup files ready, double check with the node beforehand.</li>
         </ul>";
 
-        $asuntoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "✅ Inscripción Confirmada al Taller - FabCoins" : "✅ Tu Reserva ha sido Confirmada - FabCoins";
-        $asuntoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "✅ Workshop Registration Confirmed - FabCoins" : "✅ Your Reservation has been Confirmed - FabCoins";
+        $asuntoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "✅ Tu inscripción al taller está confirmada" : "✅ Tu reserva ha sido aprobada con éxito";
+        $asuntoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "✅ Workshop Registration Confirmed" : "✅ Your Reservation has been Confirmed";
 
         return self::enviar($emailCreator, $asuntoEs, $asuntoEn, ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "✅ Registro Exitoso" : "✅ Reserva Confirmada", ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "✅ Registration Successful" : "✅ Booking Confirmed", $msgEs, $msgEn);
     }
@@ -612,41 +624,43 @@ class MailService
     {
         $linkAcceso = route('login');
 
-        $conceptoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "un taller / servicio" : (($tipoActivo === 'lab') ? "un espacio" : "un equipo");
-        $conceptoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "a workshop / service" : (($tipoActivo === 'lab') ? "a space" : "an equipment");
-        $unidadEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "Cupos requeridos" : "Tiempo estimado";
+        $conceptoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "un taller / servicio" : (($tipoActivo === 'lab') ? "un espacio" : "una máquina");
+        $conceptoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "a workshop / service" : (($tipoActivo === 'lab') ? "a space" : "a machine");
+        $unidadEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "Cupos solicitados" : "Tiempo estimado";
         $unidadEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "Requested slots" : "Estimated time";
 
+        // Cuerpo en Español
         $msgEs = "
-        <p>Hola <strong>$nombreLab</strong>,</p>
-        <p>El creador <strong>$nombreCreator</strong> ha solicitado reservar <strong>$conceptoEs</strong> en tu sede utilizando un crédito debido a que no cuenta con saldo líquido suficiente.</p>
+        <p>¡Hola, <strong>$nombreLab</strong>!</p>
+        <p>El creador <strong>$nombreCreator</strong> desea reservar <strong>$conceptoEs</strong> en tu sede mediante una opción de financiamiento, ya que no cuenta con el saldo total de FabCoins en este momento.</p>
         <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
-            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Detalles de la Solicitud:</p>
-            <p style='margin:0 0 4px 0;'><strong>Nombre:</strong> $nombreEquipo</p>
+            <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Detalles de la propuesta:</p>
+            <p style='margin:0 0 4px 0;'><strong>Recurso:</strong> $nombreEquipo</p>
             <p style='margin:0 0 4px 0;'><strong>$unidadEs:</strong> $horas</p>
-            <p style='margin:0; '><strong>Crédito solicitado:</strong> <span style='color:#f1c40f; font-weight:bold;'>" . number_format($montoCredito, 0) . " FC</span></p>
+            <p style='margin:0; '><strong>Financiamiento solicitado:</strong> <span style='color:#f1c40f; font-weight:bold;'>" . number_format($montoCredito, 0) . " FC</span></p>
         </div>
-        <p>Por favor, ingresa a tu panel de control para revisar esta propuesta de financiamiento, evaluar el perfil del alumno y decidir si apruebas la solicitud.</p>
+        <p>Por favor, ingresa a tu panel de control para revisar esta solicitud, conocer el perfil del creador y decidir si apruebas este apoyo colaborativo.</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
-            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Revisar Solicitud en el Panel</a>
+            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Revisar Solicitud en mi Panel</a>
         </p>";
 
+        // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello <strong>$nombreLab</strong>,</p>
-        <p>The creator <strong>$nombreCreator</strong> has requested to reserve <strong>$conceptoEn</strong> at your lab using a credit because they do not have enough liquid balance.</p>
+        <p>Hi <strong>$nombreLab</strong>,</p>
+        <p>The creator <strong>$nombreCreator</strong> has requested to reserve <strong>$conceptoEn</strong> at your space through a financing option, as they do not have the full FabCoins balance at the moment.</p>
         <div style='background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; margin: 20px 0;'>
             <p style='margin:0 0 5px 0; font-size:12px; color:#7f8c8d; text-transform:uppercase;'>Request Details:</p>
-            <p style='margin:0 0 4px 0;'><strong>Name:</strong> $nombreEquipo</p>
+            <p style='margin:0 0 4px 0;'><strong>Resource:</strong> $nombreEquipo</p>
             <p style='margin:0 0 4px 0;'><strong>$unidadEn:</strong> $horas</p>
             <p style='margin:0; '><strong>Requested Credit:</strong> <span style='color:#f1c40f; font-weight:bold;'>" . number_format($montoCredito, 0) . " FC</span></p>
         </div>
-        <p>Please log into your dashboard to review this financing proposal, evaluate the creator's profile, and decide whether to approve the request.</p>
+        <p>Please log into your dashboard to review this proposal, check out the creator's profile, and decide whether to approve this collaborative support.</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
             <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Review Request in Dashboard</a>
         </p>";
 
-        $asuntoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "📅 Solicitud de Taller con Crédito - FabCoins" : "📅 Nueva Solicitud de Alquiler con Crédito ISA - FabCoins";
-        $asuntoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "📅 Workshop Request with Credit - FabCoins" : "📅 New Rental Request with ISA Credit - FabCoins";
+        $asuntoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "📅 Solicitud de taller con financiamiento - FabCoins" : "📅 Nueva solicitud de alquiler con crédito - FabCoins";
+        $asuntoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "📅 Workshop Request with Credit - FabCoins" : "📅 New Rental Request with Credit - FabCoins";
 
         return self::enviar($emailLab, $asuntoEs, $asuntoEn, "📅 Solicitud de Financiamiento Recibida", "📅 Financing Request Received", $msgEs, $msgEn);
     }
@@ -656,21 +670,22 @@ class MailService
      */
     public static function resolucionCreditoAlCreator($emailCreator, $nombreCreator, $nombreLab, $monto, $esAprobado, $tipoActivo = 'machine')
     {
-        $asuntoEs = $esAprobado ? "✅ Crédito Aprobado - FabCoins" : "❌ Crédito Rechazado - FabCoins";
-        $asuntoEn = $esAprobado ? "✅ Credit Approved - FabCoins" : "❌ Credit Declined - FabCoins";
+        $asuntoEs = $esAprobado ? "✅ ¡Tu solicitud de apoyo fue aprobada! - FabCoins" : "❌ Tu solicitud de apoyo no pudo ser aprobada - FabCoins";
+        $asuntoEn = $esAprobado ? "✅ Credit Support Approved! - FabCoins" : "❌ Credit Support Declined - FabCoins";
         
-        $destinoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "tu inscripción al taller" : "tu reserva de tiempo";
-        $destinoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "your workshop registration" : "your time reservation";
+        $destinoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "tu lugar en el taller" : "tu turno de uso";
+        $destinoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "your workshop spot" : "your reserved time slot";
 
+        // Cuerpos dinámicos amigables
         $msgEs = $esAprobado 
-            ? "<p>¡Hola <strong>$nombreCreator</strong>!</p><p>El equipo de <strong>$nombreLab</strong> ha <strong>APROBADO</strong> tu solicitud de crédito por un valor de <strong>" . number_format($monto, 0) . " FC</strong>. Debido a esto, $destinoEs ya se encuentra activa y registrada.</p>"
-            : "<p>Hola <strong>$nombreCreator</strong>,</p><p>Te informamos que tu solicitud de crédito por un valor de <strong>" . number_format($monto, 0) . " FC</strong> fue rechazada por <strong>$nombreLab</strong>. El saldo parcial que se había retenido fue devuelto a tu billetera.</p>";
+            ? "<p>¡Hola, <strong>$nombreCreator</strong>!</p><p>Te traemos excelentes noticias: el equipo de <strong>$nombreLab</strong> ha <strong>APROBADO</strong> tu solicitud de financiamiento por un valor de <strong>" . number_format($monto, 0) . " FC</strong>. Gracias a esto, $destinoEs ya se encuentra completamente activo y asegurado para ti.</p>"
+            : "<p>Hola, <strong>$nombreCreator</strong>:</p><p>Te informamos que en esta ocasión tu solicitud de financiamiento por <strong>" . number_format($monto, 0) . " FC</strong> no pudo ser aprobada por <strong>$nombreLab</strong>. Cualquier balance parcial que se hubiera separado temporalmente ya está de vuelta en tu saldo disponible.</p>";
 
         $msgEn = $esAprobado
-            ? "<p>Hello <strong>$nombreCreator</strong>!</p><p>The team at <strong>$nombreLab</strong> has <strong>APPROVED</strong> your credit request for <strong>" . number_format($monto, 0) . " FC</strong>. Therefore, $destinoEn is now active and secured.</p>"
-            : "<p>Hello <strong>$nombreCreator</strong>,</p><p>We inform you that your credit request for <strong>" . number_format($monto, 0) . " FC</strong> was declined by <strong>$nombreLab</strong>. Any held balance has been returned to your wallet balance.</p>";
+            ? "<p>Hi <strong>$nombreCreator</strong>!</p><p>We have great news! The team at <strong>$nombreLab</strong> has <strong>APPROVED</strong> your financing request for <strong>" . number_format($monto, 0) . " FC</strong>. Therefore, $destinoEn is now fully active and secured for you.</p>"
+            : "<p>Hello <strong>$nombreCreator</strong>,</p><p>We wanted to let you know that your financing request for <strong>" . number_format($monto, 0) . " FC</strong> could not be approved by <strong>$nombreLab</strong> this time. Any partial balance that was temporarily held is already back in your available account balance.</p>";
 
-        return self::enviar($emailCreator, $asuntoEs, $asuntoEn, $esAprobado ? "✅ Crédito Autorizado" : "❌ Crédito No Aprobado", $esAprobado ? "✅ Credit Authorized" : "❌ Credit Declined", $msgEs, $msgEn);
+        return self::enviar($emailCreator, $asuntoEs, $asuntoEn, $esAprobado ? "✅ Financiamiento Autorizado" : "❌ Solicitud No Aprobada", $esAprobado ? "✅ Credit Authorized" : "❌ Request Not Approved", $msgEs, $msgEn);
     }
 
     /**
@@ -678,21 +693,23 @@ class MailService
      */
     public static function reservaRechazadaAlCreator($emailCreator, $nombreCreator, $nombreLab, $nombreEquipo, $tipoActivo = 'machine')
     {
-        $conceptoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "de inscripción para el taller" : "de reserva para el activo";
-        $conceptoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "registration request for the workshop" : "reservation request for the asset";
+        $conceptoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "tu inscripción para el taller" : "tu turno para la máquina";
+        $conceptoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "your workshop registration" : "your machine booking request";
 
+        // Cuerpo en Español
         $msgEs = "
-        <p>Hola <strong>$nombreCreator</strong>,</p>
-        <p>Te informamos que tu solicitud $conceptoEs <strong>$nombreEquipo</strong> fue rechazada por el laboratorio <strong>$nombreLab</strong>.</p>
-        <p>Los fondos en garantía han sido devueltos por completo al saldo de tu billetera líquida.</p>";
+        <p>Hola, <strong>$nombreCreator</strong>:</p>
+        <p>Te escribimos para avisarte que, por temas imprevistos de agenda, el laboratorio <strong>$nombreLab</strong> no pudo confirmar $conceptoEs: <strong>$nombreEquipo</strong>.</p>
+        <p>Tus FabCoins ya han sido liberados por completo y están listos en tu saldo para que puedas usarlos en cualquier otra actividad o reserva que desees dentro de la plataforma.</p>";
 
+        // Cuerpo en Inglés
         $msgEn = "
         <p>Hello <strong>$nombreCreator</strong>,</p>
-        <p>We inform you that your $conceptoEn <strong>$nombreEquipo</strong> was declined by the laboratory <strong>$nombreLab</strong>.</p>
-        <p>The escrowed funds have been fully refunded to your liquid wallet balance.</p>";
+        <p>We are writing to inform you that due to unexpected scheduling constraints, the laboratory <strong>$nombreLab</strong> could not confirm $conceptoEn: <strong>$nombreEquipo</strong>.</p>
+        <p>Your FabCoins have been fully released and are ready in your account balance so you can use them for any other activity or booking on the platform.</p>";
 
-        $asuntoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "❌ Inscripción Rechazada - FabCoins" : "❌ Reserva Rechazada - FabCoins";
-        $asuntoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "❌ Registration Declined - FabCoins" : "❌ Reservation Declined - FabCoins";
+        $asuntoEs = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "❌ Inscripción no confirmada - FabCoins" : "❌ Reserva no confirmada - FabCoins";
+        $asuntoEn = ($tipoActivo === 'workshop' || $tipoActivo === 'service') ? "❌ Registration Not Confirmed - FabCoins" : "❌ Booking Not Confirmed - FabCoins";
 
         return self::enviar($emailCreator, $asuntoEs, $asuntoEn, "❌ Solicitud No Procesada", "❌ Request Not Processed", $msgEs, $msgEn);
     }
@@ -713,33 +730,33 @@ class MailService
 
         // Cuerpo en Español
         $msgEs = "
-        <p>¡Hola <strong>$nombreCreator</strong>!</p>
-        <p>El lab<strong>$nombreLab</strong> ha publicado una <strong>Misión Exclusiva</strong> dirigida especialmente a ti.</p>
+        <p>¡Hola, <strong>$nombreCreator</strong>!</p>
+        <p>El laboratorio <strong>$nombreLab</strong> ha publicado una <strong>Misión Especial y Exclusiva</strong> pensada especialmente para ti.</p>
         <div style='background:rgba(241,196,15,0.04); border:1px dashed #f1c40f; padding:15px; border-radius:8px; text-align:center; margin:20px 0;'>
-            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px;'>Monto de Cobertura en Escrow:</span>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px;'>Monto que se descontará de tu saldo pendiente:</span>
             <span style='font-size:22px; font-weight:800; color:#f1c40f;'>" . number_format($recompensa, 0) . " FC</span>
         </div>
-        <p><strong>🚨 Nota:</strong> Al tratarse de una misión de retorno vinculada a tu línea de financiamiento activa, el valor de la recompensa se aplicará de forma directa para reducir o liquidar tu saldo deudor con este lab.</p>
-        <p>Es una oportunidad perfecta para saldar tu compromiso utilizando tus habilidades técnicas. ¡Revisa los detalles y ponte en marcha!</p>
+        <p><strong>🚨 Nota importante:</strong> Al tratarse de una misión de apoyo vinculada a tu saldo pendiente con este espacio, el valor de la recompensa se aplicará de forma directa para reducir o saldar por completo tu meta con este laboratorio.</p>
+        <p>Es una oportunidad perfecta para avanzar en tus objetivos usando todo tu talento técnico. ¡Revisa los detalles y ponte en marcha!</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
             <a href='$linkAcceso' style='background-color:#f1c40f; color:#0b0c10; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Ver Detalles de la Misión</a>
         </p>";
 
         // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello <strong>$nombreCreator</strong>!</p>
-        <p>The lab<strong>$nombreLab</strong> has published an <strong>Exclusive Mission</strong> tailored specifically for you.</p>
+        <p>Hi <strong>$nombreCreator</strong>!</p>
+        <p>The lab <strong>$nombreLab</strong> has published an <strong>Exclusive Special Mission</strong> tailored especially for you.</p>
         <div style='background:rgba(241,196,15,0.04); border:1px dashed #f1c40f; padding:15px; border-radius:8px; text-align:center; margin:20px 0;'>
-            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px;'>Escrow Coverage Amount:</span>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px;'>Amount to be reduced from your outstanding balance:</span>
             <span style='font-size:22px; font-weight:800; color:#f1c40f;'>" . number_format($recompensa, 0) . " FC</span>
         </div>
-        <p><strong>🚨 Note:</strong> As an exclusive payback mission linked to your active financing agreement, the reward value will be directly applied to reduce or settle your outstanding debt with this lab.</p>
-        <p>It is the perfect opportunity to fulfill your commitment using your technical talent. Check the requirements and get started!</p>
+        <p><strong>🚨 Important Note:</strong> As a payback mission connected to your agreement with this lab, the reward value will be directly applied to reduce or fully settle your outstanding balance with them.</p>
+        <p>It is the perfect opportunity to fulfill your commitment using your technical talents. Check the details and get started!</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
             <a href='$linkAcceso' style='background-color:#f1c40f; color:#0b0c10; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>View Mission Details</a>
         </p>";
 
-        return self::enviar($emailCreator, "🎯 Misión Exclusiva de Amortización - FabCoins", "🎯 Exclusive Amortization Mission - FabCoins", "🎯 Misión de Honor Asignada", "🎯 Honor Mission Assigned", $msgEs, $msgEn);
+        return self::enviar($emailCreator, "🎯 Misión Especial de Apoyo - FabCoins", "🎯 Exclusive Payback Mission - FabCoins", "🎯 Misión de Honor Asignada", "🎯 Special Mission Assigned", $msgEs, $msgEn);
     }
 
     /**
@@ -750,25 +767,27 @@ class MailService
     {
         $linkAcceso = route('login');
 
+        // Cuerpo en Español
         $msgEs = "
-        <p>Hola <strong>$nombreLab</strong>,</p>
-        <p>Te informamos que el creador <strong>$nombreCreator</strong> ha <strong>ACEPTADO</strong> formalmente la Misión que le dirigiste: <strong>\"$tituloMision\"</strong>.</p>
-        <p>El acuerdo de amortización por un valor de <strong>" . number_format($recompensa, 0) . " FC</strong> ha entrado en fase de ejecución activa. El creador ya se encuentra habilitado para desarrollar las tareas técnicas encomendadas.</p>
-        <p>Una vez que el trabajo sea entregado en tu sede, recuerda ingresar al panel de control para auditar las habilidades del creador y liberar el colateral para reducir su deuda.</p>
+        <p>¡Hola, <strong>$nombreLab</strong>!</p>
+        <p>Te contamos que el creador <strong>$nombreCreator</strong> ha <strong>ACEPTADO</strong> formalmente la misión especial que le enviaste: <strong>\"$tituloMision\"</strong>.</p>
+        <p>Este acuerdo para avanzar con el pago de su saldo pendiente por un valor de <strong>" . number_format($recompensa, 0) . " FC</strong> ya está oficialmente en marcha y el creador se encuentra listo para iniciar las tareas técnicas.</p>
+        <p>Una vez que el proyecto esté listo en tu sede, recuerda ingresar a tu panel de control para calificar amigablemente su trabajo y confirmar el descuento de su saldo.</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
-            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Monitorear Misiones en Panel</a>
+            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Monitorear Misiones Abiertas</a>
         </p>";
 
+        // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello <strong>$nombreLab</strong>,</p>
-        <p>We are writing to inform you that the creator <strong>$nombreCreator</strong> has formally <strong>ACCEPTED</strong> the Mission you directed to them: <strong>\"$tituloMision\"</strong>.</p>
-        <p>The amortization agreement for <strong>" . number_format($recompensa, 0) . " FC</strong> is now in active execution. The creator is now authorized to perform the technical tasks specified.</p>
-        <p>Once the work is delivered to your workshop, remember to log into your dashboard to evaluate the creator's skills and release the escrowed tokens to reduce their debt.</p>
+        <p>Hi <strong>$nombreLab</strong>,</p>
+        <p>We are writing to let you know that the creator <strong>$nombreCreator</strong> has formally <strong>ACCEPTED</strong> the special mission you directed to them: <strong>\"$tituloMision\"</strong>.</p>
+        <p>This agreement to move forward with settling their outstanding balance for <strong>" . number_format($recompensa, 0) . " FC</strong> is now officially active, and the creator is clear to start working on the specified tasks.</p>
+        <p>Once the work is completed at your space, remember to log into your dashboard to leave a friendly review and release the held tokens to reduce their balance.</p>
         <p style='text-align:center; margin:25px 0 10px 0;'>
-            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Monitor Missions in Dashboard</a>
+            <a href='$linkAcceso' style='background-color:#3498db; color:#ffffff; padding:12px 30px; text-decoration:none; border-radius:6px; font-weight:bold; display:inline-block;'>Monitor Active Missions</a>
         </p>";
 
-        return self::enviar($emailLab, "🤝 Misión de Honor Aceptada - FabCoins", "🤝 Honor Mission Accepted - FabCoins", "🤝 Compromiso de Amortización Activo", "🤝 Payback Commitment Active", $msgEs, $msgEn);
+        return self::enviar($emailLab, "🤝 Misión de Honor Aceptada - FabCoins", "🤝 Honor Mission Accepted - FabCoins", "🤝 Compromiso de Apoyo Activo", "🤝 Payback Commitment Active", $msgEs, $msgEn);
     }
 
     /**
@@ -780,38 +799,61 @@ class MailService
         $estrellasHtml = str_repeat('⭐', $estrellas);
 
         $saldoDeudaTextoEs = ($deudaRestante > 0) 
-            ? "Tu saldo deudor remanente con el lab es de <strong>" . number_format($deudaRestante, 0) . " FC</strong>."
-            : "<strong>🎉 ¡Felicidades! Tu contrato de financiamiento con este lab ha sido saldado al 100%.</strong>";
+            ? "Tu balance pendiente remanente con este laboratorio es de <strong>" . number_format($deudaRestante, 0) . " FC</strong>."
+            : "<strong>🎉 ¡Muchísimas felicidades! Tu compromiso de apoyo con este laboratorio ha quedado completamente saldado al 100%.</strong>";
 
         $saldoDeudaTextoEn = ($deudaRestante > 0) 
-            ? "Your remaining outstanding balance with the lab is <strong>" . number_format($deudaRestante, 0) . " FC</strong>."
+            ? "Your remaining outstanding balance with this lab is now <strong>" . number_format($deudaRestante, 0) . " FC</strong>."
             : "<strong>🎉 Congratulations! Your financing agreement with this lab has been 100% settled.</strong>";
 
         // Cuerpo en Español
         $msgEs = "
-        <p>Hola <strong>$nombreCreator</strong>,</p>
-        <p>El lab ha auditado tu entrega final para la misión <em>\"$tituloMision\"</em> y la ha aprobado satisfactoriamente.</p>
+        <p>¡Hola, <strong>$nombreCreator</strong>!</p>
+        <p>El laboratorio revisó y aprobó con éxito tu entrega final para la misión: <em>\"$tituloMision\"</em>.</p>
         <div style='background:#131722; padding:20px; border-radius:8px; text-align:center; margin:20px 0; border:1px solid rgba(255,255,255,0.02);'>
-            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;'>Monto Amortizado a tu Deuda:</span>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;'>Monto descontado de tu balance:</span>
             <span style='color:#f1c40f; margin:0; font-size:26px; font-weight:800;'>-" . number_format($montoAmortizado, 0) . " FC</span>
-            <p style='margin:10px 0 0 0; font-size:14px; color:#ffffff;'>Evaluación del Lab: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
+            <p style='margin:10px 0 0 0; font-size:14px; color:#ffffff;'>Calificación del Laboratorio: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
         </div>
-        <p>Los fondos en custodia han sido liberados y transferidos directamente a la tesorería del lab para amortizar tu crédito. $saldoDeudaTextoEs</p>
-        <p style='margin-top:15px;'>Tus habilidades validadas y tu puntuación de reputación pública han sido actualizadas en la red. ¡Gracias por tu compromiso!</p>";
+        <p>Los FabCoins se han aplicado directamente para cubrir tu meta. $saldoDeudaTextoEs</p>
+        <p style='margin-top:15px;'>Tus nuevas habilidades validadas y tu puntuación de reputación pública ya brillan actualizadas en la red. ¡Gracias por tu enorme dedicación!</p>";
 
         // Cuerpo en Inglés
         $msgEn = "
-        <p>Hello <strong>$nombreCreator</strong>,</p>
-        <p>The lab has audited your final delivery for the mission <em>\"$tituloMision\"</em> and has successfully approved it.</p>
+        <p>Hi <strong>$nombreCreator</strong>,</p>
+        <p>The laboratory has successfully audited and approved your final delivery for the mission: <em>\"$tituloMision\"</em>.</p>
         <div style='background:#131722; padding:20px; border-radius:8px; text-align:center; margin:20px 0; border:1px solid rgba(255,255,255,0.02);'>
-            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;'>Amount Amortized to Your Debt:</span>
+            <span style='font-size:11px; color:#7f8c8d; display:block; text-transform:uppercase; letter-spacing:0.5px;'>Amount deducted from your balance:</span>
             <span style='color:#f1c40f; margin:0; font-size:26px; font-weight:800;'>-" . number_format($montoAmortizado, 0) . " FC</span>
             <p style='margin:10px 0 0 0; font-size:14px; color:#ffffff;'>Lab Evaluation: <span style='letter-spacing:2px;'>$estrellasHtml</span></p>
         </div>
-        <p>The escrowed tokens have been released and transferred directly to the lab's vault to amortize your credit line. $saldoDeudaTextoEn</p>
-        <p style='margin-top:15px;'>Your validated skills and public reputation score have been successfully updated in the network. Thank you for your commitment!</p>";
+        <p>The tokens have been successfully applied to cover your support agreement. $saldoDeudaTextoEn</p>
+        <p style='margin-top:15px;'>Your newly validated skills and public reputation score have been successfully updated in the ranking logs. Thank you for your commitment!</p>";
 
-        return self::enviar($emailCreator, "🪙 Comprobante de Amortización - FabCoins", "🪙 Amortization Receipt - FabCoins", "🪙 Crédito Amortizado", "🪙 Credit Amortized", $msgEs, $msgEn);
+        return self::enviar($emailCreator, "🪙 Reporte de balance actualizado - FabCoins", "🪙 Amortization Balance Receipt - FabCoins", "🪙 Balance Saldado", "🪙 Account Balance Settled", $msgEs, $msgEn);
     }
-    
+
+    /**
+     * CORREO NUEVO: CONFIRMACIÓN DE CONTRASEÑA MODIFICADA CON ÉXITO
+     */
+    public static function notificarCambioPassword($emailDestino, $nombreUsuario)
+    {
+        $msgEs = "
+        <p>¡Hola, <strong>$nombreUsuario</strong>!</p>
+        <p>Te escribimos rápidamente para confirmarte que la contraseña de tu cuenta en la red de <strong>FabCoins</strong> ha sido modificada con éxito hoy.</p>
+        <p>Si tú mismo realizaste este cambio, ¡está todo perfecto! No necesitas hacer nada más; tus nuevas credenciales ya están activas.</p>
+        <hr style='border:0; border-top:1px solid rgba(255,255,255,0.05); margin:20px 0;'>
+        <p style='font-size:12.5px; color:#e74c3c; font-weight:bold;'>⚠️ ¿No fuiste tú?</p>
+        <p style='font-size:13px; color:#cbd5e0; margin-top:5px;'>Si tú no solicitaste este cambio de clave, por favor ponte en contacto de inmediato con nuestro equipo de soporte para ayudarte a congelar tu cuenta y proteger tus FabCoins acumulados.</p>";
+
+        $msgEn = "
+        <p>Hi <strong>$nombreUsuario</strong>!</p>
+        <p>This is a quick confirmation to let you know that your <strong>FabCoins</strong> network account password was successfully updated today.</p>
+        <p>If you made this change yourself, you are all set! No further action is required; your new credentials are live.</p>
+        <hr style='border:0; border-top:1px solid rgba(255,255,255,0.05); margin:20px 0;'>
+        <p style='font-size:12.5px; color:#e74c3c; font-weight:bold;'>⚠️ Wasn't this you?</p>
+        <p style='font-size:13px; color:#cbd5e0; margin-top:5px;'>If you did not request this password reset, please reach out to our support team immediately so we can help you freeze your account and secure your earned FabCoins.</p>";
+
+        return self::enviar($emailDestino, "🔒 Tu contraseña ha sido cambiada", "🔒 Your password has been changed", "🔒 Confirmación de Seguridad", "🔒 Security Confirmation", $msgEs, $msgEn);
+    }
 }

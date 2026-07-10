@@ -8,8 +8,8 @@
     <!-- HEADER INDUSTRIAL DE ALTA GAMA -->
     <header class="lab-header-v2">
        <button type="button" class="lab-profile-trigger" 
-        onclick="abrirHubPersistente('hub-activar'); setTimeout(() => { document.getElementById('seccion-perfil-mapa').scrollIntoView({ behavior: 'smooth' }); }, 250);" 
-        title="{{ __('messages.edit_profile') }}">
+        onclick="window.open('{{ route('public.profile', auth()->user()->slug ?? auth()->id()) }}', '_blank')" 
+        title="👁️ {{ __('messages.view_public_profile') }}">
             <div class="lab-avatar-wrapper {{ ($isFrozen ?? false) ? 'status-frozen' : 'status-active' }}">
                 <img src="{{ $lab->avatar_url ?: 'https://ui-avatars.com/api/?name='.urlencode($lab->name).'&background=1abc9c&color=fff' }}" alt="{{ $lab->name }}">
             </div>

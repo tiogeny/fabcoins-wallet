@@ -48,12 +48,24 @@ class AuthenticatedSessionController extends Controller
     /**
      * Procesa el cambio obligatorio de clave inicial para cuentas invitadas.
      */
-    public function completeOnboarding(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
+    public function completeOnboarding(\Illuminate\Http\Request $request)
     {
-        $request->validate([
+        // Creamos un validador manual para controlar el rechazo sin perder el estado
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'temp_user_id' => 'required|integer',
             'new_password' => 'required|string|min:8', 
+        ], [
+            'new_password.min' => __('messages.error_password_min'),
+            'new_password.required' => __('messages.error_password_required'),
         ]);
+
+        // 🛑 SI FALLA: Congelamos la pantalla de bienvenida y le inyectamos el mensaje en rojo de forma nativa
+        if ($validator->fails()) {
+            return view('auth.login', [
+                'require_onboarding' => true,
+                'temp_user_id' => $request->input('temp_user_id')
+            ])->withErrors($validator);
+        }
 
         // 1. Verificar usando Query Builder directo si el usuario existe y requiere el cambio
         $usuarioExiste = \Illuminate\Support\Facades\DB::table('users')
@@ -73,11 +85,11 @@ class AuthenticatedSessionController extends Controller
                 'force_password_change' => 0 // 🔓 Cuenta liberada oficialmente
             ]);
 
-        // 3. Loguear al usuario usando su ID directamente
-        \Illuminate\Support\Facades\Auth::loginUsingId($request->input('temp_user_id'));
-
-        // 4. Iniciar y regenerar su sesión limpia
+        // 3. Iniciar y regenerar su sesión limpia PRIMERO (Evita que Laravel tumbe el token de acceso)
         $request->session()->regenerate();
+
+        // 4. Loguear al usuario usando su ID de forma segura inmediatamente después
+        \Illuminate\Support\Facades\Auth::loginUsingId($request->input('temp_user_id'));
 
         // 5. Redirigir al distribuidor de tráfico central
         return redirect()->route('dashboard');

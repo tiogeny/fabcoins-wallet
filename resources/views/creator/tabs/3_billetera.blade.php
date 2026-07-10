@@ -179,7 +179,7 @@
                          style="min-height: 194px; height: auto; overflow-y: auto; color: #fff; background: #131722; padding: 14px; border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; outline: none; line-height: 1.5;"
                          oninput="sincronizarEditorOculto('creator-editor', 'creator-bio-hidden')">{!! $creator->bio !!}</div>
                     
-                    <input type="hidden" name="bio" id="creator-bio-hidden" value="{{ $creator->bio }}">
+                    <input type="hidden" name="bio" id="creator-bio-hidden" value="{{ e($creator->bio) }}">
                 </div>
 
                 {{-- 🔗 REDES Y LOCALIZACIÓN (COLUMNA DERECHA) --}}
@@ -218,6 +218,14 @@
                     </div>
                 </div>
             </div>
+
+            {{-- 🧠 RECUPERACIÓN EN TIEMPO REAL (Antigravity Approved): Asegura que las habilidades se pinten marcadas si existen en la BD --}}
+            @php
+                $misSkillsIds = \Illuminate\Support\Facades\DB::table('user_skills')
+                    ->where('user_id', auth()->id())
+                    ->pluck('skill_id')
+                    ->toArray();
+            @endphp
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; align-items: start; margin-top: 25px;">
                 

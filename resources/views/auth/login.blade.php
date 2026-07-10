@@ -14,9 +14,9 @@
     </div>
     <p class="auth-subtitle">{{ __('messages.app_subtitle') }}</p>
 
-    {{-- MANEJO DE ALERTAS NATIVAS DE LARAVEL --}}
+    {{-- MANEJO DE ALERTAS NATIVAS DE LARAVEL (CON ID DE CONTROL SEGURO) --}}
     @if($errors->any())
-        <div class="alert alert-danger" style="padding: 12px; font-size: 13px; margin-bottom: 15px;">
+        <div id="auth-alert-danger" class="alert alert-danger" style="padding: 12px; font-size: 13px; margin-bottom: 15px; transition: opacity 0.3s ease;">
             {{ $errors->first() }}
         </div>
     @endif
@@ -38,8 +38,15 @@
             @csrf
             <input type="hidden" name="temp_user_id" value="{{ $temp_user_id }}">
             
-            <div class="auth-input-group">
+            <div class="auth-input-group password-toggle-wrapper">
                 <input type="password" name="new_password" placeholder="{{ __('messages.onb_ph_pass') }}" required>
+                <span class="password-toggle-eye" onclick="toggleAuthPassword(this)">
+                    <!-- Icono Ojo Abierto SVG Moderno -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open-icon">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </span>
             </div>            
             <button type="submit" class="btn-auth-submit">{{ __('messages.onb_btn') }}</button>
         </form>
@@ -172,17 +179,15 @@ function toggleAuthPassword(iconElement) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-        // Buscamos las pestañas nativas del archivo (el segundo elemento suele ser Register)
         const tabs = document.querySelectorAll('.auth-tab-btn');
         
-        // 1. 🚀 CASO A: Si Laravel devuelve errores de registro o datos viejos (old)
-        // Forzamos que se mantenga abierta la pestaña de Registro para que el usuario vea qué falló.
-        @if($errors->has('name') || $errors->has('email') || old('name'))
+        // 1. 🚀 CASO A: Solo cambia a Registro si hay errores específicos de registro (evita atrapar el error del login)
+        @if($errors->has('name') || old('name') || $errors->has('password_confirmation'))
             if (tabs.length > 1) {
                 switchAuthTab('register', tabs[1]);
             }
         @else
-            // 2. 🌐 CASO B: Si no hay errores, leemos si la URL viene desde la Landing con ?tab=register
+            // 2. 🌐 CASO B: Flujo normal por parámetro de URL
             const urlParams = new URLSearchParams(window.location.search);
             const tabParam = urlParams.get('tab');
 
@@ -190,6 +195,23 @@ document.addEventListener("DOMContentLoaded", function() {
                 switchAuthTab('register', tabs[1]);
             }
         @endif
+
+        // ⏱️ CONTROL RADAR DE UX: Desvanecer el mensaje de error
+        const alertDanger = document.getElementById('auth-alert-danger');
+        if (alertDanger) {
+            // Opción A: Se desvanece solo automáticamente a los 5 segundos
+            setTimeout(() => {
+                alertDanger.style.opacity = '0';
+                setTimeout(() => alertDanger.remove(), 300);
+            }, 4000);
+
+            // Opción B: Se elimina AL INSTANTE en cuanto el usuario presiona cualquier tecla para corregir sus datos
+            document.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', () => {
+                    alertDanger.remove();
+                });
+            });
+        }
     });
 </script>
 @endsection

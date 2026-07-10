@@ -119,11 +119,7 @@
                     </div>
                 </div>
 
-                <div class="grid-mission-inputs" style="grid-template-columns: 1.2fr 0.8fr; margin-top: 5px;">
-                    <div>
-                        <label class="premium-label">{{ __('messages.lbl_temp_password') }}</label>
-                        <input type="text" name="password" placeholder="Clave robusta" class="premium-input" required>
-                    </div>
+                <div class="grid-mission-inputs" style="grid-template-columns: 1fr; margin-top: 5px;">
                     <div>
                         <label class="premium-label">{{ __('messages.lbl_node_lang') }}</label>
                         <select name="lab_lang" class="premium-select">

@@ -2,6 +2,11 @@
 
 @section('title', $user->name . ' | ' . __('messages.app_subtitle'))
 
+{{-- 🌐 CARD DINÁMICA PARA REDES (WhatsApp, X, LinkedIn) --}}
+@section('og_title', $user->name . ' | Ecosistema FabCoins')
+@section('og_description', $user->role === 'lab' ? 'Explora el inventario de maquinaria, talleres activos y reputación oficial de este nodo tecnológico.' : 'Conoce el portafolio de misiones completadas y habilidades técnicas validadas de este creador.')
+@section('og_image', !empty($user->avatar_url) ? $user->avatar_url : asset('images/og-share.png'))
+
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/lab.css') }}?v=1.0">
     <link rel="stylesheet" href="{{ asset('css/creator.css') }}?v=1.6">
