@@ -14,6 +14,11 @@ class MissionController extends Controller
      */
     public function store(Request $request)
     {
+        // Bloquear montos negativos o cero en la recompensa
+        $request->validate([
+            'reward_fc' => 'required|numeric|min:0.01',
+        ]);
+
         $labId = auth()->id();
         $rewardUnit = floatval($request->input('reward_fc', 0));
         $targetCreatorId = $request->input('target_creator_id') ? intval($request->input('target_creator_id')) : null;
@@ -103,8 +108,15 @@ class MissionController extends Controller
      */
     public function assignCreator(Request $request)
     {
+        $labId = auth()->id();
         $missionId = $request->input('mission_id');
         $creatorId = $request->input('creator_id');
+
+        // Validar que la misión realmente pertenezca al Lab que está logueado
+        $propietarioMision = DB::table('missions')->where('id', $missionId)->where('lab_id', $labId)->exists();
+        if (!$propietarioMision) {
+            return redirect()->back()->with('error', "Acceso denegado: No tienes permisos sobre esta misión.");
+        }
 
         try {
             DB::transaction(function () use ($missionId, $creatorId) {
@@ -159,8 +171,17 @@ class MissionController extends Controller
      */
     public function rejectCreator(Request $request)
     {
+        $labId = auth()->id();
+        $missionId = $request->input('mission_id');
+
+        // Validar que la misión realmente pertenezca al Lab que está logueado
+        $propietarioMision = DB::table('missions')->where('id', $missionId)->where('lab_id', $labId)->exists();
+        if (!$propietarioMision) {
+            return redirect()->back()->with('error', "Acceso denegado: No tienes permisos sobre esta misión.");
+        }
+
         DB::table('mission_applications')
-            ->where('mission_id', $request->input('mission_id'))
+            ->where('mission_id', $missionId)
             ->where('creator_id', $request->input('creator_id'))
             ->update(['status' => 'rejected', 'updated_at' => now()]);
 
