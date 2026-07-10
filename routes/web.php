@@ -141,8 +141,10 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
 // --- 🔐 RUTAS DE AUTENTICACIÓN PROTEGIDAS POR LOCALE ---
 Route::middleware(['locale'])->group(function () {
-    // 🔓 RUTA LIBRE: Permite procesar el formulario de clave nueva sin estar logueado aún
-    Route::post('/onboarding/complete', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'completeOnboarding'])->name('onboarding.complete');
+    // 🔒 PROTEGIDA CON FIRMA DIGITAL: Ahora el endpoint exige obligatoriamente la firma generada por el SuperAdmin
+    Route::post('/onboarding/complete', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'completeOnboarding'])
+        ->middleware('signed')
+        ->name('onboarding.complete');
         
     require __DIR__.'/auth.php';
 });

@@ -37,7 +37,8 @@ class SystemController extends Controller
 
         $avatar = "https://ui-avatars.com/api/?name=" . urlencode($name) . "&background=2ecc71&color=fff";
 
-        DB::table('users')->insert([
+        // Cambiado a insertGetId para capturar y almacenar el ID real del nuevo Lab
+        $newLabId = DB::table('users')->insertGetId([
             'name' => $name, 'email' => $email, 'password' => Hash::make($password),
             'role' => 'lab', 'avatar_url' => $avatar, 'slug' => $slug,
             'force_password_change' => 1, 'preferred_lang' => $lab_lang, 'created_at' => now()
@@ -47,7 +48,7 @@ class SystemController extends Controller
         $urlOnboarding = URL::temporarySignedRoute(
             'onboarding.complete', 
             now()->addDays(1), 
-            ['user' => $newLab->id]
+            ['user' => $newLabId] // Corregido: Usamos el ID real capturado
         );
 
         // 📨 TRIGGER: Despacha la plantilla de bienvenida oficial bilingüe
@@ -58,6 +59,11 @@ class SystemController extends Controller
 
     public function updatePolicy(Request $request)
     {
+        // Escudo Monetario (VULN-NEW-05): Validar rango para evitar inflación o errores tipográficos
+        $request->validate([
+            'nuevo_pct' => 'required|numeric|min:1|max:100',
+        ]);
+
         DB::table('global_settings')
             ->where('setting_key', 'tokenization_pct')
             ->update(['setting_value' => floatval($request->input('nuevo_pct'))]);

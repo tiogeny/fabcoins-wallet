@@ -231,20 +231,25 @@ class JobController extends Controller
         
         if (!$contract) return redirect()->back()->with('error', 'Contrato no encontrado o inválido.');
 
-        // Verificamos saldo líquido en tiempo real
-        $querySaldo = DB::select("SELECT SUM(CASE WHEN type IN ('income', 'mint') THEN amount ELSE -amount END) as saldo FROM transactions WHERE user_id = ?", [$creator->id]);
-        $saldoActual = $querySaldo[0]->saldo ?? 0;
+        try {
+            // 🔒 CIRUGÍA DE SEGURIDAD (VULN-NEW-04): Verificación y cobro atómico con bloqueo pesimista
+            DB::transaction(function() use ($creator, $contract, &$amountToPay) {
+                
+                // Calculamos el saldo real congelando la fila para evitar Race Conditions Concurrentes
+                $saldoActual = DB::table('transactions')
+                    ->where('user_id', $creator->id)
+                    ->lockForUpdate()
+                    ->selectRaw("SUM(CASE WHEN type IN ('income', 'mint') THEN amount ELSE -amount END) as saldo")
+                    ->value('saldo') ?? 0;
 
-        if ($amountToPay > $saldoActual || $amountToPay <= 0) {
-            return redirect()->back()->with('error', 'Saldo insuficiente para este abono.');
-        }
+                if ($amountToPay > $saldoActual || $amountToPay <= 0) {
+                    throw new \Exception('Saldo insuficiente para este abono.');
+                }
 
-        // Limitamos el pago al máximo de la deuda
-        if ($amountToPay > $contract->amount_remaining) {
-            $amountToPay = $contract->amount_remaining;
-        }
-
-        DB::transaction(function() use ($creator, $contract, $amountToPay) {
+                // Limitamos el pago al máximo de la deuda
+                if ($amountToPay > $contract->amount_remaining) {
+                    $amountToPay = $contract->amount_remaining;
+                }
             // 1. Descontamos de la billetera del creador
             DB::table('transactions')->insert([
                 'user_id' => $creator->id,
@@ -288,6 +293,11 @@ class JobController extends Controller
                 'created_at' => now()
             ]);
         });
+
+        } catch (\Exception $e) {
+            // Si la validación atómica falla, cancelamos todo el Ledger de forma segura
+            return redirect()->back()->with('error', $e->getMessage());
+        }
 
         // 📨 TRIGGER: Alerta al Lab sobre el reingreso contable por pasarela voluntaria
         $lab = DB::table('users')->where('id', $contract->lab_id)->first();
