@@ -26,15 +26,23 @@ class ReservationController extends Controller
         }
 
         $costoTotal = $horas * $asset->set_price_fc;
-        $querySaldo = DB::select("SELECT SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END) as saldo FROM transactions WHERE user_id = ?", [$creator->id]);
-        $saldoTotal = $querySaldo[0]->saldo ?? 0;
+        $saldoTotal = 0; // Inicializamos la variable que usarán tus correos más abajo
 
-        // Si no tiene saldo y tampoco pidió crédito, lo rebotamos por seguridad
-        if ($saldoTotal < $costoTotal && !$isCreditRequest) {
-            return redirect()->route('creator.dashboard')->with('error', __('messages.swal_insufficient_escrow_desc'));
-        }
+        try {
+            // El proceso se ejecuta dentro de un try-catch por seguridad
+            DB::transaction(function() use ($creator, $assetId, $horas, $fecha, $costoTotal, $asset, &$saldoTotal, $isCreditRequest) {
+                
+                // 🔒 CERROJO ATÓMICO (VULN-03): Nadie puede alterar este saldo en este milisegundo
+                $saldoTotal = DB::table('transactions')
+                    ->where('user_id', $creator->id)
+                    ->lockForUpdate()
+                    ->selectRaw("SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END) as saldo")
+                    ->value('saldo') ?? 0;
 
-        DB::transaction(function() use ($creator, $assetId, $horas, $fecha, $costoTotal, $asset, $saldoTotal, $isCreditRequest) {
+                // Si no tiene saldo y tampoco pidió crédito, cancelamos la transacción de inmediato
+                if ($saldoTotal < $costoTotal && !$isCreditRequest) {
+                    throw new \Exception(__('messages.swal_insufficient_escrow_desc'));
+                }
             
             // 1. Insertar siempre la Orden de Reserva capturando su ID autogenerado
             $orderId = DB::table('orders')->insertGetId([
@@ -111,6 +119,11 @@ class ReservationController extends Controller
             }
         });
 
+        } catch (\Exception $e) {
+            // Si el saldo falla o se detecta fraude concurrente, redirige con el error original
+            return redirect()->route('creator.dashboard')->with('error', $e->getMessage());
+        }
+
         // 📨 TRIGGER INTERACTIVO: Envía el correo correcto según el tipo de pago (Líquido o Crédito ISA)
         $lab = DB::table('users')->where('id', $asset->lab_id)->first();
         if ($lab) {
@@ -141,7 +154,11 @@ class ReservationController extends Controller
     {
         $orderId = $request->input('order_id');
         $order = DB::table('orders')->where('id', $orderId)->first();
-        if (!$order) return redirect()->route('creator.dashboard');
+        
+        // Escudo IDOR: Validar que la orden exista y pertenezca al creador logueado
+        if (!$order || $order->creator_id !== auth()->id()) {
+            return redirect()->route('creator.dashboard')->with('error', 'Acceso denegado: Esta orden no te pertenece.');
+        }
         
         $asset = DB::table('lab_assets')->where('id', $order->asset_id)->first();
         $lab = DB::table('users')->where('id', $asset->lab_id)->first();
@@ -195,7 +212,11 @@ class ReservationController extends Controller
     {
         $orderId = $request->input('order_id');
         $order = DB::table('orders')->where('id', $orderId)->first();
-        if (!$order) return redirect()->route('creator.dashboard');
+        
+        // Escudo IDOR: Validar que la orden exista y pertenezca al creador logueado
+        if (!$order || $order->creator_id !== auth()->id()) {
+            return redirect()->route('creator.dashboard')->with('error', 'Acceso denegado: Esta orden no te pertenece.');
+        }
         
         $asset = DB::table('lab_assets')->where('id', $order->asset_id)->first();
 
@@ -225,6 +246,20 @@ class ReservationController extends Controller
         $comment   = trim($request->input('comment'));
         $missionId = $request->input('mission_id');
         $orderId   = $request->input('order_id');
+
+        // 🛡️ ESCUDO ANTI-SPAM (VULN-13): Evitar duplicación de reseñas para una misma orden/misión
+        $contextType = !empty($missionId) ? 'mission' : 'market';
+        $contextId   = !empty($missionId) ? $missionId : $orderId;
+        
+        $yaCalificado = DB::table('reviews')
+            ->where('reviewer_id', $creatorId)
+            ->where('context_type', $contextType)
+            ->where('context_id', $contextId)
+            ->exists();
+
+        if ($yaCalificado) {
+            return redirect()->route('creator.dashboard')->with('error', 'Operación inválida: Ya has emitido una reseña para este servicio.');
+        }
 
         // 🎯 OBTENER EL NOMBRE DEL ACTIVO/MISIÓN ANTES DE LA TRANSACCIÓN PARA EL CORREO
         $tituloContexto = 'Infraestructura';
