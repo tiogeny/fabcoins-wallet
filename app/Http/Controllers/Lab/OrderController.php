@@ -13,10 +13,11 @@ class OrderController extends Controller
     {
         $orderId = $request->input('order_id');
         
-        // 🎯 CIRUGÍA DE CONTROL: Unimos la tabla con lab_assets para recuperar el nombre real y su tipo
+        // 🎯 CIRUGÍA DE CONTROL: Unimos la tabla con lab_assets y filtramos por el Lab autenticado
         $order = DB::table('orders')
             ->join('lab_assets', 'orders.asset_id', '=', 'lab_assets.id')
             ->where('orders.id', $orderId)
+            ->where('lab_assets.lab_id', auth()->id()) // Escudo: Solo encuentra la orden si el activo pertenece a este Lab
             ->select('orders.*', 'lab_assets.custom_name', 'lab_assets.asset_type')
             ->first();
 
@@ -63,7 +64,14 @@ class OrderController extends Controller
     public function reject(Request $request)
     {
         $orderId = $request->input('order_id');
-        $order = DB::table('orders')->where('id', $orderId)->first();
+        
+        // Escudo: Unimos con lab_assets para verificar que el activo realmente pertenece a este Lab logueado
+        $order = DB::table('orders')
+            ->join('lab_assets', 'orders.asset_id', '=', 'lab_assets.id')
+            ->where('orders.id', $orderId)
+            ->where('lab_assets.lab_id', auth()->id())
+            ->select('orders.*')
+            ->first();
 
         // 1. Candado de seguridad: Solo se pueden rechazar órdenes en estado pendiente
         if (!$order || $order->status !== 'pending') {
@@ -125,7 +133,13 @@ class OrderController extends Controller
         $orderId = $request->input('order_id');
         $nuevaFecha = $request->input('nueva_fecha');
         
-        $order = DB::table('orders')->where('id', $orderId)->first();
+        // Escudo: Verificar que el activo de la orden le pertenece a este Lab logueado
+        $order = DB::table('orders')
+            ->join('lab_assets', 'orders.asset_id', '=', 'lab_assets.id')
+            ->where('orders.id', $orderId)
+            ->where('lab_assets.lab_id', auth()->id())
+            ->select('orders.*')
+            ->first();
 
         if (!$order || $order->status !== 'pending') {
             return redirect()->back()->with('error', 'La orden no se puede reprogramar.');
